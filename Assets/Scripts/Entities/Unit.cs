@@ -67,6 +67,8 @@ public class Unit : BaseEntity
             else
                 ComputeRepairing();
         }
+        if (CaptureTarget != null)
+            StartCapture(CaptureTarget);
 	}
     #endregion
 
@@ -109,20 +111,25 @@ public class Unit : BaseEntity
     // Targetting Task - attack
     public void SetAttackTarget(BaseEntity target)
     {
-        if (CanAttack(target) == false)
+        if (target == null)
             return;
 
         if (CaptureTarget != null)
             StopCapture();
 
         if (target.GetTeam() != GetTeam())
+        {
+            if (!CanAttack(target))
+                SetTargetPos(target.gameObject.transform.position);
+            
             StartAttacking(target);
+        }
     }
 
     // Targetting Task - capture
     public void SetCaptureTarget(TargetBuilding target)
     {
-        if (CanCapture(target) == false)
+        if (target == null)
             return;
 
         if (EntityTarget != null)
@@ -132,7 +139,16 @@ public class Unit : BaseEntity
             StopCapture();
 
         if (target.GetTeam() != GetTeam())
-            StartCapture(target);
+        {
+            if (CanCapture(target))
+                StartCapture(target);
+
+            else
+            {
+                SetTargetPos(target.gameObject.transform.position);
+                CaptureTarget = target;
+            }
+        }
     }
 
     // Targetting Task - repairing
@@ -149,9 +165,6 @@ public class Unit : BaseEntity
     }
     public bool CanAttack(BaseEntity target)
     {
-        if (target == null)
-            return false;
-
         // distance check
         if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.AttackDistanceMax * GetUnitData.AttackDistanceMax)
             return false;
@@ -196,9 +209,6 @@ public class Unit : BaseEntity
     }
     public bool CanCapture(TargetBuilding target)
     {
-        if (target == null)
-            return false;
-
         // distance check
         if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
             return false;
