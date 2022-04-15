@@ -1,5 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic;
+using UnityEngine.Events;
+
+enum E_MODE
+{
+    Agressive,
+    Defensive,
+    Passive
+}
+
 public class Unit : BaseEntity
 {
     [SerializeField]
@@ -13,6 +23,11 @@ public class Unit : BaseEntity
     public UnitDataScriptable GetUnitData { get { return UnitData; } }
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
+    public bool needToCapture = false;
+    SphereCollider infoRange = null;
+    List<BaseEntity> entitiesInRange = new List<BaseEntity>();
+    E_MODE mode = E_MODE.Agressive;
+
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -56,6 +71,7 @@ public class Unit : BaseEntity
             Init(Team);
 
         base.Start();
+        infoRange = GetComponent<SphereCollider>();
     }
     override protected void Update()
     {
@@ -67,7 +83,7 @@ public class Unit : BaseEntity
             else
                 ComputeRepairing();
         }
-        if (CaptureTarget != null)
+        if (needToCapture)
             StartCapture(CaptureTarget);
 	}
     #endregion
@@ -147,6 +163,7 @@ public class Unit : BaseEntity
             {
                 SetTargetPos(target.gameObject.transform.position);
                 CaptureTarget = target;
+                needToCapture = true;
             }
         }
     }
@@ -210,7 +227,7 @@ public class Unit : BaseEntity
     public bool CanCapture(TargetBuilding target)
     {
         // distance check
-        if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
+        if (target == null || (target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
             return false;
 
         return true;
@@ -227,6 +244,7 @@ public class Unit : BaseEntity
 
         CaptureTarget = target;
         CaptureTarget.StartCapture(this);
+        needToCapture = false;
     }
     public void StopCapture()
     {
@@ -288,4 +306,18 @@ public class Unit : BaseEntity
         }
     }
     #endregion
+
+    private void OnTriggerEnter(Collider other)
+    {
+        BaseEntity entity = other.GetComponent<BaseEntity>();
+        if (entity)
+            entitiesInRange.Add(entity);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        BaseEntity entity = other.GetComponent<BaseEntity>();
+        if (entity)
+            entitiesInRange.Remove(entity);
+    }
 }

@@ -553,13 +553,19 @@ public sealed class PlayerController : UnitController
                 {
                     // Direct call to attacking task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
+                    {
                         unit.SetAttackTarget(other);
+                        unit.needToCapture = false;
+                    }
                 }
                 else if (other.NeedsRepairing())
                 {
                     // Direct call to reparing task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
+                    {
                         unit.SetRepairTarget(other);
+                        unit.needToCapture = false;
+                    }
                 }
             }
         }
@@ -583,7 +589,10 @@ public sealed class PlayerController : UnitController
 
             // Direct call to moving task $$$ to be improved by AI behaviour
             foreach (Unit unit in SelectedUnitList)
+            {
                 unit.SetTargetPos(newPos);
+                unit.needToCapture = false;
+            }
         }
     }
     #endregion
