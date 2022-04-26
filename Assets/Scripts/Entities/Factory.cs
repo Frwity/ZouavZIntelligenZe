@@ -228,7 +228,7 @@ public sealed class Factory : BaseEntity
             if (unit != null)
             {
                 Controller.AddUnit(unit);
-                (Controller as PlayerController)?.UpdateFactoryBuildQueueUI(RequestedEntityBuildIndex);
+                (Controller as PlayerController)?.UpdateFactoryBuildQueueUI(this, RequestedEntityBuildIndex);
             }
         };
     }

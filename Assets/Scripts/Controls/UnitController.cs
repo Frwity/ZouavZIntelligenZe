@@ -42,7 +42,7 @@ public class UnitController : MonoBehaviour
     protected List<Unit> UnitList = new List<Unit>();
     protected List<Unit> SelectedUnitList = new List<Unit>();
     protected List<Factory> FactoryList = new List<Factory>();
-    protected Factory SelectedFactory = null;
+    protected List<Factory> SelectedFactoryList = new List<Factory>();
 
     // events
     protected Action OnBuildPointsUpdated;
@@ -136,7 +136,7 @@ public class UnitController : MonoBehaviour
         {
             TotalBuildPoints += factory.Cost;
             if (factory.IsSelected)
-                SelectedFactory = null;
+                SelectedFactoryList.Remove(factory);
             FactoryList.Remove(factory);
         };
         FactoryList.Add(factory);
@@ -146,37 +146,34 @@ public class UnitController : MonoBehaviour
         if (factory == null || factory.IsUnderConstruction)
             return;
 
-        SelectedFactory = factory;
-        SelectedFactory.SetSelected(true);
+        factory.SetSelected(true);
+        SelectedFactoryList.Add(factory);
         UnselectAllUnits();
     }
     virtual protected void UnselectCurrentFactory()
     {
-        if (SelectedFactory != null)
-            SelectedFactory.SetSelected(false);
-        SelectedFactory = null;
+        foreach (Factory factory in SelectedFactoryList)
+            factory.SetSelected(false);
+        SelectedFactoryList.Clear();
     }
-    protected bool RequestUnitBuild(int unitMenuIndex)
+    protected bool RequestUnitBuild(int unitMenuIndex, Factory factory)
     {
-        if (SelectedFactory == null)
-            return false;
-
-        return SelectedFactory.RequestUnitBuild(unitMenuIndex);
+        return factory.RequestUnitBuild(unitMenuIndex);
     }
     protected bool RequestFactoryBuild(int factoryIndex, Vector3 buildPos)
     {
-        if (SelectedFactory == null)
+        if (SelectedFactoryList.Count == 0)
             return false;
 
-        int cost = SelectedFactory.GetFactoryCost(factoryIndex);
+        int cost = SelectedFactoryList[0].GetFactoryCost(factoryIndex);
         if (TotalBuildPoints < cost)
             return false;
 
         // Check if positon is valid
-        if (SelectedFactory.CanPositionFactory(factoryIndex, buildPos) == false)
+        if (SelectedFactoryList[0].CanPositionFactory(factoryIndex, buildPos) == false)
             return false;
 
-        Factory newFactory = SelectedFactory.StartBuildFactory(factoryIndex, buildPos);
+        Factory newFactory = SelectedFactoryList[0].StartBuildFactory(factoryIndex, buildPos);
         if (newFactory != null)
         {
             AddFactory(newFactory);
