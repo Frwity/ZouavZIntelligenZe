@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 3563715967324713862}
   - component: {fileID: 1707494665243283660}
   - component: {fileID: 8898371080241738159}
-  - component: {fileID: 7366792380342480649}
   m_Layer: 10
   m_Name: Unit_Trike
   m_TagString: Untagged
@@ -105,19 +104,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!135 &7366792380342480649
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1707494665243283662}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 15
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &5237823902566746043
 GameObject:
   m_ObjectHideFlags: 0

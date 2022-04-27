@@ -7,7 +7,8 @@ enum E_MODE
 {
     Agressive,
     Defensive,
-    Passive
+    Passive,
+    FollowInstruction
 }
 
 public class Unit : BaseEntity
@@ -24,8 +25,6 @@ public class Unit : BaseEntity
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
     public bool needToCapture = false;
-    SphereCollider infoRange = null;
-    List<BaseEntity> entitiesInRange = new List<BaseEntity>();
     E_MODE mode = E_MODE.Agressive;
 
     override public void Init(ETeam _team)
@@ -71,7 +70,7 @@ public class Unit : BaseEntity
             Init(Team);
 
         base.Start();
-        infoRange = GetComponent<SphereCollider>();
+        InvokeRepeating("CheckForEnemy", 1f, 1f);
     }
     override protected void Update()
     {
@@ -307,17 +306,22 @@ public class Unit : BaseEntity
     }
     #endregion
 
-    private void OnTriggerEnter(Collider other)
+    void CheckForEnemy()
     {
-        BaseEntity entity = other.GetComponent<BaseEntity>();
-        if (entity)
-            entitiesInRange.Add(entity);
-    }
+        if (EntityTarget != null && EntityTarget is Unit)
+            return;
 
-    private void OnTriggerExit(Collider other)
-    {
-        BaseEntity entity = other.GetComponent<BaseEntity>();
-        if (entity)
-            entitiesInRange.Remove(entity);
+        Collider[] unitsCollider = Physics.OverlapSphere(transform.position, 15f, 1 << LayerMask.NameToLayer("Unit"));
+        foreach(Collider unitCollider in unitsCollider)
+        {
+            if (unitCollider.GetComponent<Unit>().Team != Team)
+            {
+                if (mode == E_MODE.Agressive)
+                {
+                    EntityTarget = unitCollider.GetComponent<Unit>();
+                    return;
+                }
+            }
+        }
     }
 }

@@ -238,7 +238,6 @@ GameObject:
   - component: {fileID: 9097152687149926693}
   - component: {fileID: 6593571166977932406}
   - component: {fileID: 1442247095}
-  - component: {fileID: 6964336821823831230}
   m_Layer: 10
   m_Name: Unit_Tank
   m_TagString: Untagged
@@ -330,19 +329,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!135 &6964336821823831230
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4489616219243337951}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 15
-  m_Center: {x: 0, y: 2, z: 0}
 --- !u!1 &5583398558084100897
 GameObject:
   m_ObjectHideFlags: 0
