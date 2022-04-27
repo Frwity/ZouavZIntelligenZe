@@ -19,7 +19,7 @@ public class UnitController : MonoBehaviour
         get { return _TotalBuildPoints; }
         set
         {
-            Debug.Log("TotalBuildPoints updated");
+            //Debug.Log("TotalBuildPoints updated");
             _TotalBuildPoints = value;
             OnBuildPointsUpdated?.Invoke();
         }
@@ -39,10 +39,10 @@ public class UnitController : MonoBehaviour
     protected Transform TeamRoot = null;
     public Transform GetTeamRoot() { return TeamRoot; }
 
-    protected List<Unit> UnitList = new List<Unit>();
-    protected List<Unit> SelectedUnitList = new List<Unit>();
-    protected List<Factory> FactoryList = new List<Factory>();
-    protected Factory SelectedFactory = null;
+    public List<Unit> UnitList = new List<Unit>();
+    public List<Unit> SelectedUnitList = new List<Unit>();
+    public List<Factory> FactoryList = new List<Factory>();
+    public Factory SelectedFactory = null;
 
     // events
     protected Action OnBuildPointsUpdated;
@@ -160,7 +160,6 @@ public class UnitController : MonoBehaviour
     {
         if (SelectedFactory == null)
             return false;
-
         return SelectedFactory.RequestUnitBuild(unitMenuIndex);
     }
     protected bool RequestFactoryBuild(int factoryIndex, Vector3 buildPos)
@@ -193,8 +192,8 @@ public class UnitController : MonoBehaviour
     {
         string rootName = Team.ToString() + "Team";
         TeamRoot = GameObject.Find(rootName)?.transform;
-        if (TeamRoot)
-            Debug.LogFormat("TeamRoot {0} found !", rootName);
+        //if (TeamRoot)
+            //Debug.LogFormat("TeamRoot {0} found !", rootName);
     }
     virtual protected void Start ()
     {
@@ -211,7 +210,7 @@ public class UnitController : MonoBehaviour
             }
         }
 
-        Debug.Log("found " + FactoryList.Count + " factory for team " + GetTeam().ToString());
+        //Debug.Log("found " + FactoryList.Count + " factory for team " + GetTeam().ToString());
     }
     virtual protected void Update ()
     {
