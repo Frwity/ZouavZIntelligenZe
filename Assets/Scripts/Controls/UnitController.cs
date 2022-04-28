@@ -112,7 +112,7 @@ public class UnitController : MonoBehaviour
     }
     public void CaptureTarget(int points)
     {
-        Debug.Log("CaptureTarget");
+        //Debug.Log("CaptureTarget");
         TotalBuildPoints += points;
         CapturedTargets++;
     }
@@ -160,7 +160,7 @@ public class UnitController : MonoBehaviour
     {
         if (SelectedFactory == null)
             return false;
-        return SelectedFactory.RequestUnitBuild(unitMenuIndex);
+        return SelectedFactory.RequestUnitBuild(unitMenuIndex, null);
     }
     protected bool RequestFactoryBuild(int factoryIndex, Vector3 buildPos)
     {

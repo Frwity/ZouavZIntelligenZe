@@ -5,7 +5,15 @@ using UnityEngine;
 public class StrategicTask
 {
     public bool isComplete = false;
-    UnitController controller;
+    protected UnitController controller;
+    protected List<Unit> squad;
+
+    //public virtual int GetId() = 0;
+
+    public void SetUnit(Unit _unit)
+    {
+        squad.Add(_unit);
+    }
 
     public virtual void StartTask(UnitController _controller)
     {
@@ -21,41 +29,36 @@ public class StrategicTask
 
 public class CreateSquadTask : StrategicTask
 {
-    Unit unit;
-    public CreateSquadTask(ref Unit ExplorationSquadPlaceHolder)
+    //static int id = 0;
+
+    public CreateSquadTask(List<Unit> ExplorationSquadPlaceHolder)
     {
-        unit = ExplorationSquadPlaceHolder;
-        Debug.Log(unit);
+        squad = ExplorationSquadPlaceHolder;
     }
 
     public override void StartTask(UnitController _controller)
     {
         base.StartTask(_controller);
-        Debug.Log(unit);
-        _controller.FactoryList[0].RequestUnitBuild(0);
+        _controller.FactoryList[0].RequestUnitBuild(0, this);
     }
     public override void UpdateTask()
     {
         base.UpdateTask();
-        if (unit != null)
-        {
+        if (squad != null)
             EndTask();
-            Debug.Log("end");
-        }
     }
 }
 
 public class CapturePointTask : StrategicTask
 {
-    Unit unit;
     TargetBuilding targetBuilding;
 
     bool isCapturing = false;
 
-    public CapturePointTask(Unit _ExplorationSquadPlaceHolder, TargetBuilding _targetBuilding)
+    public CapturePointTask(List<Unit> _ExplorationSquadPlaceHolder, TargetBuilding _targetBuilding)
     {
         targetBuilding = _targetBuilding;
-        unit = _ExplorationSquadPlaceHolder;
+        squad = _ExplorationSquadPlaceHolder;
     }
 
     public override void StartTask(UnitController _controller)
@@ -66,24 +69,21 @@ public class CapturePointTask : StrategicTask
 
     public override void UpdateTask()
     {
-        Debug.Log(unit);
         base.UpdateTask();
-        if (unit == null)
+        if (squad == null)
             return;
-        Debug.Log(unit);
-
-        Debug.Log("aze");
-
         if (!isCapturing)
         {
-            if (unit.CanCapture(targetBuilding))
+            if (squad[0].CanCapture(targetBuilding))
             {
-                unit.StartCapture(targetBuilding);
+                squad[0].StartCapture(targetBuilding);
                 isCapturing = true;
             }
             else
-                unit.SetTargetPos(targetBuilding.transform.position);
+                squad[0].SetTargetPos(targetBuilding.transform.position);
         }
+        if (targetBuilding.GetTeam() == controller.GetTeam())
+            EndTask();
     }
 
     public override void EndTask()

@@ -10,6 +10,7 @@ public sealed class Factory : BaseEntity
     GameObject[] UnitPrefabs = null;
     GameObject[] FactoryPrefabs = null;
     int RequestedEntityBuildIndex = -1;
+    StrategicTask task;
     Image BuildGaugeImage;
     float CurrentBuildDuration = 0f;
     float EndBuildDate = 0f;
@@ -22,7 +23,7 @@ public sealed class Factory : BaseEntity
 
     [SerializeField]
     int MaxBuildingQueueSize = 5;
-    Queue<int> BuildingQueue = new Queue<int>();
+    Queue<KeyValuePair<int, StrategicTask>> BuildingQueue = new Queue<KeyValuePair<int, StrategicTask>>();
     public enum State
     {
         Available = 0,
@@ -114,8 +115,8 @@ public sealed class Factory : BaseEntity
                     // manage build queue : chain with new unit build if necessary
                     if (BuildingQueue.Count != 0)
                     {
-                        int unitIndex = BuildingQueue.Dequeue();
-                        StartBuildUnit(unitIndex);
+                        KeyValuePair<int, StrategicTask> unitInfo = BuildingQueue.Dequeue();
+                        StartBuildUnit(unitInfo.Key, unitInfo.Value);
                     }
                 }
                 else if (BuildGaugeImage)
@@ -179,14 +180,14 @@ public sealed class Factory : BaseEntity
     public int GetQueuedCount(int unitIndex)
     {
         int counter = 0;
-        foreach(int id in BuildingQueue)
+        foreach(KeyValuePair<int, StrategicTask> id in BuildingQueue)
         {
-            if (id == unitIndex)
+            if (id.Key == unitIndex)
                 counter++;
         }
         return counter;
     }
-    public bool RequestUnitBuild(int unitMenuIndex)
+    public bool RequestUnitBuild(int unitMenuIndex, StrategicTask _task)
     {
         int cost = GetUnitCost(unitMenuIndex);
         if (Controller.TotalBuildPoints < cost || BuildingQueue.Count >= MaxBuildingQueueSize)
@@ -194,11 +195,11 @@ public sealed class Factory : BaseEntity
 
         Controller.TotalBuildPoints -= cost;
 
-        StartBuildUnit(unitMenuIndex);
+        StartBuildUnit(unitMenuIndex, _task);
 
         return true;
     }
-    void StartBuildUnit(int unitMenuIndex)
+    void StartBuildUnit(int unitMenuIndex, StrategicTask _task)
     {
         if (IsUnitIndexValid(unitMenuIndex) == false)
             return;
@@ -211,7 +212,7 @@ public sealed class Factory : BaseEntity
         if (CurrentState == State.BuildingUnit)
         {
             if (BuildingQueue.Count < MaxBuildingQueueSize)
-                BuildingQueue.Enqueue(unitMenuIndex);
+                BuildingQueue.Enqueue(new KeyValuePair<int, StrategicTask>(unitMenuIndex, _task));
             return;
         }
 
@@ -222,6 +223,7 @@ public sealed class Factory : BaseEntity
         EndBuildDate = Time.time + CurrentBuildDuration;
 
         RequestedEntityBuildIndex = unitMenuIndex;
+        task = _task;
 
         OnUnitBuilt += (Unit unit) =>
         {
@@ -229,6 +231,8 @@ public sealed class Factory : BaseEntity
             {
                 Controller.AddUnit(unit);
                 (Controller as PlayerController)?.UpdateFactoryBuildQueueUI(RequestedEntityBuildIndex);
+                if (Controller is AIController)
+                    task.SetUnit(unit);
             }
         };
     }
@@ -285,9 +289,9 @@ public sealed class Factory : BaseEntity
 
         // refund build points
         Controller.TotalBuildPoints += GetUnitCost(RequestedEntityBuildIndex);
-        foreach(int unitIndex in BuildingQueue)
+        foreach(KeyValuePair<int, StrategicTask> unitIndex in BuildingQueue)
         {
-            Controller.TotalBuildPoints += GetUnitCost(unitIndex);
+            Controller.TotalBuildPoints += GetUnitCost(unitIndex.Key);
         }
         BuildingQueue.Clear();
 
