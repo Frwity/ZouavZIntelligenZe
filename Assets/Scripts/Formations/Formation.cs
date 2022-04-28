@@ -11,6 +11,9 @@ enum E_FORMATION_TYPE
     Custom
 }
 
+/*
+ * Class that calculate the position of squad members base of the type of formation selected
+ */
 public class Formation : MonoBehaviour
 {
     private E_FORMATION_TYPE FormationType;
@@ -27,7 +30,6 @@ public class Formation : MonoBehaviour
 
     private void Awake()
     {
-        //Grid = GetComponent<Grid>();
         Squad = GetComponent<Squad>();
         //For testing
         FormationType = E_FORMATION_TYPE.Circle;
@@ -38,7 +40,6 @@ public class Formation : MonoBehaviour
         if (Squad.members.Count == 0)
             return;
         
-        Debug.Log("Formation Creation");
         FormationLeader = Squad.members[0];
         
         switch (FormationType)
@@ -46,12 +47,16 @@ public class Formation : MonoBehaviour
             case E_FORMATION_TYPE.Circle:
                 CreateCircleFormation(targetPos);
                 break;
+            case E_FORMATION_TYPE.Square:
+                CreateSquareFormation(targetPos);
+                break;
+            case E_FORMATION_TYPE.Custom:
+                break;
         }
     }
     
     void CreateCircleFormation(Vector3 targetPos)
     {
-        //OldLeaderPos = FormationLeader.transform.position;
         int numberOfSectors = Squad.members.Count;
         float radius = numberOfSectors * GridDistance / Mathf.PI;
 
@@ -66,15 +71,13 @@ public class Formation : MonoBehaviour
             Vector3 positionOffset = new Vector3(offset.x, 0, offset.y);
             Vector3 rotationOffset = Quaternion.Euler(0, rotY, 0) * positionOffset;
             
-            //Vector3 dir = FormationLeader.GridPosition - OldLeaderPos;
-            //Vector3 right = new Vector3(dir.z, 0, -dir.x);
             Squad.members[i].GridPosition = FormationLeader.GridPosition + rotationOffset;
         }
         
         Squad.MoveUnitToPosition();
     }
 
-    public void CalculateFormationPos(Vector3 pos)
+    void CreateSquareFormation(Vector3 targetPos)
     {
         
     }

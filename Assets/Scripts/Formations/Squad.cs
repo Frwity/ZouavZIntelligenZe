@@ -8,20 +8,12 @@ public class Squad : MonoBehaviour
     [HideInInspector] public List<Unit> members = new List<Unit>();
     private Formation SquadFormation;
     [HideInInspector] public Unit SquadLeader;
+    private float MoveSpeed = 100.0f;
 
     private void Awake()
     {
         SquadFormation = GetComponent<Formation>();
         SquadFormation.Squad = this;
-    }
-
-    public void CreateSquad(List<Unit> selectedUnits)
-    {
-        foreach (Unit unit in selectedUnits)
-        {
-            members.Add(unit);
-        }
-        //SquadFormation.CreateFormation();
     }
 
     public void CreateSquadFormation(Vector3 targetPos)
@@ -41,9 +33,22 @@ public class Squad : MonoBehaviour
     
     public void MoveUnitToPosition()
     {
+        SetSquadSpeed();
         foreach (Unit unit in members)   
         {
+            unit.CurrentMoveSpeed = MoveSpeed;
             unit.SetTargetPos(unit.GridPosition);
+        }
+    }
+
+    /*
+     * The move speed of the squad is the lowest within the squad members
+     */
+    void SetSquadSpeed()
+    {
+        foreach (Unit unit in members)
+        {
+            MoveSpeed = Mathf.Min(MoveSpeed, unit.GetUnitData.Speed);
         }
     }
 }

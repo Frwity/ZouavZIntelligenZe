@@ -14,6 +14,8 @@ public class Unit : BaseEntity
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
     public Vector3 GridPosition;
+    //Move speed of the squad
+    public float CurrentMoveSpeed;
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -46,7 +48,8 @@ public class Unit : BaseEntity
         BulletSlot = transform.Find("BulletSlot");
 
         // fill NavMeshAgent parameters
-        NavMeshAgent.speed = GetUnitData.Speed;
+        CurrentMoveSpeed = GetUnitData.Speed;
+        NavMeshAgent.speed = CurrentMoveSpeed;
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
     }
@@ -102,6 +105,7 @@ public class Unit : BaseEntity
 
         if (NavMeshAgent)
         {
+            NavMeshAgent.speed = CurrentMoveSpeed;
             NavMeshAgent.SetDestination(pos);
             NavMeshAgent.isStopped = false;
         }
