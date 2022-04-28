@@ -6,70 +6,76 @@ using UnityEngine;
 enum E_FORMATION_TYPE
 {
     Circle,
-    Square
+    Square,
+    None,
+    Custom
 }
 
 public class Formation : MonoBehaviour
 {
     private E_FORMATION_TYPE FormationType;
+    private float Radius = 5.0f;
+    private Grid Grid;
 
-    private float radius = 5.0f;
-    
-    // Time to check the formation
-    [SerializeField] private float CheckFormationTime = 0.0f;
+    public Squad Squad;
 
-    private List<BaseEntity> Entities;
-    private List<Vector3> gridPoints;
-    private BaseEntity FormationLeader
+    private float GridDistance = 5.0f;
+    private Vector3 OldLeaderPos;
+
+    private Unit FormationLeader;
+
+
+    private void Awake()
     {
-        get => FormationLeader;
-        set => FormationLeader = value;
+        //Grid = GetComponent<Grid>();
+        Squad = GetComponent<Squad>();
+        //For testing
+        FormationType = E_FORMATION_TYPE.Circle;
     }
-    
-    /**
-     * Create a squad with selected entities
-     */
-    void CreateSquad()
+
+    public void CreateFormation(Vector3 targetPos)
     {
+        if (Squad.members.Count == 0)
+            return;
         
-    }
-
-    void CreateFormation()
-    {
+        Debug.Log("Formation Creation");
+        FormationLeader = Squad.members[0];
+        
         switch (FormationType)
         {
             case E_FORMATION_TYPE.Circle:
-                CreateCircleFormation();
+                CreateCircleFormation(targetPos);
                 break;
         }
     }
     
-    void CreateCircleFormation()
+    void CreateCircleFormation(Vector3 targetPos)
     {
-        int n = Entities.Count;
-        int numberOfSector = n + 1;
-        //float radius = numberOfSector * gridDistance / Mathf.PI;
+        //OldLeaderPos = FormationLeader.transform.position;
+        int numberOfSectors = Squad.members.Count;
+        float radius = numberOfSectors * GridDistance / Mathf.PI;
+
+        FormationLeader.GridPosition = targetPos;
         
-        for (int i = 0; i < n; i++)
+        for (int i = 1; i < Squad.members.Count; i++)
         {
-            float angle = (i + 1) * 2 * Mathf.PI / numberOfSector;
+            float angle = i * 2 * Mathf.PI / numberOfSectors;
             Vector2 offset = new Vector2(radius * Mathf.Sin(angle), -radius + radius * Mathf.Cos(angle));
-            AddFormationGridPoint(Entities[i], offset);
+
+            float rotY = FormationLeader.transform.eulerAngles.y;
+            Vector3 positionOffset = new Vector3(offset.x, 0, offset.y);
+            Vector3 rotationOffset = Quaternion.Euler(0, rotY, 0) * positionOffset;
+            
+            //Vector3 dir = FormationLeader.GridPosition - OldLeaderPos;
+            //Vector3 right = new Vector3(dir.z, 0, -dir.x);
+            Squad.members[i].GridPosition = FormationLeader.GridPosition + rotationOffset;
         }
+        
+        Squad.MoveUnitToPosition();
     }
 
-    void AddFormationGridPoint(BaseEntity entity, Vector2 offset)
+    public void CalculateFormationPos(Vector3 pos)
     {
-        gridPoints.Add(offset);
-    }
-
-    void ClearFormation()
-    {
-        Entities.Clear();
-    }
-
-    void ClearGrid()
-    {
-        gridPoints.Clear();
+        
     }
 }

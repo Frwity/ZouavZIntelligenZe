@@ -10,10 +10,17 @@ public class UnitController : MonoBehaviour
     protected ETeam Team;
     public ETeam GetTeam() { return Team; }
 
+    [SerializeField] private GameObject SquadPrefab;
+
     [SerializeField]
     protected int StartingBuildPoints = 15;
 
     protected int _TotalBuildPoints = 0;
+
+    protected List<Squad> Squads = new List<Squad>();
+
+    protected Squad SquadTest;
+    
     public int TotalBuildPoints
     {
         get { return _TotalBuildPoints; }
@@ -77,22 +84,11 @@ public class UnitController : MonoBehaviour
             unit.SetSelected(true);
         }
     }
-    protected void SelectUnitList(List<Unit> units)
-    {
-        foreach (Unit unit in units)
-            unit.SetSelected(true);
-        SelectedUnitList.AddRange(units);
-    }
-    protected void SelectUnitList(Unit [] units)
-    {
-        foreach (Unit unit in units)
-            unit.SetSelected(true);
-        SelectedUnitList.AddRange(units);
-    }
     protected void SelectUnit(Unit unit)
     {
         unit.SetSelected(true);
         SelectedUnitList.Add(unit);
+        SquadTest.AddUnit(unit);
     }
     protected void UnselectUnit(Unit unit)
     {
@@ -198,6 +194,7 @@ public class UnitController : MonoBehaviour
     }
     virtual protected void Start ()
     {
+        SquadTest = Instantiate(SquadPrefab).GetComponent<Squad>();
         CapturedTargets = 0;
         TotalBuildPoints = StartingBuildPoints;
 
