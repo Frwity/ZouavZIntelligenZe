@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System;
 using System.Collections.Generic;
 using UnityEngine.Events;
 
@@ -314,14 +315,22 @@ public class Unit : BaseEntity
         Collider[] unitsCollider = Physics.OverlapSphere(transform.position, 15f, 1 << LayerMask.NameToLayer("Unit"));
         foreach(Collider unitCollider in unitsCollider)
         {
-            if (unitCollider.GetComponent<Unit>().Team != Team)
+            if (unitCollider.GetComponent<Unit>().Team != Team && (!EntityTarget || !(EntityTarget is Unit)))
             {
                 if (mode == E_MODE.Agressive)
                 {
                     EntityTarget = unitCollider.GetComponent<Unit>();
+                    EntityTarget.OnDeadEvent += OnTargetDeath;
                     return;
                 }
             }
         }
+    }
+
+    void OnTargetDeath()
+    {
+        TargetBuilding temp = CaptureTarget;
+        CaptureTarget = null;
+        SetCaptureTarget(temp);
     }
 }
