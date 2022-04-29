@@ -27,10 +27,11 @@ public class Unit : BaseEntity
     public int GetTypeId { get { return UnitData.TypeId; } }
     public bool needToCapture = false;
     
-    E_MODE mode = E_MODE.Agressive;
+    [SerializeField] E_MODE mode = E_MODE.Defensive;
     private float passiveFleeDistance = 25f;
     private bool isFleeing = false;
     private BaseEntity tempEntityTarget = null;
+    private BaseEntity entityToKill = null;
 
     override public void Init(ETeam _team)
     {
@@ -93,6 +94,9 @@ public class Unit : BaseEntity
 
         if (isFleeing)
             CheckForStop();
+
+        if (entityToKill)
+            ChaseEntityToKill();
 	}
     #endregion
 
@@ -119,22 +123,26 @@ public class Unit : BaseEntity
     // Moving Task
     public void SetTargetPos(Vector3 pos)
     {
-        if (EntityTarget != null)
+        if (!entityToKill)
         {
-            EntityTarget.OnDeadEvent -= OnModeActionEnd;
-            EntityTarget = null;
+            if (EntityTarget != null)
+            {
+                EntityTarget.OnDeadEvent -= OnModeActionEnd;
+                EntityTarget = null;
+            }
+
+            if (CaptureTarget != null)
+            {
+                if (needToCapture)
+                {
+                    needToCapture = false;
+                    CaptureTarget = null;
+                }
+                else
+                    StopCapture();
+            }
         }
 
-        if (CaptureTarget != null)
-        {
-            if (needToCapture)
-            {
-                needToCapture = false;
-                CaptureTarget = null;
-            }
-            else
-                StopCapture();
-        }
         if (NavMeshAgent)
         {
             NavMeshAgent.SetDestination(pos);
@@ -148,7 +156,7 @@ public class Unit : BaseEntity
         if (target == null)
             return;
 
-        if (CaptureTarget != null)
+        if (CaptureTarget != null && !needToCapture)
             StopCapture();
 
         if (target.GetTeam() != GetTeam())
@@ -264,6 +272,7 @@ public class Unit : BaseEntity
         CaptureTarget.StartCapture(this);
         needToCapture = false;
     }
+
     public void StopCapture()
     {
         if (CaptureTarget == null)
@@ -339,6 +348,12 @@ public class Unit : BaseEntity
                 {
                     case E_MODE.Agressive:
                         tempEntityTarget = EntityTarget;
+                        entityToKill = EntityTarget = unitCollider.GetComponent<Unit>();
+                        EntityTarget.OnDeadEvent += OnModeActionEnd;
+                        return;
+
+                    case E_MODE.Defensive:
+                        tempEntityTarget = EntityTarget;
                         EntityTarget = unitCollider.GetComponent<Unit>();
                         EntityTarget.OnDeadEvent += OnModeActionEnd;
                         return;
@@ -383,5 +398,11 @@ public class Unit : BaseEntity
             isFleeing = false;
             OnModeActionEnd();
         }
+    }
+
+    void ChaseEntityToKill()
+    {
+        if ((entityToKill.transform.position - transform.position).magnitude > GetUnitData.AttackDistanceMax)
+            SetAttackTarget(entityToKill);
     }
 }
