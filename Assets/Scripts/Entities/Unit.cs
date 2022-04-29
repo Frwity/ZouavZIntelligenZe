@@ -8,7 +8,7 @@ enum E_MODE
 {
     Agressive,
     Defensive,
-    Passive,
+    Flee,
     FollowInstruction
 }
 
@@ -26,7 +26,9 @@ public class Unit : BaseEntity
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
     public bool needToCapture = false;
-    E_MODE mode = E_MODE.Agressive;
+    E_MODE mode = E_MODE.Flee;
+    private float passiveFleeDistance = 25f;
+    private bool isFleeing = false;
 
     override public void Init(ETeam _team)
     {
@@ -63,6 +65,7 @@ public class Unit : BaseEntity
         NavMeshAgent.speed = GetUnitData.Speed;
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
+        NavMeshAgent.stoppingDistance = 1f;
     }
     override protected void Start()
     {
@@ -85,6 +88,9 @@ public class Unit : BaseEntity
         }
         if (needToCapture)
             StartCapture(CaptureTarget);
+
+        if (isFleeing)
+            CheckForStop();
 	}
     #endregion
 
@@ -112,11 +118,21 @@ public class Unit : BaseEntity
     public void SetTargetPos(Vector3 pos)
     {
         if (EntityTarget != null)
+        {
+            EntityTarget.OnDeadEvent -= OnModeActionEnd;
             EntityTarget = null;
+        }
 
         if (CaptureTarget != null)
-            StopCapture();
-
+        {
+            if (needToCapture)
+            {
+                needToCapture = false;
+                CaptureTarget = null;
+            }
+            else
+                StopCapture();
+        }
         if (NavMeshAgent)
         {
             NavMeshAgent.SetDestination(pos);
@@ -147,7 +163,7 @@ public class Unit : BaseEntity
     {
         if (target == null)
             return;
-
+     
         if (EntityTarget != null)
             EntityTarget = null;
 
@@ -257,7 +273,7 @@ public class Unit : BaseEntity
 
     public bool IsCapturing()
     {
-        return CaptureTarget != null;
+        return CaptureTarget != null && !needToCapture;
     }
 
     // Repairing Task
@@ -317,20 +333,47 @@ public class Unit : BaseEntity
         {
             if (unitCollider.GetComponent<Unit>().Team != Team && (!EntityTarget || !(EntityTarget is Unit)))
             {
-                if (mode == E_MODE.Agressive)
+                switch (mode)
                 {
-                    EntityTarget = unitCollider.GetComponent<Unit>();
-                    EntityTarget.OnDeadEvent += OnTargetDeath;
-                    return;
+                    case E_MODE.Agressive:
+                        EntityTarget = unitCollider.GetComponent<Unit>();
+                        EntityTarget.OnDeadEvent += OnModeActionEnd;
+                        return;
+
+                    case E_MODE.Flee:
+                        RaycastHit hit;
+                        Vector3 direction = Vector3.up + (transform.position - unitCollider.transform.position).normalized * passiveFleeDistance;
+
+                        if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, 1 << LayerMask.NameToLayer("Floor")))
+                            direction = hit.point - transform.position;
+
+                        TargetBuilding temp = CaptureTarget;
+                        CaptureTarget = null;
+                        SetTargetPos(direction + transform.position);
+                        CaptureTarget = temp;
+                        isFleeing = true;
+                        return;
                 }
             }
         }
     }
 
-    void OnTargetDeath()
+    void OnModeActionEnd()
     {
-        TargetBuilding temp = CaptureTarget;
-        CaptureTarget = null;
-        SetCaptureTarget(temp);
+        if (needToCapture)
+        {
+            TargetBuilding temp = CaptureTarget;
+            CaptureTarget = null;
+            SetCaptureTarget(temp);
+        }
+    }
+
+    void CheckForStop()
+    {
+        if (NavMeshAgent.remainingDistance < NavMeshAgent.stoppingDistance && NavMeshAgent.remainingDistance > 0f)
+        {
+            isFleeing = false;
+            OnModeActionEnd();
+        }
     }
 }
