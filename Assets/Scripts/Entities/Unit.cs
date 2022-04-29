@@ -26,9 +26,11 @@ public class Unit : BaseEntity
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
     public bool needToCapture = false;
-    E_MODE mode = E_MODE.Flee;
+    
+    E_MODE mode = E_MODE.Agressive;
     private float passiveFleeDistance = 25f;
     private bool isFleeing = false;
+    private BaseEntity tempEntityTarget = null;
 
     override public void Init(ETeam _team)
     {
@@ -336,15 +338,18 @@ public class Unit : BaseEntity
                 switch (mode)
                 {
                     case E_MODE.Agressive:
+                        tempEntityTarget = EntityTarget;
                         EntityTarget = unitCollider.GetComponent<Unit>();
                         EntityTarget.OnDeadEvent += OnModeActionEnd;
                         return;
 
                     case E_MODE.Flee:
+                        tempEntityTarget = EntityTarget;
                         RaycastHit hit;
                         Vector3 direction = Vector3.up + (transform.position - unitCollider.transform.position).normalized * passiveFleeDistance;
+                        int layerMask = (1 << LayerMask.NameToLayer("Floor")) | (1 << LayerMask.NameToLayer("Factory")) | (1 << LayerMask.NameToLayer("Target"));
 
-                        if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, 1 << LayerMask.NameToLayer("Floor")))
+                        if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, layerMask))
                             direction = hit.point - transform.position;
 
                         TargetBuilding temp = CaptureTarget;
@@ -366,6 +371,9 @@ public class Unit : BaseEntity
             CaptureTarget = null;
             SetCaptureTarget(temp);
         }
+
+        else if (tempEntityTarget != null)
+            SetAttackTarget(tempEntityTarget);
     }
 
     void CheckForStop()
