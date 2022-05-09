@@ -15,7 +15,7 @@ public enum E_FORMATION_TYPE
 /*
  * Class that calculate the position of squad members base of the type of formation selected
  */
-public class Formation : MonoBehaviour
+public class Formation
 {
     private E_FORMATION_TYPE FormationType;
     private float Radius = 5.0f;
@@ -35,9 +35,8 @@ public class Formation : MonoBehaviour
         set => FormationType = value;
     }
 
-    private void Awake()
+    public Formation()
     {
-        Squad = GetComponent<Squad>();
         //For testing
         FormationType = E_FORMATION_TYPE.Circle;
     }

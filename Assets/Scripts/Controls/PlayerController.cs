@@ -127,6 +127,8 @@ public sealed class PlayerController : UnitController
         }
         // Set up the new Pointer Event
         MenuPointerEventData = new PointerEventData(SceneEventSystem);
+
+        SquadTest = new Squad();
     }
 
     override protected void Start()

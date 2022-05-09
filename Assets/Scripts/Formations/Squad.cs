@@ -3,21 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Squad : MonoBehaviour
+public class Squad
 {
-    [HideInInspector] public List<Unit> members = new List<Unit>();
+    public List<Unit> members = new List<Unit>();
     private Formation SquadFormation;
     private float MoveSpeed = 100.0f;
 
-    // public Squad()
-    // {
-    //     SquadFormation = new Formation();
-    //     SquadFormation.Squad = this;
-    // }
-
-    private void Awake()
+    public Squad()
     {
-        SquadFormation = GetComponent<Formation>();
+         SquadFormation = new Formation();
+         SquadFormation.Squad = this;
     }
 
     public void MoveSquad(Vector3 targetPos)
@@ -28,6 +23,12 @@ public class Squad : MonoBehaviour
     public void AddUnit(Unit unit)
     {
         members.Add(unit);
+    }
+
+    public void AddUnits(List<Unit> units)
+    {
+        members.Clear();
+        members = units;
     }
 
     public void ClearUnit()
