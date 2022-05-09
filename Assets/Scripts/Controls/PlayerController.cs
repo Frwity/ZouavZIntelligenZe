@@ -584,7 +584,7 @@ public sealed class PlayerController : UnitController
             // Direct call to moving task $$$ to be improved by AI behaviour
             // foreach (Unit unit in SelectedUnitList)
             //     unit.SetTargetPos(newPos);
-            SquadTest.CreateSquadFormation(newPos);
+            SquadTest.MoveSquad(newPos);
         }
     }
     #endregion

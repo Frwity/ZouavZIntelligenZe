@@ -7,16 +7,20 @@ public class Squad : MonoBehaviour
 {
     [HideInInspector] public List<Unit> members = new List<Unit>();
     private Formation SquadFormation;
-    [HideInInspector] public Unit SquadLeader;
     private float MoveSpeed = 100.0f;
+
+    // public Squad()
+    // {
+    //     SquadFormation = new Formation();
+    //     SquadFormation.Squad = this;
+    // }
 
     private void Awake()
     {
         SquadFormation = GetComponent<Formation>();
-        SquadFormation.Squad = this;
     }
 
-    public void CreateSquadFormation(Vector3 targetPos)
+    public void MoveSquad(Vector3 targetPos)
     {
         SquadFormation.CreateFormation(targetPos);
     }
@@ -26,19 +30,33 @@ public class Squad : MonoBehaviour
         members.Add(unit);
     }
 
-    public void RemoveMember(Unit unit)
+    public void ClearUnit()
     {
-        members.Remove(unit);
+        members.Clear();
+    }
+
+    public void RemoveUnit(Unit unit)
+    {
+        if (!members.Remove(unit)) 
+            return;
+        SquadFormation.UpdateFormationLeader();
+        //temp when unit is removed from squad recalculate formation based on the new leader grid position
+        MoveSquad(members[0].GridPosition);
     }
     
     public void MoveUnitToPosition()
     {
         SetSquadSpeed();
-        foreach (Unit unit in members)   
+        foreach (Unit unit in members)
         {
             unit.CurrentMoveSpeed = MoveSpeed;
             unit.SetTargetPos(unit.GridPosition);
         }
+    }
+
+    public void MoveSquadToPos(Vector3 pos)
+    {
+        SquadFormation.CreateFormation(pos);
     }
 
     /*
@@ -50,5 +68,20 @@ public class Squad : MonoBehaviour
         {
             MoveSpeed = Mathf.Min(MoveSpeed, unit.GetUnitData.Speed);
         }
+    }
+
+    public void CaptureTarget(Vector3 targetPos)
+    {
+        
+    }
+
+    public void AttackTarget(Vector3 targetPos)
+    {
+        
+    }
+    
+    public void SwitchFormation(E_FORMATION_TYPE newFormationType)
+    {
+        SquadFormation.SetFormationType = newFormationType;
     }
 }
