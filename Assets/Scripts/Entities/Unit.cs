@@ -36,6 +36,9 @@ public class Unit : BaseEntity
     public Vector3 GridPosition;
     //Move speed of the squad
     public float CurrentMoveSpeed;
+    public Tile currentTile = null;
+    public float influence = 1;
+
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
