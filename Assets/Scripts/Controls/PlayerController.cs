@@ -127,6 +127,8 @@ public sealed class PlayerController : UnitController
         }
         // Set up the new Pointer Event
         MenuPointerEventData = new PointerEventData(SceneEventSystem);
+
+        SquadTest = new Squad(this);
     }
 
     override protected void Start()
@@ -213,6 +215,8 @@ public sealed class PlayerController : UnitController
 
         // Apply camera movement
         UpdateMoveCamera();
+        
+        SquadTest.UpdateSquad();
     }
     #endregion
 
@@ -573,8 +577,9 @@ public sealed class PlayerController : UnitController
             if (target != null && target.GetTeam() != GetTeam())
             {
                 // Direct call to capturing task $$$ to be improved by AI behaviour
-                foreach (Unit unit in SelectedUnitList)
-                    unit.SetCaptureTarget(target);
+                // foreach (Unit unit in SelectedUnitList)
+                //     unit.SetCaptureTarget(target);
+                SquadTest.CaptureTarget(target);
             }
         }
         // Set unit move target
@@ -590,7 +595,7 @@ public sealed class PlayerController : UnitController
             foreach (Unit unit in SelectedUnitList)
                 unit.needToCapture = false;
             
-            SquadTest.CreateSquadFormation(newPos);
+            SquadTest.MoveSquad(newPos);
         }
     }
     #endregion

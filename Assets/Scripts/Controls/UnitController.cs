@@ -192,7 +192,6 @@ public class UnitController : MonoBehaviour
     }
     virtual protected void Start ()
     {
-        SquadTest = Instantiate(SquadPrefab).GetComponent<Squad>();
         CapturedTargets = 0;
         TotalBuildPoints = StartingBuildPoints;
 

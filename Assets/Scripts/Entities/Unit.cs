@@ -199,6 +199,12 @@ public class Unit : BaseEntity
         }
     }
 
+    public void NeedToCapture(TargetBuilding target)
+    {
+        CaptureTarget = target;
+        needToCapture = true;
+    }
+
     // Targetting Task - repairing
     public void SetRepairTarget(BaseEntity entity)
     {
@@ -259,7 +265,7 @@ public class Unit : BaseEntity
     {
         // distance check
         if (target == null || (target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
-            return false;
+            return false;   
 
         return true;
     }
@@ -267,9 +273,6 @@ public class Unit : BaseEntity
     // Capture Task
     public void StartCapture(TargetBuilding target)
     {
-        if (CanCapture(target) == false)
-            return;
-
         if (NavMeshAgent)
             NavMeshAgent.isStopped = true;
 
@@ -409,5 +412,10 @@ public class Unit : BaseEntity
     {
         if ((entityToKill.transform.position - transform.position).magnitude > GetUnitData.AttackDistanceMax)
             SetAttackTarget(entityToKill);
+    }
+
+    public void StopMovement()
+    {
+        NavMeshAgent.isStopped = true;
     }
 }
