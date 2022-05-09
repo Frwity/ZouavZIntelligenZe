@@ -33,6 +33,9 @@ public class Unit : BaseEntity
     private BaseEntity tempEntityTarget = null;
     private BaseEntity entityToKill = null;
 
+    public Vector3 GridPosition;
+    //Move speed of the squad
+    public float CurrentMoveSpeed;
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -65,7 +68,8 @@ public class Unit : BaseEntity
         BulletSlot = transform.Find("BulletSlot");
 
         // fill NavMeshAgent parameters
-        NavMeshAgent.speed = GetUnitData.Speed;
+        CurrentMoveSpeed = GetUnitData.Speed;
+        NavMeshAgent.speed = CurrentMoveSpeed;
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
         NavMeshAgent.stoppingDistance = 1f;
@@ -145,6 +149,7 @@ public class Unit : BaseEntity
 
         if (NavMeshAgent)
         {
+            NavMeshAgent.speed = CurrentMoveSpeed;
             NavMeshAgent.SetDestination(pos);
             NavMeshAgent.isStopped = false;
         }
