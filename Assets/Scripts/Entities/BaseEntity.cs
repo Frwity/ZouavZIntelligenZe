@@ -61,7 +61,7 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
         {
             IsAlive = false;
             OnDeadEvent?.Invoke();
-            Debug.Log("Entity " + gameObject.name + " died");
+            //Debug.Log("Entity " + gameObject.name + " died");
         }
     }
     public void Destroy()

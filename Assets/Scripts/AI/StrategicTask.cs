@@ -2,13 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StrategicTask
+public abstract class StrategicTask
 {
     public bool isComplete = false;
-    UnitController controller;
+    protected AIController controller;
+    protected List<Unit> squad;
+    [SerializeField] protected TaskData taskDate;
 
-    public virtual void StartTask(UnitController _controller)
+    public abstract bool Evaluate(AIController _controller, ref float currentScore);
+
+    public void SetUnit(Unit _unit)
     {
+        squad.Add(_unit);
+    }
+
+    public virtual void StartTask(AIController _controller)
+    {
+        isComplete = false;
         controller = _controller;
     }
 
@@ -21,73 +31,95 @@ public class StrategicTask
 
 public class CreateSquadTask : StrategicTask
 {
-    Unit unit;
-    public CreateSquadTask(ref Unit ExplorationSquadPlaceHolder)
+    public static int id { get; private set; } = 0;
+
+    public CreateSquadTask(List<Unit> ExplorationSquadPlaceHolder)
     {
-        unit = ExplorationSquadPlaceHolder;
-        Debug.Log(unit);
+        squad = ExplorationSquadPlaceHolder;
     }
 
-    public override void StartTask(UnitController _controller)
+    public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
-        Debug.Log(unit);
-        _controller.FactoryList[0].RequestUnitBuild(0);
+        if (_controller.FactoryList[0] != null)
+            _controller.FactoryList[0].RequestUnitBuild(0, this);
     }
     public override void UpdateTask()
     {
         base.UpdateTask();
-        if (unit != null)
-        {
+        if (squad != null)
             EndTask();
-            Debug.Log("end");
-        }
+    }
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        return false;
     }
 }
 
 public class CapturePointTask : StrategicTask
 {
-    Unit unit;
+    public static int id { get; private set; } = 1;
+
     TargetBuilding targetBuilding;
 
     bool isCapturing = false;
+    bool isWalking = false;
 
-    public CapturePointTask(Unit _ExplorationSquadPlaceHolder, TargetBuilding _targetBuilding)
+    public CapturePointTask(List<Unit> _ExplorationSquadPlaceHolder)
     {
-        targetBuilding = _targetBuilding;
-        unit = _ExplorationSquadPlaceHolder;
+        squad = _ExplorationSquadPlaceHolder;
     }
 
-    public override void StartTask(UnitController _controller)
+    public override bool Evaluate(AIController _controller, ref float currentScore)
     {
-        base.StartTask(_controller);
-        
+        float score = 0.0f;
+
+        int captureIndex = int.MaxValue;
+        float distance = float.MaxValue;
+
+        for (int i = 0; i < _controller.CapturableTargets.transform.childCount; ++i)
+        {
+            float tempdist = (_controller.CapturableTargets.transform.GetChild(i).position - _controller.FactoryList[0].transform.position).magnitude;
+            if (_controller.CapturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempdist < distance)
+            {
+                captureIndex = i;
+                distance = tempdist;
+            }
+        }
+        if (captureIndex != int.MaxValue)
+        {
+            targetBuilding = _controller.CapturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
+            score = (_controller.taskDatas[id].Distance.Evaluate(distance) + _controller.taskDatas[id].Ratio.Evaluate(0)) * _controller.taskDatas[id].Time.Evaluate(Time.time);
+        }
+
+        if (score > currentScore)
+        {
+            currentScore = score;
+            return true;
+        }
+        return false;
     }
 
     public override void UpdateTask()
     {
-        Debug.Log(unit);
         base.UpdateTask();
-        if (unit == null)
+        if (squad == null)
             return;
-        Debug.Log(unit);
-
-        Debug.Log("aze");
-
         if (!isCapturing)
         {
-            if (unit.CanCapture(targetBuilding))
+            if (squad[0].CanCapture(targetBuilding))
             {
-                unit.StartCapture(targetBuilding);
+                squad[0].StartCapture(targetBuilding);
                 isCapturing = true;
             }
-            else
-                unit.SetTargetPos(targetBuilding.transform.position);
+            else if (!isWalking)
+            {
+                isWalking = true;
+                squad[0].SetTargetPos(targetBuilding.transform.position);
+            }
         }
-    }
-
-    public override void EndTask()
-    {
-        base.EndTask();
+        if (targetBuilding.GetTeam() == controller.GetTeam())
+            EndTask();
     }
 }

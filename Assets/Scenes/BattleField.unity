@@ -965,6 +965,23 @@ PrefabInstance:
       propertyPath: CapturableTargets
       value: 
       objectReference: {fileID: 691088639}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: ee9882d5dbbfeef40a4260c1d10b670e,
+        type: 2}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 1882d01c014b9c7498fdd1b3c557b3c6,
+        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fee74b0095774cf4f9701d9fab58813d, type: 3}
 --- !u!114 &1256912380 stripped

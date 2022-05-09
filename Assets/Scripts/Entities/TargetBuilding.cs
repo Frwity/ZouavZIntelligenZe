@@ -104,7 +104,7 @@ public class TargetBuilding : MonoBehaviour
     }
     void OnCaptured(ETeam newTeam)
     {
-        Debug.Log("target captured by " + newTeam.ToString());
+        //Debug.Log("target captured by " + newTeam.ToString());
         if (OwningTeam != newTeam)
         {
             UnitController teamController = GameServices.GetControllerByTeam(newTeam);
