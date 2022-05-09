@@ -11,6 +11,6 @@ public class TaskData : ScriptableObject
     public AnimationCurve Resources;
     public AnimationCurve MilitaryPower;
     public AnimationCurve EnemyPower;
-    public AnimationCurve Number;
+    public AnimationCurve Ratio;
     public AnimationCurve Distance;
 }

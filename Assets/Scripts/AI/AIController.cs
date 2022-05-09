@@ -5,7 +5,9 @@ using UnityEngine;
 
 public sealed class AIController : UnitController
 {
-    [SerializeField] GameObject CapturableTargets;
+    [SerializeField] public GameObject CapturableTargets;
+
+    [SerializeField] public List<TaskData> taskDatas;
 
     public StrategicTask explorationTask = null;
 
@@ -28,8 +30,9 @@ public sealed class AIController : UnitController
         explorationTask.StartTask(this);
 
         previousUtilitySystemTime = Time.time;
-    }
 
+    }
+    
     protected override void Update()
     {
         base.Update();
@@ -57,22 +60,16 @@ public sealed class AIController : UnitController
     {
         if (explorationTask == null || explorationTask.isComplete)
         {
-            int captureIndex = int.MaxValue;
-            float distance = float.MaxValue;
-            for (int i = 0; i < CapturableTargets.transform.childCount; ++i)
-            {
-                float tempdist = (CapturableTargets.transform.GetChild(i).position - FactoryList[0].transform.position).magnitude;
-                if (CapturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempdist < distance)
-                {
-                    captureIndex = i;
-                    distance = tempdist;
-                }
-            }
-            if (captureIndex != int.MaxValue)
-            {
-                explorationTask = new CapturePointTask(ExplorationSquadPlaceHolder, CapturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>());
+            StrategicTask tempTask;
+            float score = 0.0f;
+
+            tempTask = new CapturePointTask(ExplorationSquadPlaceHolder);  
+            if (tempTask.Evaluate(this, ref score))
+                explorationTask = tempTask;
+
+
+            if (score > 0.0f)
                 explorationTask.StartTask(this);
-            }
         }
     }
 }
