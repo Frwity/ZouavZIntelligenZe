@@ -273,9 +273,6 @@ public class Unit : BaseEntity
     // Capture Task
     public void StartCapture(TargetBuilding target)
     {
-        if (NavMeshAgent)
-            NavMeshAgent.isStopped = true;
-
         CaptureTarget = target;
         CaptureTarget.StartCapture(this);
         needToCapture = false;

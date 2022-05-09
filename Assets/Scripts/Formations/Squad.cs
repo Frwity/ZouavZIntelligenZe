@@ -83,7 +83,7 @@ public class Squad
     }
 
     /*
-     * The move speed of the squad is the lowest within the squad members
+     * The move speed of the squad is the lowest move speed within the squad members
      */
     void SetSquadSpeed()
     {
@@ -92,7 +92,10 @@ public class Squad
             MoveSpeed = Mathf.Min(MoveSpeed, unit.GetUnitData.Speed);
         }
     }
-
+    
+    /*
+     * Capture task 
+     */
     public void CaptureTarget(TargetBuilding target)
     {
         if (target == null)
@@ -138,7 +141,7 @@ public class Squad
         return true;
     }
 
-    private void StopSquadMovement()
+    public void StopSquadMovement()
     {
         foreach (Unit unit in members)
         {
