@@ -20,12 +20,12 @@ public class Formation
     private E_FORMATION_TYPE FormationType;
     private float Radius = 5.0f;
 
-    [HideInInspector] public Squad Squad;
+    private Squad Squad;
 
     private float GridDistance = 5.0f;
     private Vector3 OldLeaderPos;
 
-    private Unit FormationLeader = null;
+    public Unit FormationLeader = null;
 
     //Like nb of parallel line in the formation
     private int SpecialFormationValue = 3;
@@ -35,10 +35,11 @@ public class Formation
         set => FormationType = value;
     }
 
-    public Formation()
+    public Formation(Squad _squad)
     {
         //For testing
         FormationType = E_FORMATION_TYPE.Circle;
+        Squad = _squad;
     }
 
     public void UpdateFormationLeader()
