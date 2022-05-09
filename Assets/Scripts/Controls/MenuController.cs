@@ -76,7 +76,7 @@ public class MenuController : MonoBehaviour
         }
     }
 
-    public void UpdateFactoryMenu(Factory selectedFactory, Func<int, bool> requestUnitBuildMethod, Action<int> enterFactoryBuildModeMethod)
+    public void UpdateFactoryMenu(Factory selectedFactory, int selectedFactoryCount, Func<int, Factory, bool> requestUnitBuildMethod, Action<int> enterFactoryBuildModeMethod)
     {
         ShowFactoryMenu();
 
@@ -90,7 +90,7 @@ public class MenuController : MonoBehaviour
             int index = i; // capture index value for event closure
             BuildUnitButtons[i].onClick.AddListener(() =>
             {
-                if (requestUnitBuildMethod(index))
+                if (requestUnitBuildMethod(index, selectedFactory))
                     UpdateFactoryBuildQueueUI(index, selectedFactory);
             });
 
@@ -119,19 +119,22 @@ public class MenuController : MonoBehaviour
         // Factory build buttons
         // register available buttons
         i = 0;
-        for (; i < selectedFactory.AvailableFactoriesCount; i++)
+        if (selectedFactoryCount < 2)
         {
-            BuildFactoryButtons[i].gameObject.SetActive(true);
-
-            int index = i; // capture index value for event closure
-            BuildFactoryButtons[i].onClick.AddListener(() =>
+            for (; i < selectedFactory.AvailableFactoriesCount; i++)
             {
-                enterFactoryBuildModeMethod(index);
-            });
+                BuildFactoryButtons[i].gameObject.SetActive(true);
 
-            Text buttonText = BuildFactoryButtons[i].GetComponentInChildren<Text>();
-            FactoryDataScriptable data = selectedFactory.GetBuildableFactoryData(i);
-            buttonText.text = data.Caption + "(" + data.Cost + ")";
+                int index = i; // capture index value for event closure
+                BuildFactoryButtons[i].onClick.AddListener(() =>
+                {
+                    enterFactoryBuildModeMethod(index);
+                });
+
+                Text buttonText = BuildFactoryButtons[i].GetComponentInChildren<Text>();
+                FactoryDataScriptable data = selectedFactory.GetBuildableFactoryData(i);
+                buttonText.text = data.Caption + "(" + data.Cost + ")";
+            }
         }
         // hide remaining buttons
         for (; i < BuildFactoryButtons.Length; i++)

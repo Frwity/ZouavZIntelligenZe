@@ -1,5 +1,17 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System;
+using System.Collections.Generic;
+using UnityEngine.Events;
+
+enum E_MODE
+{
+    Agressive,
+    Defensive,
+    Flee,
+    FollowInstruction
+}
+
 public class Unit : BaseEntity
 {
     [SerializeField]
@@ -13,6 +25,14 @@ public class Unit : BaseEntity
     public UnitDataScriptable GetUnitData { get { return UnitData; } }
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
+    public bool needToCapture = false;
+    
+    [SerializeField] E_MODE mode = E_MODE.Defensive;
+    private float passiveFleeDistance = 25f;
+    private bool isFleeing = false;
+    private BaseEntity tempEntityTarget = null;
+    private BaseEntity entityToKill = null;
+
     public Vector3 GridPosition;
     //Move speed of the squad
     public float CurrentMoveSpeed;
@@ -52,6 +72,7 @@ public class Unit : BaseEntity
         NavMeshAgent.speed = CurrentMoveSpeed;
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
+        NavMeshAgent.stoppingDistance = 1f;
     }
     override protected void Start()
     {
@@ -60,6 +81,7 @@ public class Unit : BaseEntity
             Init(Team);
 
         base.Start();
+        InvokeRepeating("CheckForEnemy", 1f, 1f);
     }
     override protected void Update()
     {
@@ -71,6 +93,14 @@ public class Unit : BaseEntity
             else
                 ComputeRepairing();
         }
+        if (needToCapture)
+            StartCapture(CaptureTarget);
+
+        if (isFleeing)
+            CheckForStop();
+
+        if (entityToKill)
+            ChaseEntityToKill();
 	}
     #endregion
 
@@ -97,11 +127,25 @@ public class Unit : BaseEntity
     // Moving Task
     public void SetTargetPos(Vector3 pos)
     {
-        if (EntityTarget != null)
-            EntityTarget = null;
+        if (!entityToKill)
+        {
+            if (EntityTarget != null)
+            {
+                EntityTarget.OnDeadEvent -= OnModeActionEnd;
+                EntityTarget = null;
+            }
 
-        if (CaptureTarget != null)
-            StopCapture();
+            if (CaptureTarget != null)
+            {
+                if (needToCapture)
+                {
+                    needToCapture = false;
+                    CaptureTarget = null;
+                }
+                else
+                    StopCapture();
+            }
+        }
 
         if (NavMeshAgent)
         {
@@ -114,22 +158,27 @@ public class Unit : BaseEntity
     // Targetting Task - attack
     public void SetAttackTarget(BaseEntity target)
     {
-        if (CanAttack(target) == false)
+        if (target == null)
             return;
 
-        if (CaptureTarget != null)
+        if (CaptureTarget != null && !needToCapture)
             StopCapture();
 
         if (target.GetTeam() != GetTeam())
+        {
+            if (!CanAttack(target))
+                SetTargetPos(target.gameObject.transform.position);
+            
             StartAttacking(target);
+        }
     }
 
     // Targetting Task - capture
     public void SetCaptureTarget(TargetBuilding target)
     {
-        if (CanCapture(target) == false)
+        if (target == null)
             return;
-
+     
         if (EntityTarget != null)
             EntityTarget = null;
 
@@ -137,7 +186,17 @@ public class Unit : BaseEntity
             StopCapture();
 
         if (target.GetTeam() != GetTeam())
-            StartCapture(target);
+        {
+            if (CanCapture(target))
+                StartCapture(target);
+
+            else
+            {
+                SetTargetPos(target.gameObject.transform.position);
+                CaptureTarget = target;
+                needToCapture = true;
+            }
+        }
     }
 
     // Targetting Task - repairing
@@ -154,9 +213,6 @@ public class Unit : BaseEntity
     }
     public bool CanAttack(BaseEntity target)
     {
-        if (target == null)
-            return false;
-
         // distance check
         if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.AttackDistanceMax * GetUnitData.AttackDistanceMax)
             return false;
@@ -201,11 +257,8 @@ public class Unit : BaseEntity
     }
     public bool CanCapture(TargetBuilding target)
     {
-        if (target == null)
-            return false;
-
         // distance check
-        if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
+        if (target == null || (target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
             return false;
 
         return true;
@@ -222,7 +275,9 @@ public class Unit : BaseEntity
 
         CaptureTarget = target;
         CaptureTarget.StartCapture(this);
+        needToCapture = false;
     }
+
     public void StopCapture()
     {
         if (CaptureTarget == null)
@@ -234,7 +289,7 @@ public class Unit : BaseEntity
 
     public bool IsCapturing()
     {
-        return CaptureTarget != null;
+        return CaptureTarget != null && !needToCapture;
     }
 
     // Repairing Task
@@ -283,4 +338,76 @@ public class Unit : BaseEntity
         }
     }
     #endregion
+
+    void CheckForEnemy()
+    {
+        if (EntityTarget != null && EntityTarget is Unit)
+            return;
+
+        Collider[] unitsCollider = Physics.OverlapSphere(transform.position, 15f, 1 << LayerMask.NameToLayer("Unit"));
+        foreach(Collider unitCollider in unitsCollider)
+        {
+            if (unitCollider.GetComponent<Unit>().Team != Team && (!EntityTarget || !(EntityTarget is Unit)))
+            {
+                switch (mode)
+                {
+                    case E_MODE.Agressive:
+                        tempEntityTarget = EntityTarget;
+                        entityToKill = EntityTarget = unitCollider.GetComponent<Unit>();
+                        EntityTarget.OnDeadEvent += OnModeActionEnd;
+                        return;
+
+                    case E_MODE.Defensive:
+                        tempEntityTarget = EntityTarget;
+                        EntityTarget = unitCollider.GetComponent<Unit>();
+                        EntityTarget.OnDeadEvent += OnModeActionEnd;
+                        return;
+
+                    case E_MODE.Flee:
+                        tempEntityTarget = EntityTarget;
+                        RaycastHit hit;
+                        Vector3 direction = Vector3.up + (transform.position - unitCollider.transform.position).normalized * passiveFleeDistance;
+                        int layerMask = (1 << LayerMask.NameToLayer("Floor")) | (1 << LayerMask.NameToLayer("Factory")) | (1 << LayerMask.NameToLayer("Target"));
+
+                        if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, layerMask))
+                            direction = hit.point - transform.position;
+
+                        TargetBuilding temp = CaptureTarget;
+                        CaptureTarget = null;
+                        SetTargetPos(direction + transform.position);
+                        CaptureTarget = temp;
+                        isFleeing = true;
+                        return;
+                }
+            }
+        }
+    }
+
+    void OnModeActionEnd()
+    {
+        if (needToCapture)
+        {
+            TargetBuilding temp = CaptureTarget;
+            CaptureTarget = null;
+            SetCaptureTarget(temp);
+        }
+
+        else if (tempEntityTarget != null)
+            SetAttackTarget(tempEntityTarget);
+    }
+
+    void CheckForStop()
+    {
+        if (NavMeshAgent.remainingDistance < NavMeshAgent.stoppingDistance && NavMeshAgent.remainingDistance > 0f)
+        {
+            isFleeing = false;
+            OnModeActionEnd();
+        }
+    }
+
+    void ChaseEntityToKill()
+    {
+        if ((entityToKill.transform.position - transform.position).magnitude > GetUnitData.AttackDistanceMax)
+            SetAttackTarget(entityToKill);
+    }
 }

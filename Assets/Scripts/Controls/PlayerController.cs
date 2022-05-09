@@ -98,7 +98,8 @@ public sealed class PlayerController : UnitController
     }
     void CancelCurrentBuild()
     {
-        SelectedFactory?.CancelCurrentBuild();
+        foreach (Factory factory in SelectedFactoryList)
+            factory?.CancelCurrentBuild();
         PlayerMenuController.HideAllFactoryBuildQueue();
     }
 
@@ -174,9 +175,9 @@ public sealed class PlayerController : UnitController
                 (unit as IDamageable).Destroy();
             }
 
-            if (SelectedFactory)
+            foreach (Factory factory in SelectedFactoryList)
             {
-                Factory factoryRef = SelectedFactory;
+                Factory factoryRef = factory;
                 UnselectCurrentFactory();
                 factoryRef.Destroy();
             }
@@ -332,7 +333,7 @@ public sealed class PlayerController : UnitController
             Factory factory = raycastInfo.transform.GetComponent<Factory>();
             if (factory != null)
             {
-                if (factory.GetTeam() == Team && SelectedFactory != factory)
+                if (factory.GetTeam() == Team && !SelectedFactoryList.Contains(factory))
                 {
                     UnselectCurrentFactory();
                     SelectFactory(factory);
@@ -431,9 +432,7 @@ public sealed class PlayerController : UnitController
                 }
                 else if (selectedEntity is Factory)
                 {
-                    // Select only one factory at a time
-                    if (SelectedFactory == null)
-                        SelectFactory(selectedEntity as Factory);
+                    SelectFactory(selectedEntity as Factory);
                 }
             }
         }
@@ -445,9 +444,9 @@ public sealed class PlayerController : UnitController
     #endregion
 
     #region Factory / build methods
-    public void UpdateFactoryBuildQueueUI(int entityIndex)
+    public void UpdateFactoryBuildQueueUI(Factory factory, int entityIndex)
     {
-        PlayerMenuController.UpdateFactoryBuildQueueUI(entityIndex, SelectedFactory);
+        PlayerMenuController.UpdateFactoryBuildQueueUI(entityIndex, factory);
     }
     protected override void SelectFactory(Factory factory)
     {
@@ -456,15 +455,15 @@ public sealed class PlayerController : UnitController
 
         base.SelectFactory(factory);
 
-        PlayerMenuController.UpdateFactoryMenu(SelectedFactory, RequestUnitBuild, EnterFactoryBuildMode);
+        PlayerMenuController.UpdateFactoryMenu(factory, SelectedFactoryList.Count, RequestUnitBuild, EnterFactoryBuildMode);
     }
     protected override void UnselectCurrentFactory()
     {
         //Debug.Log("UnselectCurrentFactory");
 
-        if (SelectedFactory)
+        foreach (Factory factory in SelectedFactoryList)
         {
-            PlayerMenuController.UnregisterBuildButtons(SelectedFactory.AvailableUnitsCount, SelectedFactory.AvailableFactoriesCount);
+            PlayerMenuController.UnregisterBuildButtons(factory.AvailableUnitsCount, factory.AvailableFactoriesCount);
         }
 
         PlayerMenuController.HideFactoryMenu();
@@ -473,10 +472,8 @@ public sealed class PlayerController : UnitController
     }
     void EnterFactoryBuildMode(int factoryId)
     {
-        if (SelectedFactory.GetFactoryCost(factoryId) > TotalBuildPoints)
+        if (SelectedFactoryList[0].GetFactoryCost(factoryId) > TotalBuildPoints)
             return;
-
-        //Debug.Log("EnterFactoryBuildMode");
 
         CurrentInputMode = InputMode.FactoryPositioning;
 
@@ -485,7 +482,7 @@ public sealed class PlayerController : UnitController
         // Create factory preview
 
         // Load factory prefab for preview
-        GameObject factoryPrefab = SelectedFactory.GetFactoryPrefab(factoryId);
+        GameObject factoryPrefab = SelectedFactoryList[0].GetFactoryPrefab(factoryId);
         if (factoryPrefab == null)
         {
             Debug.LogWarning("Invalid factory prefab for factoryId " + factoryId);
@@ -553,13 +550,19 @@ public sealed class PlayerController : UnitController
                 {
                     // Direct call to attacking task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
+                    {
                         unit.SetAttackTarget(other);
+                        unit.needToCapture = false;
+                    }
                 }
                 else if (other.NeedsRepairing())
                 {
                     // Direct call to reparing task $$$ to be improved by AI behaviour
                     foreach (Unit unit in SelectedUnitList)
+                    {
                         unit.SetRepairTarget(other);
+                        unit.needToCapture = false;
+                    }
                 }
             }
         }
@@ -584,6 +587,9 @@ public sealed class PlayerController : UnitController
             // Direct call to moving task $$$ to be improved by AI behaviour
             // foreach (Unit unit in SelectedUnitList)
             //     unit.SetTargetPos(newPos);
+            foreach (Unit unit in SelectedUnitList)
+                unit.needToCapture = false;
+            
             SquadTest.MoveSquad(newPos);
         }
     }
