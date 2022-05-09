@@ -5,13 +5,13 @@ using UnityEngine;
 
 public sealed class AIController : UnitController
 {
-    [SerializeField] public GameObject CapturableTargets;
+    [SerializeField] public GameObject capturableTargets;
 
     [SerializeField] public List<TaskData> taskDatas;
 
     public StrategicTask explorationTask = null;
 
-    List<Unit> ExplorationSquadPlaceHolder = new List<Unit>();
+    Squad explorationSquad = new Squad();
 
     [SerializeField] float timeBetweenUtilitySystemUpdate = 5.0f;
     float previousUtilitySystemTime = 0.0f;
@@ -25,7 +25,11 @@ public sealed class AIController : UnitController
     {
         base.Start();
 
-        explorationTask = new CreateSquadTask(ExplorationSquadPlaceHolder);
+
+        explorationTask = new CreateExploSquadTask(explorationSquad);
+
+        float t = 0;
+        explorationTask.Evaluate(this, ref t);
 
         explorationTask.StartTask(this);
 
@@ -33,7 +37,7 @@ public sealed class AIController : UnitController
 
     }
     
-    protected override void Update()
+    void Update()
     {
         base.Update();
         UpdateTask();
@@ -63,11 +67,11 @@ public sealed class AIController : UnitController
             StrategicTask tempTask;
             float score = 0.0f;
 
-            tempTask = new CapturePointTask(ExplorationSquadPlaceHolder);  
+            tempTask = new CapturePointTask(explorationSquad);  
             if (tempTask.Evaluate(this, ref score))
                 explorationTask = tempTask;
 
-
+            Debug.Log(score);
             if (score > 0.0f)
                 explorationTask.StartTask(this);
         }

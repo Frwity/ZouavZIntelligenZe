@@ -6,14 +6,14 @@ public abstract class StrategicTask
 {
     public bool isComplete = false;
     protected AIController controller;
-    protected List<Unit> squad;
+    protected Squad squad;
     [SerializeField] protected TaskData taskDate;
 
     public abstract bool Evaluate(AIController _controller, ref float currentScore);
 
     public void SetUnit(Unit _unit)
     {
-        squad.Add(_unit);
+        squad.AddUnit(_unit);
     }
 
     public virtual void StartTask(AIController _controller)
@@ -28,31 +28,91 @@ public abstract class StrategicTask
         isComplete = true;
     }
 }
-
-public class CreateSquadTask : StrategicTask
+// each diffenrent type of squad will be creating with hard code for a better control over the randomness
+public class CreateSquadTask : StrategicTask 
 {
     public static int id { get; private set; } = 0;
 
-    public CreateSquadTask(List<Unit> ExplorationSquadPlaceHolder)
+    protected int money = 1;
+    protected int targetCost;
+    protected Factory factory = null;
+
+    public override void StartTask(AIController _controller)
     {
-        squad = ExplorationSquadPlaceHolder;
+        base.StartTask(_controller);
+        targetCost = squad.totalCost + money;
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
+    }
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        for (int i = 0; i < _controller.FactoryList.Count; ++i)
+        {
+            if (_controller.FactoryList[i].CurrentState == Factory.State.Available)
+            {
+                factory = _controller.FactoryList[i];
+                break;
+            }
+        }
+        if (factory != null)
+            return true;
+        return false;
+    }
+} 
+
+public class CreateExploSquadTask : CreateSquadTask
+{
+    public static int id { get; private set; } = 2;
+
+    public CreateExploSquadTask(Squad _squad)
+    {
+        squad = _squad;
     }
 
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
-        if (_controller.FactoryList[0] != null)
-            _controller.FactoryList[0].RequestUnitBuild(0, this);
+        int moneyTemp = money;
+        while (moneyTemp > 0)
+        {
+            if (moneyTemp > 1)
+            {
+                int newUnitCost = Random.Range(0, 2);
+                factory.RequestUnitBuild(newUnitCost, this);
+                moneyTemp -= newUnitCost;
+            }
+            if (moneyTemp == 1)
+            {
+                factory.RequestUnitBuild(0, this);
+                moneyTemp -= 1;
+            }
+        }
     }
+
     public override void UpdateTask()
     {
         base.UpdateTask();
-        if (squad != null)
+        if (squad.totalCost == targetCost)
             EndTask();
     }
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
+        float score = 0.0f;
+
+        if (base.Evaluate(_controller, ref currentScore))
+        {
+
+            if (score > currentScore)
+            {
+                currentScore = score;
+                return true;
+            }
+        }
         return false;
     }
 }
@@ -66,9 +126,9 @@ public class CapturePointTask : StrategicTask
     bool isCapturing = false;
     bool isWalking = false;
 
-    public CapturePointTask(List<Unit> _ExplorationSquadPlaceHolder)
+    public CapturePointTask(Squad _squad)
     {
-        squad = _ExplorationSquadPlaceHolder;
+        squad = _squad;
     }
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
@@ -78,10 +138,10 @@ public class CapturePointTask : StrategicTask
         int captureIndex = int.MaxValue;
         float distance = float.MaxValue;
 
-        for (int i = 0; i < _controller.CapturableTargets.transform.childCount; ++i)
+        for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
         {
-            float tempdist = (_controller.CapturableTargets.transform.GetChild(i).position - _controller.FactoryList[0].transform.position).magnitude;
-            if (_controller.CapturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempdist < distance)
+            float tempdist = (_controller.capturableTargets.transform.GetChild(i).position - _controller.FactoryList[0].transform.position).magnitude;
+            if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempdist < distance)
             {
                 captureIndex = i;
                 distance = tempdist;
@@ -89,7 +149,7 @@ public class CapturePointTask : StrategicTask
         }
         if (captureIndex != int.MaxValue)
         {
-            targetBuilding = _controller.CapturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
+            targetBuilding = _controller.capturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
             score = (_controller.taskDatas[id].Distance.Evaluate(distance) + _controller.taskDatas[id].Ratio.Evaluate(0)) * _controller.taskDatas[id].Time.Evaluate(Time.time);
         }
 
@@ -103,20 +163,21 @@ public class CapturePointTask : StrategicTask
 
     public override void UpdateTask()
     {
+                Debug.Log(squad);
         base.UpdateTask();
         if (squad == null)
             return;
         if (!isCapturing)
         {
-            if (squad[0].CanCapture(targetBuilding))
+            if (squad.members[0].CanCapture(targetBuilding))
             {
-                squad[0].StartCapture(targetBuilding);
+                squad.members[0].StartCapture(targetBuilding);
                 isCapturing = true;
             }
             else if (!isWalking)
             {
                 isWalking = true;
-                squad[0].SetTargetPos(targetBuilding.transform.position);
+                squad.CreateSquadFormation(targetBuilding.transform.position);
             }
         }
         if (targetBuilding.GetTeam() == controller.GetTeam())

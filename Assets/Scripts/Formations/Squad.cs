@@ -9,7 +9,8 @@ public class Squad : MonoBehaviour
     private Formation SquadFormation;
     [HideInInspector] public Unit SquadLeader;
     private float MoveSpeed = 100.0f;
-
+    public int totalCost = 0;
+    
     private void Awake()
     {
         SquadFormation = GetComponent<Formation>();
@@ -24,6 +25,7 @@ public class Squad : MonoBehaviour
     public void AddUnit(Unit unit)
     {
         members.Add(unit);
+        totalCost += unit.Cost;
     }
 
     public void RemoveMember(Unit unit)
@@ -39,6 +41,14 @@ public class Squad : MonoBehaviour
             unit.CurrentMoveSpeed = MoveSpeed;
             unit.SetTargetPos(unit.GridPosition);
         }
+    }
+
+    public int GetSquadValue()
+    {
+        int cost = 0;
+        for (int i = 0; i < members.Count; ++i)
+            cost += members[i].Cost;
+        return cost;
     }
 
     /*

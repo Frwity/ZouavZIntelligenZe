@@ -257,6 +257,12 @@ PrefabInstance:
       objectReference: {fileID: 1256912380}
     - target: {fileID: 114127896467981986, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
+      propertyPath: SquadPrefab
+      value: 
+      objectReference: {fileID: 752352560560748380, guid: d6fc987fa22339b45a5d7d9b36d9f2c0,
+        type: 3}
+    - target: {fileID: 114127896467981986, guid: dc4ee6691f59b07458286e0cfb38d82d,
+        type: 3}
       propertyPath: BuildMenuPanel
       value: 
       objectReference: {fileID: 2078828582}
@@ -293,7 +299,7 @@ PrefabInstance:
     - target: {fileID: 114127896467981986, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
       propertyPath: StartingBuildPoints
-      value: 15
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8446335230809480305, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
@@ -960,6 +966,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: AIController
       objectReference: {fileID: 0}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: SquadPrefab
+      value: 
+      objectReference: {fileID: 752352560560748380, guid: d6fc987fa22339b45a5d7d9b36d9f2c0,
+        type: 3}
     - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
         type: 3}
       propertyPath: CapturableTargets
