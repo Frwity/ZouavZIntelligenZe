@@ -979,8 +979,13 @@ PrefabInstance:
       objectReference: {fileID: 691088639}
     - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
         type: 3}
+      propertyPath: capturableTargets
+      value: 
+      objectReference: {fileID: 691088639}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
       propertyPath: taskDatas.Array.size
-      value: 2
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
         type: 3}
@@ -991,6 +996,36 @@ PrefabInstance:
     - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
         type: 3}
       propertyPath: taskDatas.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 1882d01c014b9c7498fdd1b3c557b3c6,
+        type: 2}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: f5ced9373664e7b458c99bb24d5ce9fe,
+        type: 2}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.data[3]
+      value: 
+      objectReference: {fileID: 11400000, guid: dd0a17e7b131287488fb788aa738041c,
+        type: 2}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.data[4]
+      value: 
+      objectReference: {fileID: 11400000, guid: 3adc8eceb77e00a4889b4e44129683b8,
+        type: 2}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.data[5]
+      value: 
+      objectReference: {fileID: 11400000, guid: 5a7f33dab48261b4e86d9f05afc4d2cf,
+        type: 2}
+    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
+        type: 3}
+      propertyPath: taskDatas.Array.data[6]
       value: 
       objectReference: {fileID: 11400000, guid: 1882d01c014b9c7498fdd1b3c557b3c6,
         type: 2}

@@ -106,7 +106,7 @@ public class CreateExploSquadTask : CreateSquadTask
 
         if (base.Evaluate(_controller, ref currentScore))
         {
-
+            money = 8;
             if (score > currentScore)
             {
                 currentScore = score;
@@ -161,26 +161,99 @@ public class CapturePointTask : StrategicTask
         return false;
     }
 
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+        squad.CaptureTarget(targetBuilding);
+    }
+
     public override void UpdateTask()
     {
-                Debug.Log(squad);
         base.UpdateTask();
         if (squad == null)
             return;
-        if (!isCapturing)
-        {
-            if (squad.members[0].CanCapture(targetBuilding))
-            {
-                squad.members[0].StartCapture(targetBuilding);
-                isCapturing = true;
-            }
-            else if (!isWalking)
-            {
-                isWalking = true;
-                squad.CreateSquadFormation(targetBuilding.transform.position);
-            }
-        }
+
+        squad.UpdateSquad();
+
         if (targetBuilding.GetTeam() == controller.GetTeam())
             EndTask();
+    }
+}
+
+public class CreateFactoryTask : StrategicTask
+{
+    public static int id { get; private set; } = 3;
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        float score = 0.0f;
+
+        if (score > currentScore)
+        {
+            currentScore = score;
+            return true;
+        }
+        return false;
+    }
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
+    }
+}
+
+public class AttackTargetTask : StrategicTask
+{
+    public static int id { get; private set; } = 4;
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        float score = 0.0f;
+
+        if (score > currentScore)
+        {
+            currentScore = score;
+            return true;
+        }
+        return false;
+    }
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
+    }
+}
+
+public class PlaceDefendUnitTask : StrategicTask
+{
+    public static int id { get; private set; } = 5;
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        float score = 0.0f;
+
+        if (score > currentScore)
+        {
+            currentScore = score;
+            return true;
+        }
+        return false;
+    }
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
     }
 }

@@ -62,8 +62,6 @@ public class TargetBuilding : MonoBehaviour
 
         TeamScore[(int)unit.GetTeam()] += unit.Cost;
         
-        Debug.Log(TeamScore[0]);
-
         if (CapturingTeam == ETeam.Neutral)
         {
             if (TeamScore[(int)GameServices.GetOpponent(unit.GetTeam())] == 0)
