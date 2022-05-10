@@ -86,7 +86,7 @@ public sealed class Factory : BaseEntity
         base.Start();
         GameServices.GetGameState().IncreaseTeamScore(Team);
         Controller = GameServices.GetControllerByTeam(Team);
-        Map.Instance.AddFactory(this);
+        Map.Instance.AddFactory(this, Team);
     }
     override protected void Update()
     {

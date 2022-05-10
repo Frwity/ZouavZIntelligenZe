@@ -36,7 +36,7 @@ public class Unit : BaseEntity
     public Vector3 GridPosition;
     //Move speed of the squad
     public float CurrentMoveSpeed;
-    public Tile currentTile = null;
+    public Dictionary<Tile, float> currentTilesInfluence = new Dictionary<Tile, float>();
     public float influence = 1;
 
     override public void Init(ETeam _team)
@@ -60,6 +60,12 @@ public class Unit : BaseEntity
             fx.transform.parent = null;
         }
 
+        foreach (KeyValuePair<Tile, float> t in currentTilesInfluence)
+        {
+            t.Key.militaryInfluence += t.Value;
+            if (t.Key.strategicInfluence < 1f)
+                t.Key.team = Team == ETeam.Blue ? ETeam.Red : ETeam.Blue;
+        }
         Destroy(gameObject);
     }
     #region MonoBehaviour methods
@@ -412,5 +418,34 @@ public class Unit : BaseEntity
     {
         if ((entityToKill.transform.position - transform.position).magnitude > GetUnitData.AttackDistanceMax)
             SetAttackTarget(entityToKill);
+    }
+
+    public void UpdateTile(Tile tile, float currentInfluence)
+    {
+        if (currentInfluence < 0.1f || currentTilesInfluence.ContainsKey(tile))
+            return;
+
+        currentTilesInfluence.Add(tile, currentInfluence);
+        
+        if (tile.team != Team && tile.team != ETeam.Neutral)
+        {
+            tile.militaryInfluence -= currentInfluence;
+            if (tile.militaryInfluence < 0f)
+            {
+                tile.militaryInfluence = -tile.militaryInfluence;
+                if (tile.strategicInfluence < 1f)
+                    tile.team = Team;
+            }
+        }
+        else
+        {
+            tile.militaryInfluence += currentInfluence;
+            if (tile.team != Team)
+                tile.team = Team;
+        }
+
+        List<Tile> neighbours = Map.Instance.GetNeighbours(tile);
+        foreach(Tile t in neighbours)
+            UpdateTile(t, currentInfluence / 2f);
     }
 }

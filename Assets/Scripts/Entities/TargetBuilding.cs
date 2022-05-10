@@ -124,7 +124,7 @@ public class TargetBuilding : MonoBehaviour
         ResetCapture();
         OwningTeam = newTeam;
         BuildingMeshRenderer.material = newTeam == ETeam.Blue ? BlueTeamMaterial : RedTeamMaterial;
-        Map.Instance.AddTargetBuilding(this);
+        Map.Instance.AddTargetBuilding(this, newTeam);
     }
     #endregion
 }
