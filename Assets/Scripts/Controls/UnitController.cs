@@ -118,6 +118,15 @@ public class UnitController : MonoBehaviour
         TotalBuildPoints -= points;
         CapturedTargets--;
     }
+
+    public int GetMilitaryPower()
+    {
+        int power = 0;
+        foreach (Unit unit in UnitList)
+            power += unit.Cost;
+        return power;
+    }
+
     #endregion
 
     #region Factory methods

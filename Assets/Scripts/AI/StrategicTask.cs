@@ -28,10 +28,71 @@ public abstract class StrategicTask
         isComplete = true;
     }
 }
+
+public class CapturePointTask : StrategicTask
+{
+    public static int id { get; private set; } = 0;
+
+    TargetBuilding targetBuilding;
+
+    public CapturePointTask(Squad _squad)
+    {
+        squad = _squad;
+    }
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        float score = 0.0f;
+
+        int captureIndex = int.MaxValue;
+        float distance = float.MaxValue;
+
+        for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
+        {
+            float tempdist = (_controller.capturableTargets.transform.GetChild(i).position - _controller.FactoryList[0].transform.position).magnitude;
+            if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempdist < distance)
+            {
+                captureIndex = i;
+                distance = tempdist;
+            }
+        }
+        if (captureIndex != int.MaxValue)
+        {
+            targetBuilding = _controller.capturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
+            score = (_controller.taskDatas[id].Distance.Evaluate(distance) + _controller.taskDatas[id].Ratio.Evaluate(0)) * _controller.taskDatas[id].Time.Evaluate(Time.time); //TODO ratio evaluate
+        }
+
+        if (score > currentScore)
+        {
+            currentScore = score;
+            return true;
+        }
+        return false;
+    }
+
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+        squad.CaptureTarget(targetBuilding);
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
+        if (squad == null)
+            return;
+
+        squad.UpdateSquad();
+
+        if (targetBuilding.GetTeam() == controller.GetTeam())
+            EndTask();
+    }
+}
+
 // each diffenrent type of squad will be creating with hard code for a better control over the randomness
 public class CreateSquadTask : StrategicTask 
 {
-    public static int id { get; private set; } = 0;
+    public static int id { get; private set; } = 1;
 
     protected int money = 1;
     protected int targetCost;
@@ -66,7 +127,7 @@ public class CreateSquadTask : StrategicTask
 
 public class CreateExploSquadTask : CreateSquadTask
 {
-    public static int id { get; private set; } = 2;
+    new public static int id { get; private set; } = 2;
 
     public CreateExploSquadTask(Squad _squad)
     {
@@ -117,72 +178,13 @@ public class CreateExploSquadTask : CreateSquadTask
     }
 }
 
-public class CapturePointTask : StrategicTask
-{
-    public static int id { get; private set; } = 1;
-
-    TargetBuilding targetBuilding;
-
-    bool isCapturing = false;
-    bool isWalking = false;
-
-    public CapturePointTask(Squad _squad)
-    {
-        squad = _squad;
-    }
-
-    public override bool Evaluate(AIController _controller, ref float currentScore)
-    {
-        float score = 0.0f;
-
-        int captureIndex = int.MaxValue;
-        float distance = float.MaxValue;
-
-        for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
-        {
-            float tempdist = (_controller.capturableTargets.transform.GetChild(i).position - _controller.FactoryList[0].transform.position).magnitude;
-            if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempdist < distance)
-            {
-                captureIndex = i;
-                distance = tempdist;
-            }
-        }
-        if (captureIndex != int.MaxValue)
-        {
-            targetBuilding = _controller.capturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
-            score = (_controller.taskDatas[id].Distance.Evaluate(distance) + _controller.taskDatas[id].Ratio.Evaluate(0)) * _controller.taskDatas[id].Time.Evaluate(Time.time);
-        }
-
-        if (score > currentScore)
-        {
-            currentScore = score;
-            return true;
-        }
-        return false;
-    }
-
-    public override void StartTask(AIController _controller)
-    {
-        base.StartTask(_controller);
-        squad.CaptureTarget(targetBuilding);
-    }
-
-    public override void UpdateTask()
-    {
-        base.UpdateTask();
-        if (squad == null)
-            return;
-
-        squad.UpdateSquad();
-
-        if (targetBuilding.GetTeam() == controller.GetTeam())
-            EndTask();
-    }
-}
-
 public class CreateFactoryTask : StrategicTask
 {
     public static int id { get; private set; } = 3;
+
+    Vector3 pos;
+
+    int type = 0;
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {

@@ -9,6 +9,8 @@ public sealed class AIController : UnitController
 
     [SerializeField] public List<TaskData> taskDatas;
 
+    public PlayerController playerController { get; private set; }
+
     public StrategicTask explorationTask = null;
     public StrategicTask ecoTask = null;
     public StrategicTask militaryTask = null;
@@ -43,9 +45,10 @@ public sealed class AIController : UnitController
 
         previousUtilitySystemTime = Time.time;
 
+        playerController = FindObjectOfType<PlayerController>();
     }
-    
-    void Update()
+
+    protected override void Update()
     {
         base.Update();
         UpdateTask();
@@ -96,6 +99,11 @@ public sealed class AIController : UnitController
         {
             StrategicTask tempTask;
             float score = 0.0f;
+
+            tempTask = new CreateFactoryTask();
+            if (tempTask.Evaluate(this, ref score))
+                ecoTask = tempTask;
+
 
             if (score > 0.0f)
                 ecoTask.StartTask(this);
