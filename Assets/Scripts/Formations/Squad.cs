@@ -1,9 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+
+public enum E_TASK_STATE
+{
+    Busy,       // cannot be assign another task
+    Terminate,  // ongoing task but can be assign to another task
+    Free
+}
 
 public class Squad
 {
@@ -15,11 +21,15 @@ public class Squad
     private bool CanBreakFormation = false;
     private bool SquadCapture = false;
     private TargetBuilding targetBuilding;
+    public E_MODE SquadMode;
+    public E_TASK_STATE State;
 
     public Squad(UnitController controller)
     {
          SquadFormation = new Formation(this);
          Controller = controller;
+         SquadMode = E_MODE.Agressive;
+         State = E_TASK_STATE.Free;
     }
 
     /*
@@ -32,8 +42,9 @@ public class Squad
 
     public void AddUnit(Unit unit)
     {
+        unit.SetMode(SquadMode);
         members.Add(unit);
-        //assign first unit to be the leader
+        //assign first unit to be the leader if Leader is not set
         SquadFormation.UpdateFormationLeader();
     }
 
@@ -54,19 +65,14 @@ public class Squad
             return;
         SquadFormation.UpdateFormationLeader();
         //temp when unit is removed from squad recalculate formation based on the new leader grid position
-        MoveSquad(members[0].GridPosition);
+        MoveSquad(members[0].transform.position);
     }
 
     public void UpdateSquad()
     {
         if (SquadCapture)
-        {
-            if (!CanCapture(targetBuilding))
-                return;
-
             SquadStartCapture(targetBuilding);
-            SquadCapture = false;
-        }
+        
     }
     
     /*
@@ -103,8 +109,11 @@ public class Squad
 
         if (target.GetTeam() != Controller.GetTeam())
         {
-            if(CanCapture(target))
+            target.OnBuiilduingCaptured.AddListener(OnSquadCaptureTarget);
+            if (CanCapture(target))
+            {
                 SquadStartCapture(target);
+            }
             else
             {
                 SquadCapture = true;
@@ -125,10 +134,13 @@ public class Squad
 
     void SquadStartCapture(TargetBuilding target)
     {
-        Debug.Log("Squad Start capture");
         foreach (Unit unit in members)
         {
-            unit.StartCapture(target);
+            if (unit.IsAtDestination() && unit.needToCapture)
+            {
+                Debug.Log("unit start capture");
+                unit.StartCapture(target);
+            }
         }
     }
 
@@ -157,5 +169,12 @@ public class Squad
     public void SwitchFormation(E_FORMATION_TYPE newFormationType)
     {
         SquadFormation.SetFormationType = newFormationType;
+    }
+
+    public void OnSquadCaptureTarget()
+    {
+        SquadCapture = false;
+        State = E_TASK_STATE.Free;
+        targetBuilding.OnBuiilduingCaptured.RemoveListener(OnSquadCaptureTarget);
     }
 }

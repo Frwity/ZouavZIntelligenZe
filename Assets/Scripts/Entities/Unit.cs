@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.Events;
 
-enum E_MODE
+public enum E_MODE
 {
     Agressive,
     Defensive,
@@ -93,8 +93,6 @@ public class Unit : BaseEntity
             else
                 ComputeRepairing();
         }
-        if (needToCapture)
-            StartCapture(CaptureTarget);
 
         if (isFleeing)
             CheckForStop();
@@ -133,17 +131,6 @@ public class Unit : BaseEntity
             {
                 EntityTarget.OnDeadEvent -= OnModeActionEnd;
                 EntityTarget = null;
-            }
-
-            if (CaptureTarget != null)
-            {
-                if (needToCapture)
-                {
-                    needToCapture = false;
-                    CaptureTarget = null;
-                }
-                else
-                    StopCapture();
             }
         }
 
@@ -265,7 +252,7 @@ public class Unit : BaseEntity
     {
         // distance check
         if (target == null || (target.transform.position - transform.position).sqrMagnitude > GetUnitData.CaptureDistanceMax * GetUnitData.CaptureDistanceMax)
-            return false;   
+            return false;
 
         return true;
     }
@@ -414,5 +401,15 @@ public class Unit : BaseEntity
     public void StopMovement()
     {
         NavMeshAgent.isStopped = true;
+    }
+
+    public void SetMode(E_MODE newMode)
+    {
+        mode = newMode;
+    }
+
+    public bool IsAtDestination()
+    {
+        return NavMeshAgent.remainingDistance < 0.05f;
     }
 }

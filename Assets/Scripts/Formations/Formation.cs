@@ -44,6 +44,9 @@ public class Formation
 
     public void UpdateFormationLeader()
     {
+        if (FormationLeader != null)
+            return;
+        
         if (Squad.members.Count != 0)
             FormationLeader = Squad.members[0];
     }
@@ -66,7 +69,6 @@ public class Formation
             case E_FORMATION_TYPE.Custom:
                 break;
         }
-        
         
         Squad.MoveUnitToPosition();
     }
@@ -106,9 +108,6 @@ public class Formation
         FormationLeader.GridPosition = targetPos;
         for (int i = 0; i < Squad.members.Count; i++)
         {
-            if (FormationLeader.Equals(Squad.members[i]))
-                continue;
-            
             int row = i / 3;
             int x = i % 3;
 
@@ -116,13 +115,16 @@ public class Formation
             float rotY = FormationLeader.transform.eulerAngles.y;
             Vector3 positionOffset = new Vector3(offset.x, 0, offset.y);
             Vector3 rotationOffset = Quaternion.Euler(0, rotY, 0) * positionOffset;
+            
+            //fix first unit of the squad so that it takes the empty slot
+            if (FormationLeader.Equals(Squad.members[i]))
+            {
+                Squad.members[0].GridPosition = FormationLeader.GridPosition + rotationOffset;
+                continue;
+            }
+            
             Squad.members[i].GridPosition = FormationLeader.GridPosition + rotationOffset;
         }
-    }
-    
-    void CalculatePosDuringMove()
-    {
-        
     }
 
     /*
