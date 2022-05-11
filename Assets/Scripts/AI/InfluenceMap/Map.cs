@@ -67,15 +67,13 @@ public class Map : MonoBehaviour
     public void AddTargetBuilding(TargetBuilding targetBuilding, ETeam team)
     {
         Tile tile = GetTile(targetBuilding.transform.position);
-        tile.strategicInfluence = targetBuilding.influence;
-        tile.team = team;
+        tile.strategicInfluence = targetBuilding.GetTeam() == ETeam.Blue ? targetBuilding.influence : -targetBuilding.influence;
     }
 
     public void AddFactory(Factory factory, ETeam team)
     {
         Tile tile = GetTile(factory.transform.position);
-        tile.strategicInfluence = factory.influence;
-        tile.team = team;
+        tile.strategicInfluence = factory.GetTeam() == ETeam.Blue ? factory.influence : -factory.influence;
     }
 
     // Update is called once per frame
@@ -87,33 +85,16 @@ public class Map : MonoBehaviour
             foreach (Unit unit in unitController.UnitList)
             {
                 Tile tile = GetTile(unit.transform.position);
-                if (unit.currentTilesInfluence.TryGetValue(tile, out outValue) && Math.Abs(unit.influence - outValue) < 0.0001f)
+                if (unit.currentTilesInfluence.TryGetValue(tile, out outValue) && Math.Abs(unit.Influence - outValue) < 0.0001f)
                     continue;
 
                 else
                 {
                     foreach (KeyValuePair<Tile, float> t in unit.currentTilesInfluence)
-                    {
-                        if (t.Key.team == unit.GetTeam())
-                        {
-                            t.Key.militaryInfluence -= t.Value;
-                            if (t.Key.militaryInfluence < 0.0001f && t.Key.strategicInfluence < 1f)
-                            {
-                                if (t.Key.militaryInfluence < -0.0001f)
-                                {
-                                    t.Key.team = ETeam.Red;
-                                    t.Key.militaryInfluence = -t.Key.militaryInfluence;
-                                }
-                                else
-                                    t.Key.team = ETeam.Neutral;
-                            }
-                        }
-                        else if (t.Key.team != ETeam.Neutral)
-                            t.Key.militaryInfluence += t.Value;
-                    }
+                        t.Key.militaryInfluence -= t.Value;
 
                     unit.currentTilesInfluence.Clear();
-                    unit.UpdateTile(tile, unit.influence);
+                    unit.UpdateTile(tile, unit.Influence);
                 }
             }
         }
@@ -248,7 +229,8 @@ public class Map : MonoBehaviour
         GUIStyle gUIStyle = new GUIStyle();
         for (int i = 0; i < tileList.Count; i++)
         {
-            gUIStyle.normal.textColor = tileList[i].team == ETeam.Blue ? Color.blue : tileList[i].team == ETeam.Red ? Color.red : Color.green;
+            ETeam tileTeam = tileList[i].GetTeam();
+            gUIStyle.normal.textColor = tileTeam == ETeam.Blue ? Color.blue : tileTeam == ETeam.Red ? Color.red : Color.green;
             gUIStyle.fontStyle = FontStyle.Bold;
             Handles.Label(tileList[i].position, tileList[i].militaryInfluence.ToString() + " " + tileList[i].strategicInfluence.ToString(), gUIStyle);
         }

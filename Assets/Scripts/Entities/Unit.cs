@@ -26,7 +26,7 @@ public class Unit : BaseEntity
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
     public bool needToCapture = false;
-    
+
     [SerializeField] E_MODE mode = E_MODE.Defensive;
     private float passiveFleeDistance = 25f;
     private bool isFleeing = false;
@@ -37,7 +37,9 @@ public class Unit : BaseEntity
     //Move speed of the squad
     public float CurrentMoveSpeed;
     public Dictionary<Tile, float> currentTilesInfluence = new Dictionary<Tile, float>();
-    public float influence = 1;
+    [SerializeField]
+    private float influence = 1;
+    public float Influence { get { return Team == ETeam.Blue ? influence : -influence; } }
 
     override public void Init(ETeam _team)
     {
@@ -61,11 +63,8 @@ public class Unit : BaseEntity
         }
 
         foreach (KeyValuePair<Tile, float> t in currentTilesInfluence)
-        {
-            t.Key.militaryInfluence += t.Value;
-            if (t.Key.strategicInfluence < 1f)
-                t.Key.team = Team == ETeam.Blue ? ETeam.Red : ETeam.Blue;
-        }
+            t.Key.militaryInfluence -= t.Value;
+
         Destroy(gameObject);
     }
     #region MonoBehaviour methods
@@ -422,30 +421,14 @@ public class Unit : BaseEntity
 
     public void UpdateTile(Tile tile, float currentInfluence)
     {
-        if (currentInfluence < 0.1f || currentTilesInfluence.ContainsKey(tile))
+        if (Math.Abs(currentInfluence) < 0.1f || currentTilesInfluence.ContainsKey(tile))
             return;
 
         currentTilesInfluence.Add(tile, currentInfluence);
         
-        if (tile.team != Team && tile.team != ETeam.Neutral)
-        {
-            tile.militaryInfluence -= currentInfluence;
-            if (tile.militaryInfluence < 0f)
-            {
-                tile.militaryInfluence = -tile.militaryInfluence;
-                if (tile.strategicInfluence < 1f)
-                    tile.team = Team;
-            }
-        }
-        else
-        {
-            tile.militaryInfluence += currentInfluence;
-            if (tile.team != Team)
-                tile.team = Team;
-        }
+        tile.militaryInfluence += currentInfluence;
 
-        List<Tile> neighbours = Map.Instance.GetNeighbours(tile);
-        foreach(Tile t in neighbours)
+        foreach(Tile t in Map.Instance.GetNeighbours(tile))
             UpdateTile(t, currentInfluence / 2f);
     }
 }

@@ -7,8 +7,24 @@ public class Tile
     public Vector3 position = Vector3.zero;
     public float strategicInfluence = 0f;
     public float militaryInfluence = 0f;
-    public ETeam team = ETeam.Neutral;
     public int weight;
+
+    public ETeam GetTeam()
+    {
+        if (strategicInfluence > 0.1f)
+            return ETeam.Blue;
+
+        if (strategicInfluence < -0.1f)
+            return ETeam.Red;
+
+        if (militaryInfluence > 0.1f)
+            return ETeam.Blue;
+
+        if (militaryInfluence < -0.1f)
+            return ETeam.Red;
+
+        return ETeam.Neutral;
+    }
 }
 
 public class Connection
