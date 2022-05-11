@@ -162,7 +162,7 @@ public sealed class PlayerController : UnitController
 
         OnFactoryPositioned += (floorPos) =>
         {
-            if (RequestFactoryBuild(WantedFactoryId, floorPos))
+            if (RequestFactoryBuild(WantedFactoryId, floorPos) != null)
             {
                 ExitFactoryBuildMode();
             }
@@ -452,7 +452,7 @@ public sealed class PlayerController : UnitController
     {
         PlayerMenuController.UpdateFactoryBuildQueueUI(entityIndex, factory);
     }
-    protected override void SelectFactory(Factory factory)
+    public override void SelectFactory(Factory factory)
     {
         if (factory == null || factory.IsUnderConstruction)
             return;
@@ -461,7 +461,7 @@ public sealed class PlayerController : UnitController
 
         PlayerMenuController.UpdateFactoryMenu(factory, SelectedFactoryList.Count, RequestUnitBuild, EnterFactoryBuildMode);
     }
-    protected override void UnselectCurrentFactory()
+    public override void UnselectCurrentFactory()
     {
         //Debug.Log("UnselectCurrentFactory");
 

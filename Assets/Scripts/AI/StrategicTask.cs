@@ -144,7 +144,7 @@ public class CreateExploSquadTask : CreateSquadTask
             {
                 int newUnitCost = Random.Range(0, 2);
                 factory.RequestUnitBuild(newUnitCost, this);
-                moneyTemp -= newUnitCost;
+                moneyTemp -= newUnitCost + 1;
             }
             if (moneyTemp == 1)
             {
@@ -167,7 +167,8 @@ public class CreateExploSquadTask : CreateSquadTask
 
         if (base.Evaluate(_controller, ref currentScore))
         {
-            money = 8;
+             
+            targetCost = money;
             if (score > currentScore)
             {
                 currentScore = score;
@@ -186,12 +187,40 @@ public class CreateFactoryTask : StrategicTask
 
     int type = 0;
 
+    Factory factory;
+
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
 
+        Factory buildingFactory = null;
+        for (int i = 0; i < _controller.FactoryList.Count; ++i)
+        {
+            if (_controller.FactoryList[i].CurrentState == Factory.State.Available)
+            {
+                buildingFactory = _controller.FactoryList[i];
+                break;
+            }
+        }
+        if (buildingFactory != null)
+            _controller.SelectFactory(buildingFactory);
+        else
+            return false;
+
+        score = (_controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) 
+        * _controller.taskDatas[id].Ratio.Evaluate(_controller.FactoryList.Count / _controller.playerController.FactoryList.Count)) 
+        * _controller.taskDatas[id].Time.Evaluate(Time.time);
+
+
         if (score > currentScore)
         {
+            if (_controller.GetHFactoryCount() / _controller.GetLFactoryCount() > 0.667f)
+                type = 0;
+            else
+                type = 1;
+
+            pos = Vector3.zero;
+
             currentScore = score;
             return true;
         }
@@ -200,11 +229,17 @@ public class CreateFactoryTask : StrategicTask
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
+        factory = _controller.RequestFactoryBuild(type, pos);
+        if (factory == null)
+            EndTask();
+        _controller.UnselectCurrentFactory();
     }
 
     public override void UpdateTask()
     {
         base.UpdateTask();
+        if (factory.CurrentState == Factory.State.Available)
+            EndTask();
     }
 }
 

@@ -61,7 +61,8 @@ public class UnitController : MonoBehaviour
         foreach (Unit unit in SelectedUnitList)
             unit.SetSelected(false);
         SelectedUnitList.Clear();
-        SquadTest.members.Clear();
+        if (SquadTest != null)
+            SquadTest.members.Clear();
     }
     protected void SelectAllUnits()
     {
@@ -147,7 +148,7 @@ public class UnitController : MonoBehaviour
         };
         FactoryList.Add(factory);
     }
-    virtual protected void SelectFactory(Factory factory)
+    virtual public void SelectFactory(Factory factory)
     {
         if (factory == null || factory.IsUnderConstruction)
             return;
@@ -156,7 +157,7 @@ public class UnitController : MonoBehaviour
         SelectedFactoryList.Add(factory);
         UnselectAllUnits();
     }
-    virtual protected void UnselectCurrentFactory()
+    virtual public void UnselectCurrentFactory()
     {
         foreach (Factory factory in SelectedFactoryList)
             factory.SetSelected(false);
@@ -166,18 +167,18 @@ public class UnitController : MonoBehaviour
     {
         return factory.RequestUnitBuild(unitMenuIndex, null);
     }
-    protected bool RequestFactoryBuild(int factoryIndex, Vector3 buildPos)
+    public Factory RequestFactoryBuild(int factoryIndex, Vector3 buildPos)
     {
         if (SelectedFactoryList.Count == 0)
-            return false;
+            return null;
 
         int cost = SelectedFactoryList[0].GetFactoryCost(factoryIndex);
         if (TotalBuildPoints < cost)
-            return false;
+            return null;
 
         // Check if positon is valid
         if (SelectedFactoryList[0].CanPositionFactory(factoryIndex, buildPos) == false)
-            return false;
+            return null;
 
         Factory newFactory = SelectedFactoryList[0].StartBuildFactory(factoryIndex, buildPos);
         if (newFactory != null)
@@ -185,9 +186,25 @@ public class UnitController : MonoBehaviour
             AddFactory(newFactory);
             TotalBuildPoints -= cost;
 
-            return true;
+            return newFactory;
         }
-        return false;
+        return null;
+    }
+    public int GetLFactoryCount()
+    {
+        int count = 0;
+        foreach (Factory factory in FactoryList)
+            if (factory.GetFactoryData.TypeId == 0)
+                count += factory.Cost;
+        return count;
+    }
+    public int GetHFactoryCount()
+    {
+        int count = 0;
+        foreach (Factory factory in FactoryList)
+            if (factory.GetFactoryData.TypeId == 1)
+                count += factory.Cost;
+        return count;
     }
     #endregion
 
