@@ -128,7 +128,8 @@ public sealed class PlayerController : UnitController
         // Set up the new Pointer Event
         MenuPointerEventData = new PointerEventData(SceneEventSystem);
 
-        SquadTest = new Squad(this);
+        SelectedSquad = new Squad(this);
+        PlayerMenuController.SetSquadText(SelectedSquad.SquadMode);
     }
 
     override protected void Start()
@@ -215,8 +216,8 @@ public sealed class PlayerController : UnitController
 
         // Apply camera movement
         UpdateMoveCamera();
-        
-        SquadTest.UpdateSquad();
+
+        SelectedSquad.UpdateSquad();
     }
     #endregion
 
@@ -579,7 +580,7 @@ public sealed class PlayerController : UnitController
                 // Direct call to capturing task $$$ to be improved by AI behaviour
                 // foreach (Unit unit in SelectedUnitList)
                 //     unit.SetCaptureTarget(target);
-                SquadTest.CaptureTarget(target);
+                SelectedSquad.CaptureTarget(target);
             }
         }
         // Set unit move target
@@ -594,8 +595,17 @@ public sealed class PlayerController : UnitController
             //     unit.SetTargetPos(newPos);
             foreach (Unit unit in SelectedUnitList)
                 unit.needToCapture = false;
-            
-            SquadTest.MoveSquad(newPos);
+
+            SelectedSquad.MoveSquad(newPos);
+        }
+    }
+
+    public void SetSquadMode(int mode)
+    {
+        if (SelectedSquad != null)
+        {
+            SelectedSquad.SetMode((E_MODE)mode);
+            PlayerMenuController.SetSquadText((E_MODE)mode);
         }
     }
     #endregion

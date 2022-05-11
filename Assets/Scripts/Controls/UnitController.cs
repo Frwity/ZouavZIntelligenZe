@@ -19,7 +19,9 @@ public class UnitController : MonoBehaviour
 
     protected List<Squad> Squads = new List<Squad>();
 
-    protected Squad SquadTest;
+    protected Squad SelectedSquad;
+
+    public E_MODE SelectedSquadMode { get { return SelectedSquad.SquadMode; } }
     
     public int TotalBuildPoints
     {
@@ -61,7 +63,7 @@ public class UnitController : MonoBehaviour
         foreach (Unit unit in SelectedUnitList)
             unit.SetSelected(false);
         SelectedUnitList.Clear();
-        SquadTest.members.Clear();
+        SelectedSquad.members.Clear();
     }
     protected void SelectAllUnits()
     {
@@ -89,7 +91,7 @@ public class UnitController : MonoBehaviour
     {
         unit.SetSelected(true);
         SelectedUnitList.Add(unit);
-        SquadTest.AddUnit(unit);
+        SelectedSquad.AddUnit(unit);
     }
     protected void UnselectUnit(Unit unit)
     {
