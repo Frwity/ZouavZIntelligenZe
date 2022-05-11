@@ -27,11 +27,6 @@ public class Squad
     public E_TASK_STATE State
     {
         get => InternalState;
-        set
-        {
-            if (value != E_TASK_STATE.Busy)
-                InternalState = value;
-        }
     }
 
     public Squad(UnitController controller)
@@ -114,12 +109,12 @@ public class Squad
      */
     public void CaptureTarget(TargetBuilding target)
     {
-        if (target == null && !CanChangeTask())
+        if (target == null)
             return;
 
         if (target.GetTeam() != Controller.GetTeam())
         {
-            State = E_TASK_STATE.Busy;
+            InternalState = E_TASK_STATE.Busy;
             target.OnBuiilduingCaptured.AddListener(OnSquadCaptureTarget);
             if (CanCapture(target))
             {
@@ -171,20 +166,12 @@ public class Squad
 
     public void AttackTarget(Vector3 targetPos)
     {
-        if (!CanChangeTask())
-            return;
-        
         
     }
     
     public void SwitchFormation(E_FORMATION_TYPE newFormationType)
     {
         SquadFormation.SetFormationType = newFormationType;
-    }
-
-    public bool CanChangeTask()
-    {
-        return InternalState != E_TASK_STATE.Busy;
     }
 
     public void OnSquadCaptureTarget()
