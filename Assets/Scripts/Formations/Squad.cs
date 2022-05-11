@@ -2,12 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 public enum E_TASK_STATE
 {
     Busy,       // cannot be assign another task
-    Terminate,  // ongoing task but can be assign to another task
+    Ongoing,  // ongoing task but can be assign to another task
     Free
 }
 
@@ -22,14 +21,25 @@ public class Squad
     private bool SquadCapture = false;
     private TargetBuilding targetBuilding;
     public E_MODE SquadMode;
-    public E_TASK_STATE State;
+
+    private E_TASK_STATE InternalState;
+
+    public E_TASK_STATE State
+    {
+        get => InternalState;
+        set
+        {
+            if (value != E_TASK_STATE.Busy)
+                InternalState = value;
+        }
+    }
 
     public Squad(UnitController controller)
     {
          SquadFormation = new Formation(this);
          Controller = controller;
          SquadMode = E_MODE.Agressive;
-         State = E_TASK_STATE.Free;
+         InternalState = E_TASK_STATE.Free;
     }
 
     /*
@@ -72,7 +82,6 @@ public class Squad
     {
         if (SquadCapture)
             SquadStartCapture(targetBuilding);
-        
     }
     
     /*
@@ -80,6 +89,7 @@ public class Squad
      */
     public void MoveUnitToPosition()
     {
+        InternalState = E_TASK_STATE.Ongoing;
         SetSquadSpeed();
         foreach (Unit unit in members)
         {
@@ -104,11 +114,12 @@ public class Squad
      */
     public void CaptureTarget(TargetBuilding target)
     {
-        if (target == null)
+        if (target == null && !CanChangeTask())
             return;
 
         if (target.GetTeam() != Controller.GetTeam())
         {
+            State = E_TASK_STATE.Busy;
             target.OnBuiilduingCaptured.AddListener(OnSquadCaptureTarget);
             if (CanCapture(target))
             {
@@ -137,10 +148,7 @@ public class Squad
         foreach (Unit unit in members)
         {
             if (unit.IsAtDestination() && unit.needToCapture)
-            {
-                Debug.Log("unit start capture");
                 unit.StartCapture(target);
-            }
         }
     }
 
@@ -163,6 +171,9 @@ public class Squad
 
     public void AttackTarget(Vector3 targetPos)
     {
+        if (!CanChangeTask())
+            return;
+        
         
     }
     
@@ -171,10 +182,24 @@ public class Squad
         SquadFormation.SetFormationType = newFormationType;
     }
 
+    public bool CanChangeTask()
+    {
+        return InternalState != E_TASK_STATE.Busy;
+    }
+
     public void OnSquadCaptureTarget()
     {
         SquadCapture = false;
-        State = E_TASK_STATE.Free;
+        InternalState = E_TASK_STATE.Free;
         targetBuilding.OnBuiilduingCaptured.RemoveListener(OnSquadCaptureTarget);
+    }
+
+    public void SetMode(E_MODE newMode)
+    {
+        SquadMode = newMode;
+        foreach(Unit unit in members)
+        {
+            unit.SetMode(newMode);
+        }
     }
 }

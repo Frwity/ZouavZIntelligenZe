@@ -40,6 +40,7 @@ public class TargetBuilding : MonoBehaviour
         TeamScore = new int[2];
         TeamScore[0] = 0;
         TeamScore[1] = 0;
+        OnBuiilduingCaptured = new UnityEvent();
     }
     void Update()
     {
