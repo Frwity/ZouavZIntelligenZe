@@ -167,7 +167,7 @@ public class CreateExploSquadTask : CreateSquadTask
 
         if (base.Evaluate(_controller, ref currentScore))
         {
-             
+            money = 3;
             targetCost = money;
             if (score > currentScore)
             {
@@ -191,8 +191,10 @@ public class CreateFactoryTask : StrategicTask
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
-        float score = 0.0f;
+        if (_controller.FactoryList.Count < 0)
+            return false;
 
+        float score = 0.0f;
         Factory buildingFactory = null;
         for (int i = 0; i < _controller.FactoryList.Count; ++i)
         {
@@ -211,29 +213,45 @@ public class CreateFactoryTask : StrategicTask
         * _controller.taskDatas[id].Ratio.Evaluate(_controller.FactoryList.Count / _controller.playerController.FactoryList.Count)) 
         * _controller.taskDatas[id].Time.Evaluate(Time.time);
 
-
         if (score > currentScore)
         {
             if (_controller.GetHFactoryCount() / _controller.GetLFactoryCount() > 0.667f)
                 type = 0;
             else
                 type = 1;
+            Debug.Log(type);
 
             pos = Vector3.zero;
 
-            List<Tile> stratTiles = new List<Tile>();
             Tile stratTile = null;
 
-            foreach (Tile tile in stratTiles)
+            List<Tile> ValueTile = new List<Tile>();
+
+            foreach (Tile tile in Map.Instance.tilesWithBuild)
             {
                 if (tile.GetTeam() == _controller.GetTeam())
-                    if (stratTile == null || tile.buildType < stratTile.buildType || (tile.buildType == stratTile.buildType && tile.position < stratTile.position))
+                {
+                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 20.0f);
+
+                    foreach (Tile it in stratTiles)
+                        if (it.buildType == E_BUILDTYPE.HEAVYFACTORY || it.buildType == E_BUILDTYPE.LIGHTFACTORY)
+                            continue;
+                    ValueTile.Add(tile);
+                }
+            }
+
+            foreach (Tile tile in ValueTile)
+            { 
+                if (stratTile == null || tile.buildType <= stratTile.buildType
+                || tile.buildType == stratTile.buildType && (tile.position - _controller.FactoryList[0].transform.position).magnitude < (stratTile.position - _controller.FactoryList[0].transform.position).magnitude)
                         stratTile = tile;
             }
 
+            if (stratTile == null)
+                return false;
 
             while (buildingFactory.CanPositionFactory(type, pos) == false)
-                pos = stratTile.position + new Vector3(Random.Range(-1.0f, 1.0f), 2.0f, Random.Range(-1.0f, 1.0f)).normalized * 15.0f;
+                pos = stratTile.position + new Vector3(Random.Range(-1.0f, 1.0f), 0.0f, Random.Range(-1.0f, 1.0f)).normalized * 15.0f;
 
             currentScore = score;
             return true;
