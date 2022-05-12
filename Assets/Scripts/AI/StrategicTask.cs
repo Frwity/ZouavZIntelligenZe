@@ -221,6 +221,12 @@ public class CreateFactoryTask : StrategicTask
 
             pos = Vector3.zero;
 
+
+            Vector3 stratPoint = Vector3.zero;
+
+            while (buildingFactory.CanPositionFactory(type, pos) == false)
+                pos = stratPoint + new Vector3(Random.Range(-1.0f, 1.0f), 2.0f, Random.Range(-1.0f, 1.0f)).normalized * 15.0f;
+
             currentScore = score;
             return true;
         }
