@@ -221,11 +221,19 @@ public class CreateFactoryTask : StrategicTask
 
             pos = Vector3.zero;
 
+            List<Tile> stratTiles = new List<Tile>();
+            Tile stratTile = null;
 
-            Vector3 stratPoint = Vector3.zero;
+            foreach (Tile tile in stratTiles)
+            {
+                if (tile.GetTeam() == _controller.GetTeam())
+                    if (stratTile == null || tile.buildType < stratTile.buildType || (tile.buildType == stratTile.buildType && tile.position < stratTile.position))
+                        stratTile = tile;
+            }
+
 
             while (buildingFactory.CanPositionFactory(type, pos) == false)
-                pos = stratPoint + new Vector3(Random.Range(-1.0f, 1.0f), 2.0f, Random.Range(-1.0f, 1.0f)).normalized * 15.0f;
+                pos = stratTile.position + new Vector3(Random.Range(-1.0f, 1.0f), 2.0f, Random.Range(-1.0f, 1.0f)).normalized * 15.0f;
 
             currentScore = score;
             return true;

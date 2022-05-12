@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 public class TargetBuilding : MonoBehaviour
 {
@@ -21,7 +22,7 @@ public class TargetBuilding : MonoBehaviour
     ETeam OwningTeam = ETeam.Neutral;
     ETeam CapturingTeam = ETeam.Neutral;
     public ETeam GetTeam() { return OwningTeam; }
-
+    public int influence = 1; 
 
     #region MonoBehaviour methods
     void Start()
@@ -123,6 +124,7 @@ public class TargetBuilding : MonoBehaviour
         ResetCapture();
         OwningTeam = newTeam;
         BuildingMeshRenderer.material = newTeam == ETeam.Blue ? BlueTeamMaterial : RedTeamMaterial;
+        Map.Instance.AddTargetBuilding(this, newTeam);
     }
     #endregion
 }

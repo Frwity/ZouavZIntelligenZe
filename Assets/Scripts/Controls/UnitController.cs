@@ -46,7 +46,7 @@ public class UnitController : MonoBehaviour
     protected Transform TeamRoot = null;
     public Transform GetTeamRoot() { return TeamRoot; }
 
-    protected List<Unit> UnitList = new List<Unit>();
+    public List<Unit> UnitList = new List<Unit>();
     protected List<Unit> SelectedUnitList = new List<Unit>();
     public List<Factory> FactoryList = new List<Factory>();
     protected List<Factory> SelectedFactoryList = new List<Factory>();

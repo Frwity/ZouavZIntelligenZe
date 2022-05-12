@@ -26,7 +26,7 @@ public class Unit : BaseEntity
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
     public bool needToCapture = false;
-    
+
     [SerializeField] E_MODE mode = E_MODE.Defensive;
     private float passiveFleeDistance = 25f;
     private bool isFleeing = false;
@@ -36,6 +36,11 @@ public class Unit : BaseEntity
     public Vector3 GridPosition;
     //Move speed of the squad
     public float CurrentMoveSpeed;
+    public Dictionary<Tile, float> currentTilesInfluence = new Dictionary<Tile, float>();
+    [SerializeField]
+    private float influence = 1;
+    public float Influence { get { return Team == ETeam.Blue ? influence : -influence; } }
+
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -56,6 +61,9 @@ public class Unit : BaseEntity
             GameObject fx = Instantiate(GetUnitData.DeathFXPrefab, transform);
             fx.transform.parent = null;
         }
+
+        foreach (KeyValuePair<Tile, float> t in currentTilesInfluence)
+            t.Key.militaryInfluence -= t.Value;
 
         Destroy(gameObject);
     }
@@ -417,5 +425,18 @@ public class Unit : BaseEntity
     public void StopMovement()
     {
         NavMeshAgent.isStopped = true;
+    }
+    
+    public void UpdateTile(Tile tile, float currentInfluence)
+    {
+        if (Math.Abs(currentInfluence) < 0.1f || currentTilesInfluence.ContainsKey(tile))
+            return;
+
+        currentTilesInfluence.Add(tile, currentInfluence);
+        
+        tile.militaryInfluence += currentInfluence;
+
+        foreach(Tile t in Map.Instance.GetNeighbours(tile))
+            UpdateTile(t, currentInfluence / 2f);
     }
 }

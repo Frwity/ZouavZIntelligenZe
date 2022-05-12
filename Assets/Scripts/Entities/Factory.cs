@@ -40,6 +40,7 @@ public sealed class Factory : BaseEntity
     public Action<Factory> OnFactoryBuilt;
     public Action OnBuildCanceled;
     public bool IsBuildingUnit { get { return CurrentState == State.BuildingUnit; } }
+    public int influence = 2;
 
     #region MonoBehaviour methods
     protected override void Awake()
@@ -86,6 +87,7 @@ public sealed class Factory : BaseEntity
         base.Start();
         GameServices.GetGameState().IncreaseTeamScore(Team);
         Controller = GameServices.GetControllerByTeam(Team);
+        Map.Instance.AddFactory(this, Team);
     }
     override protected void Update()
     {
