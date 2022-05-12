@@ -10,16 +10,18 @@ public class Tile
     public int weight;
     public E_BUILDTYPE buildType = E_BUILDTYPE.NOTHING;
 
-    public void GetBuild(List<Tile> list, float range, Vector3 startPos)
+    public void GetBuild(List<Tile> tempList, List<Tile> list, float range, Vector3 startPos)
     {
-        if ((position - startPos).magnitude > range)
+        if ((position - startPos).magnitude > range || tempList.Contains(this))
             return;
+
+        tempList.Add(this);
 
         if (buildType != E_BUILDTYPE.NOTHING)
             list.Add(this);
 
         foreach (Tile tile in Map.Instance.GetNeighbours(this))
-            tile.GetBuild(list, range, startPos);
+            tile.GetBuild(tempList, list, range, startPos);
     }
 
     public ETeam GetTeam()
