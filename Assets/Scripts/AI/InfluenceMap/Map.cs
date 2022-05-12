@@ -4,6 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+public enum E_BUILDTYPE
+{
+    MINER,
+    CAPTUREPOINT,
+    HEAVYFACTORY,
+    LIGHTFACTORY,
+    TURRET,
+    NOTHING
+}
+
 public class Map : MonoBehaviour
 {
     private static Map _instance;
@@ -43,6 +53,7 @@ public class Map : MonoBehaviour
     private int maxWalkableHeight = 4;
 
     List<Tile> tileList = new List<Tile>();
+    public List<Tile> tilesWithBuild = new List<Tile>();
     private Dictionary<Tile, List<Connection>> ConnectionsGraph = new Dictionary<Tile, List<Connection>>();
 
     Vector3 gridStartPos = Vector3.zero;
@@ -68,12 +79,17 @@ public class Map : MonoBehaviour
     {
         Tile tile = GetTile(targetBuilding.transform.position);
         tile.strategicInfluence = targetBuilding.GetTeam() == ETeam.Blue ? targetBuilding.influence : -targetBuilding.influence;
+        tile.buildType = E_BUILDTYPE.CAPTUREPOINT;
+        if (!tilesWithBuild.Contains(tile))
+            tilesWithBuild.Add(tile);
     }
 
     public void AddFactory(Factory factory, ETeam team)
     {
         Tile tile = GetTile(factory.transform.position);
         tile.strategicInfluence = factory.GetTeam() == ETeam.Blue ? factory.influence : -factory.influence;
+        tile.buildType = factory.GetFactoryData.TypeId == 0 ? E_BUILDTYPE.LIGHTFACTORY : E_BUILDTYPE.HEAVYFACTORY;
+        tilesWithBuild.Add(tile);
     }
 
     // Update is called once per frame
@@ -222,6 +238,17 @@ public class Map : MonoBehaviour
     private bool IsTileWalkable(Tile tile)
     {
         return tile.weight < unreachableCost;
+    }
+
+    public List<Tile> GetTilesWithBuildAroundPoint(Vector3 startPos, float range)
+    {
+        List<Tile> list = new List<Tile>();
+
+        Tile startTile = GetTile(startPos);
+
+        startTile.GetBuild(list, range, startPos);
+
+        return list;
     }
 
     private void OnDrawGizmos()
