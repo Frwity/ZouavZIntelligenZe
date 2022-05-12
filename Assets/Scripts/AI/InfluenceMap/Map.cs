@@ -246,7 +246,9 @@ public class Map : MonoBehaviour
 
         Tile startTile = GetTile(startPos);
 
-        startTile.GetBuild(list, range, startPos);
+        List<Tile> tempList = new List<Tile>();
+
+        startTile.GetBuild(tempList, list, range, startPos);
 
         return list;
     }
