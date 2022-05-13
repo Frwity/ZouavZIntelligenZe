@@ -54,6 +54,7 @@ public class Squad
         unit.SetMode(SquadMode);
         members.Add(unit);
         totalCost += unit.Cost;
+        unit.OnUnitDeath += RemoveUnit;
         //assign first unit to be the leader
         SquadFormation.UpdateFormationLeader();
     }
@@ -64,21 +65,28 @@ public class Squad
     public void AddUnits(List<Unit> units)
     {
         members.Clear();
-        members = units;
+        foreach(Unit unit in units)
+            AddUnit(unit);
     }
 
     public void ClearUnits()
     {
-        members.Clear();
+        foreach (Unit unit in members)
+        {
+            RemoveUnit(unit);
+        }
     }
 
     public void RemoveUnit(Unit unit)
     {
         if (!members.Remove(unit)) 
             return;
+        
+        unit.OnUnitDeath -= RemoveUnit;
         SquadFormation.UpdateFormationLeader();
         //temp when unit is removed from squad recalculate formation based on the new leader grid position
-        MoveSquad(members[0].transform.position);
+        if(members.Count > 0)
+            MoveSquad(members[0].transform.position);
     }
 
     public void UpdateSquad()

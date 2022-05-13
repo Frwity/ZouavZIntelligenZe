@@ -42,6 +42,8 @@ public class Unit : BaseEntity
     private float influence = 1;
     public float Influence { get { return Team == ETeam.Blue ? influence : -influence; } }
 
+    public new Action<Unit> OnUnitDeath;
+
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -54,6 +56,7 @@ public class Unit : BaseEntity
     }
     void Unit_OnDead()
     {
+        OnUnitDeath(this);
         if (IsCapturing())
             StopCapture();
 
