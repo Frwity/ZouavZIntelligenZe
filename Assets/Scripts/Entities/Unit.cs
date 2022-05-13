@@ -56,7 +56,7 @@ public class Unit : BaseEntity
     }
     void Unit_OnDead()
     {
-        OnUnitDeath(this);
+        OnUnitDeath.Invoke(this);
         if (IsCapturing())
             StopCapture();
 
