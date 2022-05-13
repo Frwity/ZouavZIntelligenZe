@@ -9,6 +9,7 @@ public class Tile
     public float militaryInfluence = 0f;
     public int weight;
     public E_BUILDTYPE buildType = E_BUILDTYPE.NOTHING;
+    public GameObject gameobject = null;
 
     public void GetBuild(List<Tile> tempList, List<Tile> list, float range, Vector3 startPos)
     {

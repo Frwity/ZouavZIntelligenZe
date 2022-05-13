@@ -71,7 +71,7 @@ public class CapturePointTask : StrategicTask
                 else if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == _controller.playerController.GetTeam())
                     ++enemyTarget;
             }
-            score = (_controller.taskDatas[id].Distance.Evaluate(distance) + _controller.taskDatas[id].Ratio.Evaluate(((float)enemyTarget / ownedTarget) <= 0.01f ? 0.1f : ((float)enemyTarget / ownedTarget))) * _controller.taskDatas[id].Time.Evaluate(Time.time); //TODO ratio evaluate
+            score = (_controller.taskDatas[id].Distance.Evaluate(distance) + _controller.taskDatas[id].Ratio.Evaluate(((float)enemyTarget / ownedTarget) <= 0.01f ? 0.1f : ((float)enemyTarget / ownedTarget))) * _controller.taskDatas[id].Time.Evaluate(Time.time);
         }
 
         if (squad.GetSquadValue() <= Mathf.FloorToInt(Time.time / 60.0f))
@@ -102,8 +102,11 @@ public class CapturePointTask : StrategicTask
     public override void UpdateTask()
     {
         base.UpdateTask();
-        if (squad == null)
+        if (squad == null || squad.GetSquadValue() == 0)
+        {
+            EndTask();
             return;
+        }
 
         if (squadCreation != null)
         {
@@ -175,7 +178,7 @@ public class CreateExploSquadTask : CreateSquadTask
         squad = _squad;
     }
 
-    public override void StartTask(AIController _controller)
+    public override void StartTask(AIController _controller) // TODO change squad mode
     {
         base.StartTask(_controller);
         int moneyTemp = money;
@@ -375,12 +378,19 @@ public class AttackTargetTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
-
-        if (squad.GetSquadValue() <= Mathf.FloorToInt(Time.time / 60.0f))
+        if (squad.GetSquadValue() <= _controller.taskDatas[id].MilitaryPower.Evaluate(_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower()))
         {
-            squadCreation = new CreateExploSquadTask(squad);
+            squadCreation = new CreateLAttackSquadTask(squad); // TODO change squad creation depending on needs and change mode
             float f = 0.0f;
             squadCreation.Evaluate(_controller, ref f);
+        }
+        E_BUILDTYPE type = E_BUILDTYPE.NOTHING;
+
+        Tile targetTile = null;
+
+        foreach (Tile tile in Map.Instance.tilesWithBuild)
+        {
+
         }
 
         if (score > currentScore)
@@ -394,7 +404,7 @@ public class AttackTargetTask : StrategicTask
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
-        if (squadCreation != null)
+        if (squadCreation != null) 
             squadCreation.StartTask(_controller);
         else
         {
