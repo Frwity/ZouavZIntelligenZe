@@ -419,7 +419,7 @@ public class Unit : BaseEntity
 
     public bool IsAtDestination()
     {
-        return NavMeshAgent.remainingDistance < 0.05f;
+        return NavMeshAgent.remainingDistance < NavMeshAgent.stoppingDistance && NavMeshAgent.remainingDistance > 0f;
     }
 
     public void SetEntityTarget(BaseEntity entity)

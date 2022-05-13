@@ -57,14 +57,17 @@ public class Squad
         //assign first unit to be the leader
         SquadFormation.UpdateFormationLeader();
     }
-
+    
+    /*
+     * Clear the current squad members and add the new units in the squad
+     */
     public void AddUnits(List<Unit> units)
     {
         members.Clear();
         members = units;
     }
 
-    public void ClearUnit()
+    public void ClearUnits()
     {
         members.Clear();
     }
