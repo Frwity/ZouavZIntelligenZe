@@ -46,11 +46,12 @@ MonoBehaviour:
   Team: 1
   SquadPrefab: {fileID: 0}
   StartingBuildPoints: 15
+  UnitList: []
   FactoryList: []
   capturableTargets: {fileID: 0}
   taskDatas:
-  - {fileID: 11400000, guid: ee9882d5dbbfeef40a4260c1d10b670e, type: 2}
   - {fileID: 11400000, guid: 1882d01c014b9c7498fdd1b3c557b3c6, type: 2}
+  - {fileID: 11400000, guid: ee9882d5dbbfeef40a4260c1d10b670e, type: 2}
   - {fileID: 11400000, guid: f5ced9373664e7b458c99bb24d5ce9fe, type: 2}
   - {fileID: 11400000, guid: dd0a17e7b131287488fb788aa738041c, type: 2}
   - {fileID: 11400000, guid: 3adc8eceb77e00a4889b4e44129683b8, type: 2}

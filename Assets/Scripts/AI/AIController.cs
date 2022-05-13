@@ -33,15 +33,7 @@ public sealed class AIController : UnitController
 
         militarySquad1 = new Squad(this);
         militarySquad2 = new Squad(this);
-
         explorationSquad = new Squad(this);
-
-        explorationTask = new CreateExploSquadTask(explorationSquad);
-
-        float t = 0;
-        explorationTask.Evaluate(this, ref t);
-
-        explorationTask.StartTask(this);
 
         previousUtilitySystemTime = Time.time;
 
