@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 public class TargetBuilding : MonoBehaviour
 {
@@ -24,6 +25,9 @@ public class TargetBuilding : MonoBehaviour
     public ETeam GetTeam() { return OwningTeam; }
     public int influence = 1; 
 
+    public UnityEvent OnBuiilduingCaptured;
+
+
     #region MonoBehaviour methods
     void Start()
     {
@@ -37,6 +41,7 @@ public class TargetBuilding : MonoBehaviour
         TeamScore = new int[2];
         TeamScore[0] = 0;
         TeamScore[1] = 0;
+        OnBuiilduingCaptured = new UnityEvent();
     }
     void Update()
     {
@@ -79,6 +84,7 @@ public class TargetBuilding : MonoBehaviour
     }
     public void StopCapture(Unit unit)
     {
+        
         if (unit == null)
             return;
 
@@ -105,6 +111,7 @@ public class TargetBuilding : MonoBehaviour
     }
     void OnCaptured(ETeam newTeam)
     {
+        OnBuiilduingCaptured.Invoke();
         //Debug.Log("target captured by " + newTeam.ToString());
         if (OwningTeam != newTeam)
         {

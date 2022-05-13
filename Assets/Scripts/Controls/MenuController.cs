@@ -19,6 +19,9 @@ public class MenuController : MonoBehaviour
     Button[] BuildFactoryButtons = null;
     Button CancelBuildButton = null;
     Text[] BuildQueueTexts = null;
+    [SerializeField]
+    GameObject SquadMenuPanel = null;
+    Text SquadCurrentMode = null;
 
     public void HideFactoryMenu()
     {
@@ -29,6 +32,20 @@ public class MenuController : MonoBehaviour
     {
         if (FactoryMenuPanel)
             FactoryMenuPanel.SetActive(true);
+    }
+    public void HideSquadMenu()
+    {
+        if (SquadMenuPanel)
+            SquadMenuPanel.SetActive(false);
+    }
+    public void ShowSquadMenu()
+    {
+        if (SquadMenuPanel)
+            SquadMenuPanel.SetActive(true);
+    }
+    public void SetSquadText(E_MODE mode)
+    {
+        SquadCurrentMode.text = "Current Mode : " + Enum.GetName(typeof(E_MODE), mode);
     }
     public void UpdateBuildPointsUI()
     {
@@ -168,8 +185,12 @@ public class MenuController : MonoBehaviour
                 CapturedTargetsText = CapturedTargetsTextTransform.GetComponent<Text>();
             }
         }
+        if (SquadMenuPanel == null)
+            Debug.LogWarning("SquadMenuPanel not assigned in inspector");
+        else
+            SquadCurrentMode = SquadMenuPanel.transform.Find("CurrentMode").GetComponent<Text>();
 
-        Controller = GetComponent<UnitController>();
+    Controller = GetComponent<UnitController>();
     }
     void Start()
     {
