@@ -23,7 +23,7 @@ public class Squad
     private TargetBuilding targetBuilding;
     public E_MODE SquadMode;
     //Target unit to destroy
-    private Unit SquadTarget = null;
+    private BaseEntity SquadTarget = null;
     private E_TASK_STATE InternalState;
 
     public E_TASK_STATE State
@@ -169,7 +169,7 @@ public class Squad
         }
     }
 
-    public void SquadTaskAttack(Unit target)
+    public void SquadTaskAttack(BaseEntity target)
     {
         InternalState = E_TASK_STATE.Busy;
         SetMode(E_MODE.Agressive);
@@ -233,5 +233,18 @@ public class Squad
         }
         else
             MoveSquad(SquadTarget.transform.position);
+    }
+
+    /*
+     * Reset Squad task on new order
+     */
+    public void ResetTask()
+    {
+        SquadTarget = null;
+        SquadCapture = false;
+        SquadAttack = false;
+        InternalState = E_TASK_STATE.Free;
+        CanBreakFormation = false;
+        StopSquadMovement();
     }
 }
