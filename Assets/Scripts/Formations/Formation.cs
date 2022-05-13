@@ -18,7 +18,6 @@ public enum E_FORMATION_TYPE
 public class Formation
 {
     private E_FORMATION_TYPE FormationType;
-    private float Radius = 5.0f;
 
     private Squad Squad;
 
@@ -26,9 +25,6 @@ public class Formation
     private Vector3 OldLeaderPos;
 
     public Unit FormationLeader = null;
-
-    //Like nb of parallel line in the formation
-    private int SpecialFormationValue = 3;
 
     public E_FORMATION_TYPE SetFormationType
     {
@@ -56,18 +52,28 @@ public class Formation
         if (Squad.members.Count == 0)
             return;
         
-        ChooseLeader(targetPos);
-
-        switch (FormationType)
+        if (!Squad.CanBreakFormation)
         {
-            case E_FORMATION_TYPE.Circle:
-                CreateCircleFormation(targetPos);
-                break;
-            case E_FORMATION_TYPE.Line:
-                CreateLineFormation(targetPos);
-                break;
-            case E_FORMATION_TYPE.Custom:
-                break;
+            ChooseLeader(targetPos);
+            switch (FormationType)
+            {
+                case E_FORMATION_TYPE.Circle:
+                    CreateCircleFormation(targetPos);
+                    break;
+                case E_FORMATION_TYPE.Line:
+                    CreateLineFormation(targetPos);
+                    break;
+                case E_FORMATION_TYPE.Custom:
+                    break;
+            }
+        }
+        else
+        {
+            //special caseS when units don't move in formation (attack)
+            foreach (Unit unit in Squad.members)
+            {
+                unit.GridPosition = targetPos;
+            }
         }
         
         Squad.MoveUnitToPosition();

@@ -26,7 +26,8 @@ public class Unit : BaseEntity
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
     public bool needToCapture = false;
-
+    public bool IsAttacking = false;
+    
     [SerializeField] E_MODE mode = E_MODE.Defensive;
     private float passiveFleeDistance = 25f;
     private bool isFleeing = false;
@@ -419,6 +420,11 @@ public class Unit : BaseEntity
     public bool IsAtDestination()
     {
         return NavMeshAgent.remainingDistance < 0.05f;
+    }
+
+    public void SetEntityTarget(BaseEntity entity)
+    {
+        EntityTarget = entity;
     }
     public void UpdateTile(Tile tile, float currentInfluence)
     {

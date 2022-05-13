@@ -10,8 +10,6 @@ public class UnitController : MonoBehaviour
     protected ETeam Team;
     public ETeam GetTeam() { return Team; }
 
-    [SerializeField] private GameObject SquadPrefab;
-
     [SerializeField]
     protected int StartingBuildPoints = 15;
 

@@ -554,11 +554,12 @@ public sealed class PlayerController : UnitController
                 if (other.GetTeam() != GetTeam())
                 {
                     // Direct call to attacking task $$$ to be improved by AI behaviour
-                    foreach (Unit unit in SelectedUnitList)
+                    /*foreach (Unit unit in SelectedUnitList)
                     {
                         unit.SetAttackTarget(other);
                         unit.needToCapture = false;
-                    }
+                    }*/
+                    SelectedSquad.SquadTaskAttack(other);
                 }
                 else if (other.NeedsRepairing())
                 {
