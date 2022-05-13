@@ -50,6 +50,7 @@ public class UnitController : MonoBehaviour
     protected List<Unit> SelectedUnitList = new List<Unit>();
     public List<Factory> FactoryList = new List<Factory>();
     protected List<Factory> SelectedFactoryList = new List<Factory>();
+    public TargetBuilding currentTarget = null;
 
     // events
     protected Action OnBuildPointsUpdated;
@@ -148,6 +149,22 @@ public class UnitController : MonoBehaviour
         };
         FactoryList.Add(factory);
     }
+    virtual public void SelectTarget(TargetBuilding target)
+    {
+        if (target == null || target.GetTeam() == ETeam.Neutral)
+            return;
+
+        target.SetSelected(true);
+        currentTarget = target;
+    }
+    virtual public void UnselectTarget()
+    {
+        if (currentTarget != null)
+        {
+            currentTarget.SetSelected(false);
+            currentTarget = null;
+        }
+    }
     virtual public void SelectFactory(Factory factory)
     {
         if (factory == null || factory.IsUnderConstruction)
@@ -163,6 +180,7 @@ public class UnitController : MonoBehaviour
             factory.SetSelected(false);
         SelectedFactoryList.Clear();
     }
+
     protected bool RequestUnitBuild(int unitMenuIndex, Factory factory)
     {
         return factory.RequestUnitBuild(unitMenuIndex, null);
