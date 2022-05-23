@@ -630,6 +630,7 @@ public sealed class PlayerController : UnitController
                 // Direct call to capturing task $$$ to be improved by AI behaviour
                 // foreach (Unit unit in SelectedUnitList)
                 //     unit.SetCaptureTarget(target);
+                SelectedSquad.ResetTask();
                 SelectedSquad.CaptureTarget(target);
             }
         }
@@ -645,7 +646,7 @@ public sealed class PlayerController : UnitController
             foreach (Unit unit in SelectedUnitList)
                 unit.needToCapture = false;
 
-            Debug.Log(SelectedSquad.members.Count);
+            SelectedSquad.ResetTask();
             SelectedSquad.MoveSquad(newPos);
         }
     }

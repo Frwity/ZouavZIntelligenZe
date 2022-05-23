@@ -141,18 +141,19 @@ public class Squad
 
         if (target.GetTeam() != Controller.GetTeam())
         {
+            SquadNeedToCapture(target);
+
             InternalState = E_TASK_STATE.Busy;
             target.OnBuiilduingCaptured.AddListener(OnSquadCaptureTarget);
+            SquadFormation.ChooseLeader(target.transform.position);
+            SquadCapture = true;
+            MoveSquad(target.transform.position);
+            targetBuilding = target;
+
             if (CanCapture(target))
             {
+                CanBreakFormation = true;
                 SquadStartCapture(target);
-            }
-            else
-            {
-                SquadCapture = true;
-                SquadNeedToCapture(target);
-                targetBuilding = target;
-                MoveSquad(target.transform.position);
             }
         }
     }
@@ -169,8 +170,17 @@ public class Squad
     {
         foreach (Unit unit in members)
         {
-            if (unit.IsAtDestination() && unit.needToCapture)
+            if (unit.needToCapture && (unit.IsAtDestination() || unit.CanCapture(target)))
                 unit.StartCapture(target);
+        }
+    }
+
+    public void SquadStopCapture()
+    {
+        SquadCapture = false;
+        foreach (Unit unit in members)
+        {
+            unit.StopCapture();
         }
     }
 
@@ -268,12 +278,8 @@ public class Squad
     public void ResetTask()
     {
         SquadTarget = null;
-        foreach (Unit unit in members)
-        {
-            unit.StopCapture();
-            unit.SetAttackTarget(SquadTarget);
-        }
-        
+        SquadStopCapture();
+        SetSquadTarget();
         SquadCapture = false;
         SquadAttack = false;
         InternalState = E_TASK_STATE.Free;

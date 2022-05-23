@@ -76,7 +76,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
             return;
 
         TeamScore[(int)unit.GetTeam()] += unit.Cost;
-        
+
         if (CapturingTeam == ETeam.Neutral)
         {
             CapturingTeam = unit.GetTeam();
