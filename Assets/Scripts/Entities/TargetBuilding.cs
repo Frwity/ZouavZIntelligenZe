@@ -79,13 +79,10 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         
         if (CapturingTeam == ETeam.Neutral)
         {
-            if (TeamScore[(int)GameServices.GetOpponent(unit.GetTeam())] == 0)
-            {
-                CapturingTeam = unit.GetTeam();
-                GaugeImage.color = GameServices.GetTeamColor(CapturingTeam);
-            }
+            CapturingTeam = unit.GetTeam();
+            GaugeImage.color = GameServices.GetTeamColor(CapturingTeam);
         }
-        else
+        else if (CapturingTeam != unit.GetTeam())
         {
             if (TeamScore[(int)GameServices.GetOpponent(unit.GetTeam())] > 0)
                 ResetCapture();
@@ -93,7 +90,6 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     }
     public void StopCapture(Unit unit)
     {
-        
         if (unit == null)
             return;
 

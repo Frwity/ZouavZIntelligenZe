@@ -94,7 +94,7 @@ public class Squad
         if (SquadCapture)
             SquadStartCapture(targetBuilding);
 
-        if (SquadAttack)
+        if (SquadAttack && SquadTarget)
             SquadAttackTarget();
     }
     
@@ -246,10 +246,16 @@ public class Squad
         {
             foreach (Unit unit in members)
             {
+                if (!SquadTarget)
+                    continue;
+
                 if (unit.CanAttack(SquadTarget))
                     unit.ComputeAttack();
                 else
+                {
                     unit.SetTargetPos(SquadTarget.transform.position);
+                    unit.EntityTarget = SquadTarget;
+                }
             }
         }
         else
