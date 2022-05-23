@@ -19,9 +19,9 @@ public class Unit : BaseEntity
 
     Transform BulletSlot;
     float LastActionDate = 0f;
-    BaseEntity EntityTarget = null;
     TargetBuilding CaptureTarget = null;
     NavMeshAgent NavMeshAgent;
+    public BaseEntity EntityTarget = null;
     public UnitDataScriptable GetUnitData { get { return UnitData; } }
     public int Cost { get { return UnitData.Cost; } }
     public int GetTypeId { get { return UnitData.TypeId; } }
@@ -168,7 +168,7 @@ public class Unit : BaseEntity
             if (!CanAttack(target))
                 SetTargetPos(target.gameObject.transform.position);
             
-            StartAttacking(target);
+            EntityTarget = target;
         }
     }
 
@@ -177,7 +177,7 @@ public class Unit : BaseEntity
     {
         if (target == null)
             return;
-     
+
         if (EntityTarget != null)
             EntityTarget = null;
 
@@ -219,17 +219,13 @@ public class Unit : BaseEntity
     public bool CanAttack(BaseEntity target)
     {
         // distance check
-        if ((target.transform.position - transform.position).sqrMagnitude > GetUnitData.AttackDistanceMax * GetUnitData.AttackDistanceMax)
+        if (target == null || (target.transform.position - transform.position).sqrMagnitude > GetUnitData.AttackDistanceMax * GetUnitData.AttackDistanceMax)
             return false;
 
         return true;
     }
 
     // Attack Task
-    public void StartAttacking(BaseEntity target)
-    {
-        EntityTarget = target;
-    }
     public void ComputeAttack()
     {
         if (CanAttack(EntityTarget) == false)
@@ -425,10 +421,6 @@ public class Unit : BaseEntity
         return NavMeshAgent.remainingDistance < NavMeshAgent.stoppingDistance && NavMeshAgent.remainingDistance > 0f;
     }
 
-    public void SetEntityTarget(BaseEntity entity)
-    {
-        EntityTarget = entity;
-    }
     public void UpdateTile(Tile tile, float currentInfluence)
     {
         if (Math.Abs(currentInfluence) < 0.1f || currentTilesInfluence.ContainsKey(tile))

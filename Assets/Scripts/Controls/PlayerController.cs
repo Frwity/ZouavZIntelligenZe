@@ -354,6 +354,7 @@ public sealed class PlayerController : UnitController
             bool isCtrlBtPressed = Input.GetKey(KeyCode.H);
 
             UnselectCurrentFactory();
+            UnselectTarget();
 
             Unit selectedUnit = raycastInfo.transform.GetComponent<Unit>();
             if (selectedUnit != null && selectedUnit.GetTeam() == Team)
@@ -376,6 +377,7 @@ public sealed class PlayerController : UnitController
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
             UnselectCurrentFactory();
+            UnselectTarget();
             SelectionLineRenderer.enabled = true;
 
             SelectionStarted = true;
@@ -426,7 +428,8 @@ public sealed class PlayerController : UnitController
 
         int unitLayerMask = 1 << LayerMask.NameToLayer("Unit");
         int factoryLayerMask = 1 << LayerMask.NameToLayer("Factory");
-        Collider[] colliders = Physics.OverlapBox(center, size / 2f, Quaternion.identity, unitLayerMask | factoryLayerMask, QueryTriggerInteraction.Ignore);
+        int targetLayerMask = 1 << LayerMask.NameToLayer("Target");
+        Collider[] colliders = Physics.OverlapBox(center, size / 2f, Quaternion.identity, unitLayerMask | factoryLayerMask | targetLayerMask, QueryTriggerInteraction.Ignore);
         foreach (Collider col in colliders)
         {
             //Debug.Log("collider name = " + col.gameObject.name);
@@ -440,6 +443,10 @@ public sealed class PlayerController : UnitController
                 else if (selectedEntity is Factory)
                 {
                     SelectFactory(selectedEntity as Factory);
+                }
+                else if (selectedEntity is TargetBuilding)
+                {
+                    SelectTarget(selectedEntity as TargetBuilding);
                 }
             }
         }
@@ -514,6 +521,19 @@ public sealed class PlayerController : UnitController
         PlayerMenuController.HideFactoryMenu();
 
         base.UnselectCurrentFactory();
+    }
+    public override void SelectTarget(TargetBuilding target)
+    {
+        if (target == null || target.GetTeam() == ETeam.Neutral)
+            return;
+
+        base.SelectTarget(target);
+        PlayerMenuController.UpdateProduceResourcesMenu(target);
+    }
+    public override void UnselectTarget()
+    {
+        PlayerMenuController.HideProduceResourcesMenu();
+        base.UnselectTarget();
     }
     void EnterFactoryBuildMode(int factoryId)
     {
@@ -614,6 +634,7 @@ public sealed class PlayerController : UnitController
                 // Direct call to capturing task $$$ to be improved by AI behaviour
                 // foreach (Unit unit in SelectedUnitList)
                 //     unit.SetCaptureTarget(target);
+                SelectedSquad.ResetTask();
                 SelectedSquad.CaptureTarget(target);
             }
         }
@@ -629,7 +650,7 @@ public sealed class PlayerController : UnitController
             foreach (Unit unit in SelectedUnitList)
                 unit.needToCapture = false;
 
-            Debug.Log(SelectedSquad.members.Count);
+            SelectedSquad.ResetTask();
             SelectedSquad.MoveSquad(newPos);
         }
     }

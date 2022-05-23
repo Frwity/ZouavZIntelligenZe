@@ -78,6 +78,7 @@ public class Map : MonoBehaviour
     public void AddTargetBuilding(TargetBuilding targetBuilding, ETeam team)
     {
         Tile tile = GetTile(targetBuilding.transform.position);
+        tile.gameobject = targetBuilding.gameObject;
         tile.strategicInfluence = targetBuilding.GetTeam() == ETeam.Blue ? targetBuilding.influence : -targetBuilding.influence;
         tile.buildType = E_BUILDTYPE.CAPTUREPOINT;
         if (!tilesWithBuild.Contains(tile))
@@ -87,6 +88,7 @@ public class Map : MonoBehaviour
     public void AddFactory(Factory factory, ETeam team)
     {
         Tile tile = GetTile(factory.transform.position);
+        tile.gameobject = factory.gameObject;
         tile.strategicInfluence = factory.GetTeam() == ETeam.Blue ? factory.influence : -factory.influence;
         tile.buildType = factory.GetFactoryData.TypeId == 0 ? E_BUILDTYPE.LIGHTFACTORY : E_BUILDTYPE.HEAVYFACTORY;
         tilesWithBuild.Add(tile);
