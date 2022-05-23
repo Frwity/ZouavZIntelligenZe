@@ -11,16 +11,16 @@ public sealed class AIController : UnitController
 
     public PlayerController playerController { get; private set; }
 
-    public StrategicTask explorationTask = null;
-    public StrategicTask ecoTask = null;
-    public StrategicTask militaryTask = null;
+    public StrategicTask task1 = null;
+    public StrategicTask task2 = null;
 
     Squad explorationSquad;
     Squad militarySquad1;
     Squad militarySquad2;
 
     [SerializeField] float timeBetweenUtilitySystemUpdate = 5.0f;
-    float previousUtilitySystemTime = 0.0f;
+    float previousUtilitySystemTime1 = 0.0f;
+    float previousUtilitySystemTime2 = 0.0f;
 
     protected override void Awake()
     {
@@ -35,7 +35,8 @@ public sealed class AIController : UnitController
         militarySquad2 = new Squad(this);
         explorationSquad = new Squad(this);
 
-        previousUtilitySystemTime = Time.time;
+        previousUtilitySystemTime1 = Time.time;
+        previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 2.0f;
 
         playerController = FindObjectOfType<PlayerController>();
     }
@@ -43,81 +44,56 @@ public sealed class AIController : UnitController
     protected override void Update()
     {
         base.Update();
-        UpdateTask();
+        UpdateTasks();
 
-        if (previousUtilitySystemTime + timeBetweenUtilitySystemUpdate < Time.time)
+        if (previousUtilitySystemTime1 + timeBetweenUtilitySystemUpdate < Time.time)
         {
-            previousUtilitySystemTime = Time.time;
-            TasksUtilitySystemUpdate();
+            previousUtilitySystemTime1 = Time.time;
+            UtilitySystemUpdate(ref task1, 0.1f);
+        }
+        if (previousUtilitySystemTime2 + timeBetweenUtilitySystemUpdate < Time.time)
+        {
+            previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 2.0f;
+            UtilitySystemUpdate(ref task2, 0.3f);
+
         }
     }
 
-    void UpdateTask()
+    void UpdateTasks()
     {
-        if (explorationTask != null && !explorationTask.isComplete)
-            explorationTask.UpdateTask();
-        if (ecoTask != null && !ecoTask.isComplete)
-            ecoTask.UpdateTask();
-        if (militaryTask != null && !militaryTask.isComplete)
-            militaryTask.UpdateTask();
+        if (task1 != null && !task1.isComplete)
+            task1.UpdateTask();
+        if (task2 != null && !task2.isComplete)
+            task2.UpdateTask();
     }
 
-    void TasksUtilitySystemUpdate()
+    void UtilitySystemUpdate(ref StrategicTask task, float scoreThreshold)
     {
-        ActualizeExplorationTask();
-        ActualizeEcoTask();
-        ActualizeMilitaryTask();
-    }
-
-    void ActualizeExplorationTask()
-    {
-        if (explorationTask == null || explorationTask.isComplete)
+        if (task == null || task.isComplete)
         {
             StrategicTask tempTask;
-            float score = 0.0f;
+            float score = scoreThreshold;
 
-            tempTask = new CapturePointTask(explorationSquad);  
+            if (explorationSquad.State == E_TASK_STATE.Free)
+            {
+                tempTask = new CapturePointTask(explorationSquad);
+                if (tempTask.Evaluate(this, ref score))
+                    task = tempTask;
+            }
+
+            tempTask = new CreateFactoryTask();
             if (tempTask.Evaluate(this, ref score))
-                explorationTask = tempTask;
-
-            if (score > 0.0f)
-                explorationTask.StartTask(this);
-        }
-    }
-
-    void ActualizeEcoTask()
-    {
-        if (ecoTask == null || ecoTask.isComplete)
-        {
-            StrategicTask tempTask;
-            float score = 0.0f;
-
-            //tempTask = new CreateFactoryTask();
-            //if (tempTask.Evaluate(this, ref score))
-            //    ecoTask = tempTask;
-
-
-            if (score > 0.0f)
-                ecoTask.StartTask(this);
-        }
-    }
-
-    void ActualizeMilitaryTask()
-    {
-        if (militaryTask == null || militaryTask.isComplete)
-        {
-            StrategicTask tempTask;
-            float score = 0.0f;
+                task = tempTask;
 
             if (militarySquad1.State == E_TASK_STATE.Free || militarySquad2.State == E_TASK_STATE.Free)
             {
                 tempTask = new AttackTargetTask(militarySquad1.State == E_TASK_STATE.Free ? militarySquad1 : militarySquad2);
                 if (tempTask.Evaluate(this, ref score))
-                    militaryTask = tempTask;
+                    task = tempTask;
             }
 
-            if (score > 0.0f)
-                militaryTask.StartTask(this);
+            if (score > scoreThreshold)
+                task.StartTask(this);
         }
     }
 }

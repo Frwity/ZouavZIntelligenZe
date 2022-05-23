@@ -1569,12 +1569,6 @@ PrefabInstance:
       propertyPath: capturableTargets
       value: 
       objectReference: {fileID: 691088639}
-    - target: {fileID: 7859672622032877473, guid: fee74b0095774cf4f9701d9fab58813d,
-        type: 3}
-      propertyPath: taskDatas.Array.data[6]
-      value: 
-      objectReference: {fileID: 11400000, guid: 1882d01c014b9c7498fdd1b3c557b3c6,
-        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fee74b0095774cf4f9701d9fab58813d, type: 3}
 --- !u!114 &1256912380 stripped
@@ -2099,6 +2093,7 @@ MonoBehaviour:
   squareSize: 5
   maxHeight: 10
   maxWalkableHeight: 4
+  mapSize: 0
 --- !u!4 &1656596663
 Transform:
   m_ObjectHideFlags: 0
@@ -2455,7 +2450,7 @@ RectTransform:
   m_Children:
   - {fileID: 1947676290}
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
