@@ -92,9 +92,9 @@ public sealed class AIController : UnitController
             StrategicTask tempTask;
             float score = 0.0f;
 
-            tempTask = new CreateFactoryTask();
-            if (tempTask.Evaluate(this, ref score))
-                ecoTask = tempTask;
+            //tempTask = new CreateFactoryTask();
+            //if (tempTask.Evaluate(this, ref score))
+            //    ecoTask = tempTask;
 
 
             if (score > 0.0f)
@@ -108,6 +108,13 @@ public sealed class AIController : UnitController
         {
             StrategicTask tempTask;
             float score = 0.0f;
+
+            if (militarySquad1.State == E_TASK_STATE.Free || militarySquad2.State == E_TASK_STATE.Free)
+            {
+                tempTask = new AttackTargetTask(militarySquad1.State == E_TASK_STATE.Free ? militarySquad1 : militarySquad2);
+                if (tempTask.Evaluate(this, ref score))
+                    militaryTask = tempTask;
+            }
 
             if (score > 0.0f)
                 militaryTask.StartTask(this);
