@@ -344,21 +344,30 @@ public class CreateMinerTask : StrategicTask
             TargetBuilding temp = _controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>();
             if (temp.GetTeam() == _controller.GetTeam()) // TODO function and variable to hold in controller
             {
-                //if (temp.)
                 ++ownedTarget;
-                if (targetBuilding == null)
+                if (temp.isProducingResources)
+                    ++ownedMine;
+
+                if (!temp.isProducingResources && targetBuilding == null)
                     targetBuilding = temp;
-                else if ((temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude 
-                    < (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude)
+                
+                else if (!temp.isProducingResources && (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude 
+                        < (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude)
                 {
                     targetBuilding = temp;
                 }
             }
         }
 
+        if (ownedTarget == 1 || targetBuilding == null)
+            return false;
+
         float score = (_controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints)
-                    *  _controller.taskDatas[id].Ratio.Evaluate(_controller.FactoryList.Count / _controller.playerController.FactoryList.Count))
+                    *  _controller.taskDatas[id].Ratio.Evaluate(ownedTarget / ownedMine))
                     *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
+
+        Debug.Log("mine");
+        Debug.Log(score); Debug.Log(currentScore);
 
         if (score > currentScore)
         {
@@ -370,11 +379,16 @@ public class CreateMinerTask : StrategicTask
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
+        targetBuilding.StartProducingResources();
     }
 
     public override void UpdateTask()
     {
         base.UpdateTask();
+        if (targetBuilding.isProducingResources)
+        {
+            EndTask();
+        }
     }
 }
 

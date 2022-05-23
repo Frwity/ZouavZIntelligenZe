@@ -89,6 +89,10 @@ public sealed class AIController : UnitController
             if (tempTask.Evaluate(this, ref score))
                 task = tempTask;
 
+            tempTask = new CreateMinerTask();
+            if (tempTask.Evaluate(this, ref score))
+                task = tempTask;
+
             if (IsSquadAvailible())
             {
                 tempTask = new AttackTargetTask(GetRandomSquad());
