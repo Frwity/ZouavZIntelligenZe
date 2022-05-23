@@ -217,8 +217,9 @@ public sealed class PlayerController : UnitController
 
         // Apply camera movement
         UpdateMoveCamera();
-
-        SelectedSquad.UpdateSquad();
+        
+        if(SelectedSquad != null)
+            SelectedSquad.UpdateSquad();
     }
     #endregion
 
@@ -245,7 +246,7 @@ public sealed class PlayerController : UnitController
 
         for (int i = 0; i < OnCategoryPressed.Length; i++)
         {
-            if (Input.GetKeyDown(KeyCode.Keypad1 + i) || Input.GetKeyDown(KeyCode.Alpha1 + i))
+            if (Input.GetKeyDown(KeyCode.Keypad1 + i) || Input.GetKeyDown(KeyCode.Alpha7 + i))
             {
                 OnCategoryPressed[i]?.Invoke();
                 break;
@@ -349,8 +350,8 @@ public sealed class PlayerController : UnitController
         // unit selection / unselection
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, unitMask))
         {
-            bool isShiftBtPressed = Input.GetKey(KeyCode.LeftShift);
-            bool isCtrlBtPressed = Input.GetKey(KeyCode.LeftControl);
+            bool isShiftBtPressed = Input.GetKey(KeyCode.J);
+            bool isCtrlBtPressed = Input.GetKey(KeyCode.H);
 
             UnselectCurrentFactory();
 
@@ -450,28 +451,34 @@ public sealed class PlayerController : UnitController
     #endregion
 
     #region Squad creation methods
-
+    
+    /*
+     * create a squad with selected unit
+     * or select a squad with alpha numeric
+     */
     public void CreateSelectedSquad()
     {
         int index = 0;
 
         //TODO better way of doing this ?
-        if (Input.GetKeyDown(KeyCode.LeftControl))
-        {
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-                index = 1;
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
-                index = 2;
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-                index = 3;
-        }
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            index = 1;
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+            index = 2;
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+            index = 3;
 
         if (index != 0)
         {
-            if (SelectedSquad.members.Count > 0)
+            if (Squads.Count == 0 || !Squads.ContainsKey(index))
                 CreateSquad(index);
             else
+            {
+                UnselectAllUnits();
                 SelectedSquad = GetSquad(index);
+                foreach(Unit unit in SelectedSquad.members)
+                    unit.SetSelected(true);
+            }
         }
     }
 
@@ -565,7 +572,7 @@ public sealed class PlayerController : UnitController
     #region Entity targetting (attack / capture) and movement methods
     void ComputeUnitsAction()
     {
-        if (SelectedUnitList.Count == 0)
+        if (SelectedSquad == null)
             return;
 
         int damageableMask = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Factory"));
@@ -618,6 +625,7 @@ public sealed class PlayerController : UnitController
             foreach (Unit unit in SelectedUnitList)
                 unit.needToCapture = false;
 
+            Debug.Log(SelectedSquad.members.Count);
             SelectedSquad.MoveSquad(newPos);
         }
     }

@@ -137,13 +137,12 @@ public class UnitController : MonoBehaviour
     public void CreateSquad(int squadNumber)
     {
         Squads.Add(squadNumber, new Squad(this));
-        Squad squad = Squads[Squads.Count - 1];
+        Squad squad = Squads[squadNumber];
         squad.AddUnits(SelectedSquad.members);
     }
 
     public Squad GetSquad(int squadNumber)
     {
-        Debug.Log(squadNumber);
         return Squads.ContainsKey(squadNumber) ? Squads[squadNumber] : null;
     }
 
