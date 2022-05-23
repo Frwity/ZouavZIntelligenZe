@@ -262,6 +262,12 @@ public class Squad
     public void ResetTask()
     {
         SquadTarget = null;
+        foreach (Unit unit in members)
+        {
+            unit.StopCapture();
+            unit.SetAttackTarget(SquadTarget);
+        }
+        
         SquadCapture = false;
         SquadAttack = false;
         InternalState = E_TASK_STATE.Free;
