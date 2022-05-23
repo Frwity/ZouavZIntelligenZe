@@ -19,9 +19,15 @@ public class MenuController : MonoBehaviour
     Button[] BuildFactoryButtons = null;
     Button CancelBuildButton = null;
     Text[] BuildQueueTexts = null;
+    
     [SerializeField]
     GameObject SquadMenuPanel = null;
     Text SquadCurrentMode = null;
+    
+    [SerializeField]
+    GameObject ProduceResourcesMenuPanel = null;
+    GameObject produceResourcesButton = null;
+    GameObject produceResourcesText = null;
 
     public void HideFactoryMenu()
     {
@@ -42,6 +48,18 @@ public class MenuController : MonoBehaviour
     {
         if (SquadMenuPanel)
             SquadMenuPanel.SetActive(true);
+    }
+    public void HideProduceResourcesMenu()
+    {
+        if (ProduceResourcesMenuPanel)
+            ProduceResourcesMenuPanel.SetActive(false);
+
+        produceResourcesButton.GetComponent<Button>().onClick.RemoveAllListeners();
+    }
+    public void ShowProduceResourcesMenu()
+    {
+        if (ProduceResourcesMenuPanel)
+            ProduceResourcesMenuPanel.SetActive(true);
     }
     public void SetSquadText(E_MODE mode)
     {
@@ -159,6 +177,26 @@ public class MenuController : MonoBehaviour
             BuildFactoryButtons[i].gameObject.SetActive(false);
         }
     }
+
+    public void UpdateProduceResourcesMenu(TargetBuilding target)
+    {
+        ShowProduceResourcesMenu();
+        if (target)
+        {
+            produceResourcesText.SetActive(target.isProducingResources);
+            produceResourcesButton.SetActive(!target.isProducingResources);
+            produceResourcesButton.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                if (Controller.TotalBuildPoints >= 8)
+                {
+                    Controller.TotalBuildPoints -= 8;
+                    target.StartProducingResources();
+                    produceResourcesButton.SetActive(false);
+                    produceResourcesText.SetActive(true);
+                }
+            });
+        }
+    }
     void Awake()
     {
         if (FactoryMenuCanvas == null)
@@ -188,7 +226,13 @@ public class MenuController : MonoBehaviour
         if (SquadMenuPanel == null)
             Debug.LogWarning("SquadMenuPanel not assigned in inspector");
         else
+        {
             SquadCurrentMode = SquadMenuPanel.transform.Find("CurrentMode").GetComponent<Text>();
+            SquadMenuPanel.SetActive(false);
+        }
+
+        if (ProduceResourcesMenuPanel != null)
+            ProduceResourcesMenuPanel.SetActive(false);
 
     Controller = GetComponent<UnitController>();
     }
@@ -197,8 +241,8 @@ public class MenuController : MonoBehaviour
         BuildUnitButtons = FactoryMenuPanel.transform.Find("BuildUnitMenu_Panel").GetComponentsInChildren<Button>();
         BuildFactoryButtons = FactoryMenuPanel.transform.Find("BuildFactoryMenu_Panel").GetComponentsInChildren<Button>();
         CancelBuildButton = FactoryMenuPanel.transform.Find("Cancel_Button").GetComponent<Button>();
+        produceResourcesButton = ProduceResourcesMenuPanel.transform.Find("Button").gameObject;
+        produceResourcesText = ProduceResourcesMenuPanel.transform.Find("Already Upgraded").gameObject;
         BuildQueueTexts = new Text[BuildUnitButtons.Length];
     }
 }
-
-        
