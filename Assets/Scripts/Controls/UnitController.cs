@@ -61,7 +61,6 @@ public class UnitController : MonoBehaviour
     {
         foreach (Unit unit in SelectedUnitList)
             unit.SetSelected(false);
-        SelectedUnitList.Clear();
     }
     protected void SelectAllUnits()
     {
