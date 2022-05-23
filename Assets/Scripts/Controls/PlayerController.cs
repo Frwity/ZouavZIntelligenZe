@@ -11,7 +11,7 @@ public sealed class PlayerController : UnitController
     public enum InputMode
     {
         Orders,
-        FactoryPositioning
+        FactoryPositioning,
     }
 
     [SerializeField]
@@ -212,6 +212,7 @@ public sealed class PlayerController : UnitController
                 break;
         }
 
+        CreateSelectedSquad();
         UpdateCameraInput();
 
         // Apply camera movement
@@ -455,6 +456,34 @@ public sealed class PlayerController : UnitController
     }
     #endregion
 
+    #region Squad creation methods
+
+    public void CreateSelectedSquad()
+    {
+        int index = 0;
+
+        //TODO better way of doing this ?
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+                index = 1;
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+                index = 2;
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+                index = 3;
+        }
+
+        if (index != 0)
+        {
+            if (SelectedSquad.members.Count > 0)
+                CreateSquad(index);
+            else
+                SelectedSquad = GetSquad(index);
+        }
+    }
+
+    #endregion
+
     #region Factory / build methods
     public void UpdateFactoryBuildQueueUI(Factory factory, int entityIndex)
     {
@@ -572,18 +601,11 @@ public sealed class PlayerController : UnitController
             if (other != null)
             {
                 if (other.GetTeam() != GetTeam())
-                {
-                    // Direct call to attacking task $$$ to be improved by AI behaviour
-                    /*foreach (Unit unit in SelectedUnitList)
-                    {
-                        unit.SetAttackTarget(other);
-                        unit.needToCapture = false;
-                    }*/
                     SelectedSquad.SquadTaskAttack(other);
-                }
                 else if (other.NeedsRepairing())
                 {
                     // Direct call to reparing task $$$ to be improved by AI behaviour
+                    //TODO Repair taks
                     foreach (Unit unit in SelectedUnitList)
                     {
                         unit.SetRepairTarget(other);
@@ -607,7 +629,6 @@ public sealed class PlayerController : UnitController
         // Set unit move target
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
-
             Vector3 newPos = raycastInfo.point;
             SetTargetCursorPosition(newPos);
 

@@ -15,7 +15,7 @@ public class UnitController : MonoBehaviour
 
     protected int _TotalBuildPoints = 0;
 
-    protected List<Squad> Squads = new List<Squad>();
+    protected Dictionary<int, Squad> Squads = new Dictionary<int, Squad>();
 
     protected Squad SelectedSquad;
 
@@ -129,6 +129,37 @@ public class UnitController : MonoBehaviour
         return power;
     }
 
+    #endregion
+    
+    #region Squad Methods
+    /*
+     * Create a squad with SelectedSquad's units
+     */
+    public void CreateSquad(int squadNumber)
+    {
+        Squads.Add(squadNumber, new Squad(this));
+        Squad squad = Squads[Squads.Count - 1];
+        squad.AddUnits(SelectedSquad.members);
+    }
+
+    public Squad GetSquad(int squadNumber)
+    {
+        Debug.Log(squadNumber);
+        return Squads.ContainsKey(squadNumber) ? Squads[squadNumber] : null;
+    }
+
+    public void RemoveSquad(int selectedSquadIndex)
+    {
+        if (Squads.Count == 0 || Squads.Count < selectedSquadIndex)
+            return;
+        
+        Squads.Remove(selectedSquadIndex);
+    }
+
+    public void RemoveAllSquads()
+    {
+        Squads.Clear();
+    }
     #endregion
 
     #region Factory methods
