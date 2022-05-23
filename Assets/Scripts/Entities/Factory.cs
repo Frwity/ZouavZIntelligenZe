@@ -135,7 +135,9 @@ public sealed class Factory : BaseEntity
             fx.transform.parent = null;
         }
 
-        Map.Instance.tilesWithBuild.Remove(Map.Instance.GetTile(this.transform.position));
+        Tile tile = Map.Instance.GetTile(this.transform.position);
+        tile.strategicInfluence = 0;
+        Map.Instance.tilesWithBuild.Remove(tile);
         GameServices.GetGameState().DecreaseTeamScore(Team);
         Destroy(gameObject);
     }

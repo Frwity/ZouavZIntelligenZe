@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-public class TargetBuilding : MonoBehaviour
+public class TargetBuilding : MonoBehaviour, ISelectable
 {
     [SerializeField]
     float CaptureGaugeStart = 100f;
@@ -22,11 +22,14 @@ public class TargetBuilding : MonoBehaviour
     float CaptureGaugeValue;
     ETeam OwningTeam = ETeam.Neutral;
     ETeam CapturingTeam = ETeam.Neutral;
+    UnitController owningController = null;
+    GameObject SelectedSprite = null;
+
     public ETeam GetTeam() { return OwningTeam; }
-    public int influence = 1; 
-
+    public int influence = 1;
     public UnityEvent OnBuiilduingCaptured;
-
+    public bool canProduceResources = false;
+    public bool isProducingResources = false;
 
     #region MonoBehaviour methods
     void Start()
@@ -60,6 +63,12 @@ public class TargetBuilding : MonoBehaviour
     }
     #endregion
 
+    private void Awake()
+    {
+        SelectedSprite = transform.Find("SelectedSprite")?.gameObject;
+        SelectedSprite?.SetActive(false);
+    }
+
     #region Capture methods
     public void StartCapture(Unit unit)
     {
@@ -67,16 +76,13 @@ public class TargetBuilding : MonoBehaviour
             return;
 
         TeamScore[(int)unit.GetTeam()] += unit.Cost;
-        
+
         if (CapturingTeam == ETeam.Neutral)
         {
-            if (TeamScore[(int)GameServices.GetOpponent(unit.GetTeam())] == 0)
-            {
-                CapturingTeam = unit.GetTeam();
-                GaugeImage.color = GameServices.GetTeamColor(CapturingTeam);
-            }
+            CapturingTeam = unit.GetTeam();
+            GaugeImage.color = GameServices.GetTeamColor(CapturingTeam);
         }
-        else
+        else if (CapturingTeam != unit.GetTeam())
         {
             if (TeamScore[(int)GameServices.GetOpponent(unit.GetTeam())] > 0)
                 ResetCapture();
@@ -84,7 +90,6 @@ public class TargetBuilding : MonoBehaviour
     }
     public void StopCapture(Unit unit)
     {
-        
         if (unit == null)
             return;
 
@@ -117,7 +122,10 @@ public class TargetBuilding : MonoBehaviour
         {
             UnitController teamController = GameServices.GetControllerByTeam(newTeam);
             if (teamController != null)
+            {
                 teamController.CaptureTarget(BuildPoints);
+                owningController = teamController;
+            }
 
             if (OwningTeam != ETeam.Neutral)
             {
@@ -125,6 +133,7 @@ public class TargetBuilding : MonoBehaviour
                 teamController = GameServices.GetControllerByTeam(OwningTeam);
                 if (teamController != null)
                     teamController.LoseTarget(BuildPoints);
+                CancelInvoke("ProduceResources");
             }
         }
 
@@ -132,6 +141,23 @@ public class TargetBuilding : MonoBehaviour
         OwningTeam = newTeam;
         BuildingMeshRenderer.material = newTeam == ETeam.Blue ? BlueTeamMaterial : RedTeamMaterial;
         Map.Instance.AddTargetBuilding(this, newTeam);
+        isProducingResources = false;
+    }
+
+    public void StartProducingResources()
+    {
+        isProducingResources = true;
+        InvokeRepeating("ProduceResources", 5f, 5f);
+    }
+
+    private void ProduceResources()
+    {
+        owningController.TotalBuildPoints++;
+    }
+
+    public void SetSelected(bool selected)
+    {
+        SelectedSprite?.SetActive(selected);
     }
     #endregion
 }

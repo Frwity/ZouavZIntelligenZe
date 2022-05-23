@@ -54,28 +54,39 @@ public class Squad
         unit.SetMode(SquadMode);
         members.Add(unit);
         totalCost += unit.Cost;
+        unit.OnUnitDeath += RemoveUnit;
         //assign first unit to be the leader
         SquadFormation.UpdateFormationLeader();
     }
-
+    
+    /*
+     * Clear the current squad members and add the new units in the squad
+     */
     public void AddUnits(List<Unit> units)
     {
         members.Clear();
-        members = units;
+        foreach(Unit unit in units)
+            AddUnit(unit);
     }
 
-    public void ClearUnit()
+    public void ClearUnits()
     {
-        members.Clear();
+        foreach (Unit unit in members)
+        {
+            RemoveUnit(unit);
+        }
     }
 
     public void RemoveUnit(Unit unit)
     {
         if (!members.Remove(unit)) 
             return;
+        
+        unit.OnUnitDeath -= RemoveUnit;
         SquadFormation.UpdateFormationLeader();
         //temp when unit is removed from squad recalculate formation based on the new leader grid position
-        MoveSquad(members[0].transform.position);
+        if(members.Count > 0)
+            MoveSquad(members[0].transform.position);
     }
 
     public void UpdateSquad()
@@ -83,7 +94,7 @@ public class Squad
         if (SquadCapture)
             SquadStartCapture(targetBuilding);
 
-        if (SquadAttack)
+        if (SquadAttack && SquadTarget)
             SquadAttackTarget();
     }
     
@@ -130,18 +141,19 @@ public class Squad
 
         if (target.GetTeam() != Controller.GetTeam())
         {
+            SquadNeedToCapture(target);
+
             InternalState = E_TASK_STATE.Busy;
             target.OnBuiilduingCaptured.AddListener(OnSquadCaptureTarget);
+            SquadFormation.ChooseLeader(target.transform.position);
+            SquadCapture = true;
+            MoveSquad(target.transform.position);
+            targetBuilding = target;
+
             if (CanCapture(target))
             {
+                CanBreakFormation = true;
                 SquadStartCapture(target);
-            }
-            else
-            {
-                SquadCapture = true;
-                SquadNeedToCapture(target);
-                targetBuilding = target;
-                MoveSquad(target.transform.position);
             }
         }
     }
@@ -158,8 +170,17 @@ public class Squad
     {
         foreach (Unit unit in members)
         {
-            if (unit.IsAtDestination() && unit.needToCapture)
+            if (unit.needToCapture && (unit.IsAtDestination() || unit.CanCapture(target)))
                 unit.StartCapture(target);
+        }
+    }
+
+    public void SquadStopCapture()
+    {
+        SquadCapture = false;
+        foreach (Unit unit in members)
+        {
+            unit.StopCapture();
         }
     }
 
@@ -235,10 +256,16 @@ public class Squad
         {
             foreach (Unit unit in members)
             {
+                if (!SquadTarget)
+                    continue;
+
                 if (unit.CanAttack(SquadTarget))
                     unit.ComputeAttack();
                 else
+                {
                     unit.SetTargetPos(SquadTarget.transform.position);
+                    unit.EntityTarget = SquadTarget;
+                }
             }
         }
         else
@@ -251,6 +278,8 @@ public class Squad
     public void ResetTask()
     {
         SquadTarget = null;
+        SquadStopCapture();
+        SetSquadTarget();
         SquadCapture = false;
         SquadAttack = false;
         InternalState = E_TASK_STATE.Free;

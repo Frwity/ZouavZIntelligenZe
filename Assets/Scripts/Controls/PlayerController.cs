@@ -11,7 +11,7 @@ public sealed class PlayerController : UnitController
     public enum InputMode
     {
         Orders,
-        FactoryPositioning
+        FactoryPositioning,
     }
 
     [SerializeField]
@@ -212,12 +212,14 @@ public sealed class PlayerController : UnitController
                 break;
         }
 
+        CreateSelectedSquad();
         UpdateCameraInput();
 
         // Apply camera movement
         UpdateMoveCamera();
-
-        SelectedSquad.UpdateSquad();
+        
+        if(SelectedSquad != null)
+            SelectedSquad.UpdateSquad();
     }
     #endregion
 
@@ -244,7 +246,7 @@ public sealed class PlayerController : UnitController
 
         for (int i = 0; i < OnCategoryPressed.Length; i++)
         {
-            if (Input.GetKeyDown(KeyCode.Keypad1 + i) || Input.GetKeyDown(KeyCode.Alpha1 + i))
+            if (Input.GetKeyDown(KeyCode.Keypad1 + i) || Input.GetKeyDown(KeyCode.Alpha7 + i))
             {
                 OnCategoryPressed[i]?.Invoke();
                 break;
@@ -348,10 +350,11 @@ public sealed class PlayerController : UnitController
         // unit selection / unselection
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, unitMask))
         {
-            bool isShiftBtPressed = Input.GetKey(KeyCode.LeftShift);
-            bool isCtrlBtPressed = Input.GetKey(KeyCode.LeftControl);
+            bool isShiftBtPressed = Input.GetKey(KeyCode.J);
+            bool isCtrlBtPressed = Input.GetKey(KeyCode.H);
 
             UnselectCurrentFactory();
+            UnselectTarget();
 
             Unit selectedUnit = raycastInfo.transform.GetComponent<Unit>();
             if (selectedUnit != null && selectedUnit.GetTeam() == Team)
@@ -374,6 +377,7 @@ public sealed class PlayerController : UnitController
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
             UnselectCurrentFactory();
+            UnselectTarget();
             SelectionLineRenderer.enabled = true;
 
             SelectionStarted = true;
@@ -424,7 +428,8 @@ public sealed class PlayerController : UnitController
 
         int unitLayerMask = 1 << LayerMask.NameToLayer("Unit");
         int factoryLayerMask = 1 << LayerMask.NameToLayer("Factory");
-        Collider[] colliders = Physics.OverlapBox(center, size / 2f, Quaternion.identity, unitLayerMask | factoryLayerMask, QueryTriggerInteraction.Ignore);
+        int targetLayerMask = 1 << LayerMask.NameToLayer("Target");
+        Collider[] colliders = Physics.OverlapBox(center, size / 2f, Quaternion.identity, unitLayerMask | factoryLayerMask | targetLayerMask, QueryTriggerInteraction.Ignore);
         foreach (Collider col in colliders)
         {
             //Debug.Log("collider name = " + col.gameObject.name);
@@ -439,6 +444,10 @@ public sealed class PlayerController : UnitController
                 {
                     SelectFactory(selectedEntity as Factory);
                 }
+                else if (selectedEntity is TargetBuilding)
+                {
+                    SelectTarget(selectedEntity as TargetBuilding);
+                }
             }
         }
 
@@ -446,6 +455,44 @@ public sealed class PlayerController : UnitController
         SelectionStart = Vector3.zero;
         SelectionEnd = Vector3.zero;
     }
+    #endregion
+
+    #region Squad creation methods
+    
+    /*
+     * create a squad with selected unit
+     * or select a squad with alpha numeric
+     */
+    public void CreateSelectedSquad()
+    {
+        int index = 0;
+
+        //TODO better way of doing this ?
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            index = 1;
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+            index = 2;
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+            index = 3;
+
+        if (index != 0)
+        {
+            if (Squads.Count == 0 || !Squads.ContainsKey(index))
+                CreateSquad(index);
+            else
+            {
+                UnselectAllUnits();
+                SelectedSquad = GetSquad(index);
+                //unit selection UI only
+                SelectedUnitList.AddRange(SelectedSquad.members);
+                foreach (Unit unit in SelectedUnitList)
+                {
+                    unit.SetSelected(true);
+                }
+            }
+        }
+    }
+
     #endregion
 
     #region Factory / build methods
@@ -474,6 +521,19 @@ public sealed class PlayerController : UnitController
         PlayerMenuController.HideFactoryMenu();
 
         base.UnselectCurrentFactory();
+    }
+    public override void SelectTarget(TargetBuilding target)
+    {
+        if (target == null || target.GetTeam() == ETeam.Neutral)
+            return;
+
+        base.SelectTarget(target);
+        PlayerMenuController.UpdateProduceResourcesMenu(target);
+    }
+    public override void UnselectTarget()
+    {
+        PlayerMenuController.HideProduceResourcesMenu();
+        base.UnselectTarget();
     }
     void EnterFactoryBuildMode(int factoryId)
     {
@@ -536,7 +596,7 @@ public sealed class PlayerController : UnitController
     #region Entity targetting (attack / capture) and movement methods
     void ComputeUnitsAction()
     {
-        if (SelectedUnitList.Count == 0)
+        if (SelectedSquad == null)
             return;
 
         int damageableMask = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Factory"));
@@ -552,18 +612,11 @@ public sealed class PlayerController : UnitController
             if (other != null)
             {
                 if (other.GetTeam() != GetTeam())
-                {
-                    // Direct call to attacking task $$$ to be improved by AI behaviour
-                    /*foreach (Unit unit in SelectedUnitList)
-                    {
-                        unit.SetAttackTarget(other);
-                        unit.needToCapture = false;
-                    }*/
                     SelectedSquad.SquadTaskAttack(other);
-                }
                 else if (other.NeedsRepairing())
                 {
                     // Direct call to reparing task $$$ to be improved by AI behaviour
+                    //TODO Repair taks
                     foreach (Unit unit in SelectedUnitList)
                     {
                         unit.SetRepairTarget(other);
@@ -581,13 +634,13 @@ public sealed class PlayerController : UnitController
                 // Direct call to capturing task $$$ to be improved by AI behaviour
                 // foreach (Unit unit in SelectedUnitList)
                 //     unit.SetCaptureTarget(target);
+                SelectedSquad.ResetTask();
                 SelectedSquad.CaptureTarget(target);
             }
         }
         // Set unit move target
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
-
             Vector3 newPos = raycastInfo.point;
             SetTargetCursorPosition(newPos);
 
@@ -597,6 +650,7 @@ public sealed class PlayerController : UnitController
             foreach (Unit unit in SelectedUnitList)
                 unit.needToCapture = false;
 
+            SelectedSquad.ResetTask();
             SelectedSquad.MoveSquad(newPos);
         }
     }

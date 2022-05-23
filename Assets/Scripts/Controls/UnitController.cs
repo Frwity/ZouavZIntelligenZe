@@ -15,7 +15,7 @@ public class UnitController : MonoBehaviour
 
     protected int _TotalBuildPoints = 0;
 
-    protected List<Squad> Squads = new List<Squad>();
+    protected Dictionary<int, Squad> Squads = new Dictionary<int, Squad>();
 
     protected Squad SelectedSquad;
 
@@ -50,6 +50,7 @@ public class UnitController : MonoBehaviour
     protected List<Unit> SelectedUnitList = new List<Unit>();
     public List<Factory> FactoryList = new List<Factory>();
     protected List<Factory> SelectedFactoryList = new List<Factory>();
+    public TargetBuilding currentTarget = null;
 
     // events
     protected Action OnBuildPointsUpdated;
@@ -60,9 +61,6 @@ public class UnitController : MonoBehaviour
     {
         foreach (Unit unit in SelectedUnitList)
             unit.SetSelected(false);
-        SelectedUnitList.Clear();
-        if (SelectedSquad != null)
-            SelectedSquad.members.Clear();
     }
     protected void SelectAllUnits()
     {
@@ -129,6 +127,36 @@ public class UnitController : MonoBehaviour
     }
 
     #endregion
+    
+    #region Squad Methods
+    /*
+     * Create a squad with SelectedSquad's units
+     */
+    public void CreateSquad(int squadNumber)
+    {
+        Squads.Add(squadNumber, new Squad(this));
+        Squad squad = Squads[squadNumber];
+        squad.AddUnits(SelectedSquad.members);
+    }
+
+    public Squad GetSquad(int squadNumber)
+    {
+        return Squads.ContainsKey(squadNumber) ? Squads[squadNumber] : null;
+    }
+
+    public void RemoveSquad(int selectedSquadIndex)
+    {
+        if (Squads.Count == 0 || Squads.Count < selectedSquadIndex)
+            return;
+        
+        Squads.Remove(selectedSquadIndex);
+    }
+
+    public void RemoveAllSquads()
+    {
+        Squads.Clear();
+    }
+    #endregion
 
     #region Factory methods
     void AddFactory(Factory factory)
@@ -148,6 +176,22 @@ public class UnitController : MonoBehaviour
         };
         FactoryList.Add(factory);
     }
+    virtual public void SelectTarget(TargetBuilding target)
+    {
+        if (target == null || target.GetTeam() == ETeam.Neutral)
+            return;
+
+        target.SetSelected(true);
+        currentTarget = target;
+    }
+    virtual public void UnselectTarget()
+    {
+        if (currentTarget != null)
+        {
+            currentTarget.SetSelected(false);
+            currentTarget = null;
+        }
+    }
     virtual public void SelectFactory(Factory factory)
     {
         if (factory == null || factory.IsUnderConstruction)
@@ -163,6 +207,7 @@ public class UnitController : MonoBehaviour
             factory.SetSelected(false);
         SelectedFactoryList.Clear();
     }
+
     protected bool RequestUnitBuild(int unitMenuIndex, Factory factory)
     {
         return factory.RequestUnitBuild(unitMenuIndex, null);

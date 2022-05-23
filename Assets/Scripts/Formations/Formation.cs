@@ -69,7 +69,7 @@ public class Formation
         }
         else
         {
-            //special caseS when units don't move in formation (attack)
+            //special cases when units don't move in formation
             foreach (Unit unit in Squad.members)
             {
                 unit.GridPosition = targetPos;
@@ -137,7 +137,7 @@ public class Formation
      * Choose the leader when a move order is issue
      * The leader is the unit closest to the destination
      */
-    void ChooseLeader(Vector3 pos)
+    public void ChooseLeader(Vector3 pos)
     {
         float distance;
         
