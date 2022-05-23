@@ -474,24 +474,22 @@ public sealed class PlayerController : UnitController
             index = 2;
         else if (Input.GetKeyDown(KeyCode.Alpha3))
             index = 3;
-
-        if (index != 0)
+        
+        //No selection use
+        if (index == 0) 
+            return;
+        
+        if (Squads.Count == 0 || !Squads.ContainsKey(index))
+            CreateSquad(index);
+        else
         {
-            if (Squads.Count == 0 || !Squads.ContainsKey(index))
+            UnselectAllUnits();
+            SelectedSquad.members = GetSquad(index).members;
+            //unit selection UI only
+            SelectedUnitList.AddRange(SelectedSquad.members);
+            foreach (Unit unit in SelectedUnitList)
             {
-                Debug.Log("Create squad " + index);
-                CreateSquad(index);
-            }
-            else
-            {
-                UnselectAllUnits();
-                SelectedSquad.members = GetSquad(index).members;
-                //unit selection UI only
-                SelectedUnitList.AddRange(SelectedSquad.members);
-                foreach (Unit unit in SelectedUnitList)
-                {
-                    unit.SetSelected(true);
-                }
+                unit.SetSelected(true);
             }
         }
     }

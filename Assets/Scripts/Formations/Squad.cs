@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public enum E_TASK_STATE
 {
@@ -20,6 +21,7 @@ public class Squad
     public bool CanBreakFormation = false;
     private bool SquadCapture = false;
     private bool SquadAttack = false;
+    private bool SquadRepair = false;
     private TargetBuilding targetBuilding;
     public int totalCost = 0;
     
@@ -96,6 +98,9 @@ public class Squad
 
         if (SquadAttack && SquadTarget)
             SquadAttackTarget();
+        
+        if(SquadRepair && SquadTarget)
+            SquadStartRepair();
     }
     
     /*
@@ -282,8 +287,43 @@ public class Squad
         SetSquadTarget();
         SquadCapture = false;
         SquadAttack = false;
+        SquadRepair = false;
         InternalState = E_TASK_STATE.Free;
         CanBreakFormation = false;
         StopSquadMovement();
     }
+
+    #region RepairTask
+
+    public void StartRepairTask(BaseEntity target)
+    {
+        ResetTask();
+        
+        InternalState = E_TASK_STATE.Busy;
+        SquadTarget = target;
+        SquadRepair = true;
+        CanBreakFormation = true;
+        
+        MoveSquad(target.transform.position);
+    }
+
+    private void SquadStartRepair()
+    {
+        if (!SquadTarget.NeedsRepairing())
+        {
+            ResetTask();
+            return;
+        }
+        
+        foreach (Unit unit in members)
+        {
+            if (unit.Equals(SquadTarget))
+                continue;
+            
+            if(unit.IsAtDestination() && unit.CanRepair(SquadTarget))
+                unit.StartRepairing(SquadTarget);
+        }
+    }
+    
+    #endregion
 }
