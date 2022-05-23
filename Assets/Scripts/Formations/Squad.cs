@@ -37,7 +37,7 @@ public class Squad
     {
          SquadFormation = new Formation(this);
          Controller = controller;
-         SquadMode = E_MODE.Agressive;
+         SquadMode = E_MODE.Defensive;
          InternalState = E_TASK_STATE.Free;
     }
 
