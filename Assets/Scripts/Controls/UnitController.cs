@@ -61,8 +61,6 @@ public class UnitController : MonoBehaviour
         foreach (Unit unit in SelectedUnitList)
             unit.SetSelected(false);
         SelectedUnitList.Clear();
-        if (SelectedSquad != null)
-            SelectedSquad.members.Clear();
     }
     protected void SelectAllUnits()
     {

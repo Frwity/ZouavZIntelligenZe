@@ -476,8 +476,12 @@ public sealed class PlayerController : UnitController
             {
                 UnselectAllUnits();
                 SelectedSquad = GetSquad(index);
-                foreach(Unit unit in SelectedSquad.members)
+                //unit selection UI only
+                SelectedUnitList.AddRange(SelectedSquad.members);
+                foreach (Unit unit in SelectedUnitList)
+                {
                     unit.SetSelected(true);
+                }
             }
         }
     }
