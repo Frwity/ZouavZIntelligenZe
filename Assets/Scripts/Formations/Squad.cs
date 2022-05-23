@@ -15,7 +15,7 @@ public class Squad
     public List<Unit> members = new List<Unit>();
     private Formation SquadFormation;
     private float MoveSpeed = 100.0f;
-    private UnitController Controller;
+    public UnitController Controller;
     //use to break formation and attack
     public bool CanBreakFormation = false;
     private bool SquadCapture = false;

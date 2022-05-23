@@ -478,11 +478,14 @@ public sealed class PlayerController : UnitController
         if (index != 0)
         {
             if (Squads.Count == 0 || !Squads.ContainsKey(index))
+            {
+                Debug.Log("Create squad " + index);
                 CreateSquad(index);
+            }
             else
             {
                 UnselectAllUnits();
-                SelectedSquad = GetSquad(index);
+                SelectedSquad.members = GetSquad(index).members;
                 //unit selection UI only
                 SelectedUnitList.AddRange(SelectedSquad.members);
                 foreach (Unit unit in SelectedUnitList)

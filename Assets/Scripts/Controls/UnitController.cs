@@ -61,6 +61,7 @@ public class UnitController : MonoBehaviour
     {
         foreach (Unit unit in SelectedUnitList)
             unit.SetSelected(false);
+        SelectedUnitList.Clear();
     }
     protected void SelectAllUnits()
     {
@@ -88,7 +89,7 @@ public class UnitController : MonoBehaviour
     {
         unit.SetSelected(true);
         SelectedUnitList.Add(unit);
-        SelectedSquad.AddUnit(unit);
+        SelectedSquad.members = SelectedUnitList;
     }
     protected void UnselectUnit(Unit unit)
     {
