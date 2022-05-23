@@ -52,6 +52,8 @@ public class Map : MonoBehaviour
     [SerializeField]
     private int maxWalkableHeight = 4;
 
+    public float mapSize;
+
     List<Tile> tileList = new List<Tile>();
     public List<Tile> tilesWithBuild = new List<Tile>();
     private Dictionary<Tile, List<Connection>> ConnectionsGraph = new Dictionary<Tile, List<Connection>>();
@@ -64,6 +66,7 @@ public class Map : MonoBehaviour
 
     private void Awake()
     {
+        mapSize = Mathf.Sqrt(gridSizeH * gridSizeH + gridSizeV * gridSizeV);
         CreateMap();
     }
 

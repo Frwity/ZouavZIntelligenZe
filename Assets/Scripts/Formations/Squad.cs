@@ -5,9 +5,9 @@ using UnityEngine;
 
 public enum E_TASK_STATE
 {
-    Busy,       // cannot be assign another task
-    Ongoing,  // ongoing task but can be assign to another task
-    Free
+    Free,
+    Ongoing, // ongoing task but can be assign to another task
+    Busy       // cannot be assign another task
 }
 
 public class Squad
