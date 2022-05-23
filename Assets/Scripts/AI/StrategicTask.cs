@@ -66,13 +66,15 @@ public class CapturePointTask : StrategicTask
 
             for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
             {
-                if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == _controller.GetTeam())
+                if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == _controller.GetTeam()) // TODO function and variable to hold in controller
                     ++ownedTarget;
                 else if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == _controller.playerController.GetTeam())
                     ++enemyTarget;
             }
-            score = (_controller.taskDatas[id].Distance.Evaluate(distance) + _controller.taskDatas[id].Ratio.Evaluate(((float)enemyTarget / ownedTarget) <= 0.01f ? 0.1f : ((float)enemyTarget / ownedTarget))) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
+            score = (_controller.taskDatas[id].Distance.Evaluate(distance / Map.Instance.mapSize) + _controller.taskDatas[id].Ratio.Evaluate(((enemyTarget + 0.25f) / (ownedTarget)) <= 0.01f ? 0.1f : ((float)enemyTarget / ownedTarget))) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
         }
+        else
+            return false;
 
         if (squad.GetSquadValue() <= Mathf.FloorToInt(Time.time / 60.0f))
         {
@@ -81,6 +83,8 @@ public class CapturePointTask : StrategicTask
             squadCreation.Evaluate(_controller, ref f);
         }
 
+        Debug.Log("capture");
+        Debug.Log(score);
 
         if (score > currentScore)
         {
@@ -96,7 +100,7 @@ public class CapturePointTask : StrategicTask
         if (squadCreation != null)
             squadCreation.StartTask(_controller);
         else
-            squad.CaptureTarget(targetBuilding);
+            StartCapture();
     }
 
     public override void UpdateTask()
@@ -113,7 +117,7 @@ public class CapturePointTask : StrategicTask
             squadCreation.UpdateTask();
             if (squadCreation.isComplete)
             {
-                squad.CaptureTarget(targetBuilding);
+                StartCapture();
                 squadCreation = null;
             }
         }
@@ -124,6 +128,12 @@ public class CapturePointTask : StrategicTask
             if (targetBuilding.GetTeam() == controller.GetTeam())
                 EndTask();
         }
+    }
+
+    public void StartCapture()
+    {
+        squad.SetMode(E_MODE.Flee);
+        squad.CaptureTarget(targetBuilding);
     }
 
     public override void EndTask()
@@ -219,7 +229,7 @@ public class CreateExploSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) * _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.25f);
+                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.25f) + 2;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
                 return true;
@@ -287,7 +297,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
     {
         base.StartTask(_controller);
         int moneyTemp = money;
-        while (moneyTemp > 0) // TODO 
+        while (moneyTemp > 0) // TODO create squad
         {
             factory.RequestUnitBuild(2, this);
             moneyTemp -= 3;
@@ -306,7 +316,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
         if (base.Evaluate(_controller, ref currentScore))
         {
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
-            if (score > currentScore) // TODO
+            if (score > currentScore) // TODO alocate money
             {
                 money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.8f);
                 money += 3 - money % 3;
@@ -316,6 +326,55 @@ public class CreateHAttackSquadTask : CreateSquadTask
             }
         }
         return false;
+    }
+}
+
+public class CreateMinerTask : StrategicTask
+{
+    public static int id { get; private set; } = 5;
+
+    TargetBuilding targetBuilding = null;
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        int ownedTarget = 1;
+        int ownedMine = 1;
+        for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
+        {
+            TargetBuilding temp = _controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>();
+            if (temp.GetTeam() == _controller.GetTeam()) // TODO function and variable to hold in controller
+            {
+                //if (temp.)
+                ++ownedTarget;
+                if (targetBuilding == null)
+                    targetBuilding = temp;
+                else if ((temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude 
+                    < (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude)
+                {
+                    targetBuilding = temp;
+                }
+            }
+        }
+
+        float score = (_controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints)
+                    *  _controller.taskDatas[id].Ratio.Evaluate(_controller.FactoryList.Count / _controller.playerController.FactoryList.Count))
+                    *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
+
+        if (score > currentScore)
+        {
+            currentScore = score;
+            return true;
+        }
+        return false;
+    }
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
     }
 }
 
@@ -333,8 +392,6 @@ public class CreateFactoryTask : StrategicTask
     {
         if (_controller.FactoryList.Count < 0)
             return false;
-
-        // Debug.Log("attack create fac ");
 
         Factory buildingFactory = null;
         for (int i = 0; i < _controller.FactoryList.Count; ++i) // get availible factory
@@ -354,9 +411,8 @@ public class CreateFactoryTask : StrategicTask
                     *  _controller.taskDatas[id].Ratio.Evaluate(_controller.FactoryList.Count / _controller.playerController.FactoryList.Count)) 
                     *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
 
-        //Debug.Log(_controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints));
-        //Debug.Log(_controller.taskDatas[id].Ratio.Evaluate(_controller.FactoryList.Count / _controller.playerController.FactoryList.Count));
-        //Debug.Log(_controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f));
+        Debug.Log("factory");
+        Debug.Log(score);
 
         if (score > currentScore)
         {
@@ -424,8 +480,9 @@ public class AttackTargetTask : StrategicTask
     public static int id { get; private set; } = 7;
 
     Tile targetTile = null;
-
     StrategicTask squadCreation = null;
+
+    float checkIfEndInterval = 0.0f;
 
     public AttackTargetTask(Squad _squad)
     {
@@ -434,7 +491,6 @@ public class AttackTargetTask : StrategicTask
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
-        //Debug.Log("attack enter");
         float score = 0.0f;
         if (_controller.taskDatas[CreateHAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f) > _controller.taskDatas[CreateHAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f)) // choose what types of squad will attack
         {
@@ -480,12 +536,11 @@ public class AttackTargetTask : StrategicTask
         if (targetTile == null || score <= 0.001f)
             return false;
 
-        //Debug.Log(_controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f));
-        //Debug.Log(_controller.taskDatas[id].Distance.Evaluate((targetTile.position - (squadCreation as CreateSquadTask).factory.transform.position).magnitude / Map.Instance.mapSize));
-
         score *=  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
                 * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - (squadCreation as CreateSquadTask).factory.transform.position).magnitude / Map.Instance.mapSize);
 
+        Debug.Log("attack");
+        Debug.Log(score);
         if (score > currentScore)
         {
             currentScore = score;
@@ -518,14 +573,40 @@ public class AttackTargetTask : StrategicTask
                 squadCreation = null;
             }
         }
-        else // if squad complete, update the attack
+        else // if squad complete, update attack : retreat if low ? complete squad ?
         {
-            
+            if (squad.GetSquadValue() == 0)
+                EndTask();
+
+            if (checkIfEndInterval < Time.time)
+            {
+                checkIfEndInterval = Time.time + 1.0f;
+                if (targetTile.gameobject == null || targetTile.gameobject.GetComponent<BaseEntity>() == null)
+                {
+                    EndTask();
+                    return;
+                }
+                else
+                {
+                    if (targetTile.buildType != E_BUILDTYPE.MINER)
+                    {
+                        if (!targetTile.gameobject.GetComponent<BaseEntity>().IsAlive)
+                            EndTask();
+                    }
+                    else
+                    {
+                        if (targetTile.gameobject.GetComponent<TargetBuilding>().GetTeam() == controller.GetTeam())
+                            EndTask();
+                    }
+                }
+            }
         }
     }
 
     public void LaunchAttack()
     {
+        checkIfEndInterval = Time.time;
+        squad.SetMode(E_MODE.Agressive);
         if (targetTile.buildType != E_BUILDTYPE.MINER)
             squad.SquadTaskAttack(targetTile.gameobject.GetComponent<BaseEntity>());
         else

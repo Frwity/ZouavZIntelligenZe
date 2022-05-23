@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8e24455241804543b7411941772f756, type: 3}
-  m_Name: 3CreateLAttackSquad
+  m_Name: 5CreateMiner
   m_EditorClassIdentifier: 
-  id: 3
+  id: 4
   Time:
     serializedVersion: 2
     m_Curve:
@@ -26,8 +26,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.703598
-      value: 0.0062201824
+      time: 0.9967104
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -35,8 +35,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.033753324
     - serializedVersion: 3
-      time: 1.1719971
-      value: 0.91947937
+      time: 2.2703857
+      value: 0.8900604
       inSlope: 0.36638036
       outSlope: 0.040974263
       tangentMode: 1
@@ -44,19 +44,19 @@ MonoBehaviour:
       inWeight: 0.046823613
       outWeight: 0.20279227
     - serializedVersion: 3
-      time: 2.8179333
-      value: 0.021729171
-      inSlope: -0.24206413
-      outSlope: -0.24206413
+      time: 3.5979815
+      value: 0.013070211
+      inSlope: -0.029370202
+      outSlope: -0.029370202
       tangentMode: 1
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 3.819497
-      value: 0.89080226
-      inSlope: 0.06280988
-      outSlope: 0.06280988
+      time: 5.1744432
+      value: 0.87756974
+      inSlope: -0.0022984985
+      outSlope: -0.0022984985
       tangentMode: 1
       weightedMode: 0
       inWeight: 0.33333334
@@ -85,15 +85,15 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0.00034444206
-      outSlope: 0.00034444206
+      inSlope: 0
+      outSlope: 0
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 5.404602
-      value: 0.0018615723
+      time: 10
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -103,8 +103,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 15
       value: 1
-      inSlope: 0.10402262
-      outSlope: 0.10402262
+      inSlope: 0.2
+      outSlope: 0.2
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
