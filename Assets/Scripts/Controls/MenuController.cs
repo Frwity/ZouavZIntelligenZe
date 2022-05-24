@@ -195,10 +195,8 @@ public class MenuController : MonoBehaviour
             produceResourcesButton.SetActive(!target.isProducingResources && !target.isUpgrading);
             produceResourcesButton.GetComponent<Button>().onClick.AddListener(() =>
             {
-                if (Controller.TotalBuildPoints >= 8)
+                if (target.StartUpgrade())
                 {
-                    Controller.TotalBuildPoints -= 8;
-                    target.StartUpgrade();
                     produceResourcesButton.SetActive(false);
                     produceResourcesText.SetActive(true);
                 }

@@ -13,10 +13,12 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     [SerializeField]
     int BuildPoints = 5;
     [SerializeField]
+    int upgradeCost = 8;
+    [SerializeField]
     Material BlueTeamMaterial = null;
     [SerializeField]
     Material RedTeamMaterial = null;
-
+    
     Material NeutralMaterial = null;
     MeshRenderer BuildingMeshRenderer = null;
     Image GaugeImage;
@@ -160,10 +162,16 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         isProducingResources = false;
     }
 
-    public void StartUpgrade()
+    public bool StartUpgrade()
     {
+        UnitController teamController = GameServices.GetControllerByTeam(OwningTeam);
+        if (teamController.TotalBuildPoints < upgradeCost)
+            return false;
+
+        teamController.TotalBuildPoints -= upgradeCost;
         currentUpgradeDuration = upgradeDuration;
         isUpgrading = true;
+        return true;
     }
 
     private void StartProducingResources()
