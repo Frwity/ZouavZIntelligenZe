@@ -285,6 +285,7 @@ public class Squad
         SquadTarget = null;
         SquadStopCapture();
         SetSquadTarget();
+        SquadStopRepair();
         SquadCapture = false;
         SquadAttack = false;
         SquadRepair = false;
@@ -306,7 +307,7 @@ public class Squad
         
         MoveSquad(target.transform.position);
     }
-
+      
     private void SquadStartRepair()
     {
         if (!SquadTarget.NeedsRepairing())
@@ -319,10 +320,19 @@ public class Squad
         {
             if (unit.Equals(SquadTarget))
                 continue;
-            
-            if(unit.IsAtDestination() && unit.CanRepair(SquadTarget))
-                unit.StartRepairing(SquadTarget);
+
+            if (unit.IsAtDestination() && unit.CanRepair(SquadTarget) && !unit.IsRepairing)
+            {
+                unit.IsRepairing = true;
+                unit.SetRepairTarget(SquadTarget);
+            }
         }
+    }
+
+    private void SquadStopRepair()
+    {
+        foreach (Unit unit in members)
+            unit.IsRepairing = false;
     }
     
     #endregion
