@@ -155,7 +155,7 @@ public class CreateSquadTask : StrategicTask
     protected int money = 1;
     public int targetCost;
     public Factory factory = null;
-    FACTORY_TYPE factoryType = FACTORY_TYPE.LIGHT;
+    protected FACTORY_TYPE factoryType = FACTORY_TYPE.LIGHT;
 
     protected enum FACTORY_TYPE
     {
@@ -192,7 +192,6 @@ public class CreateSquadTask : StrategicTask
                     factory = it;
             }
         }
-
         if (factory != null)
             return true;
         return false;
@@ -286,7 +285,7 @@ public class CreateLAttackSquadTask : CreateSquadTask
     {
         if (base.Evaluate(_controller, ref currentScore))
         {
-            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
+            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
                 money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.8f);
@@ -328,9 +327,11 @@ public class CreateHAttackSquadTask : CreateSquadTask
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
+        factoryType = FACTORY_TYPE.HEAVY;
+
         if (base.Evaluate(_controller, ref currentScore))
         {
-            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
+            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
                 money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.7f);
@@ -553,6 +554,7 @@ public class AttackTargetTask : StrategicTask
     Tile targetTile = null;
     StrategicTask squadCreation = null;
 
+    Vector3 rallyPoint;
     float checkIfEndInterval = 0.0f;
 
     public AttackTargetTask(Squad _squad)
@@ -563,19 +565,25 @@ public class AttackTargetTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
-        if (_controller.taskDatas[CreateLAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f) > _controller.taskDatas[CreateHAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f)) // choose what types of squad will attack
-        {
-            if (CreateSquadTask.HasToCompleteSquad(_controller, CreateLAttackSquadTask.id, squad.GetSquadValue(), 0.80f))
-                squadCreation = new CreateLAttackSquadTask(squad);
-        }
-        else
-        {
-            if (CreateSquadTask.HasToCompleteSquad(_controller, CreateHAttackSquadTask.id, squad.GetSquadValue(), 0.70f))
-                squadCreation = new CreateHAttackSquadTask(squad);
-        }
 
-        if (squadCreation != null)
-            squadCreation.Evaluate(_controller, ref score);
+        StrategicTask temp;
+
+        // choose, if neened, what type of squad will complete the current to attack
+        temp = new CreateLAttackSquadTask(squad);
+        if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateLAttackSquadTask.id, squad.GetSquadValue(), 0.80f))
+            squadCreation = temp;
+
+        temp = new CreateHAttackSquadTask(squad);
+        if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateHAttackSquadTask.id, squad.GetSquadValue(), 0.70f))
+            squadCreation = temp;
+
+        if (score <= 0.001)
+            return false;
+
+        if (squadCreation == null)
+            rallyPoint = squad.GetSquadLeader().transform.position;
+        else
+            rallyPoint = (squadCreation as CreateSquadTask).factory.transform.position;
 
         E_BUILDTYPE tempType = E_BUILDTYPE.NOTHING;
 
@@ -595,8 +603,8 @@ public class AttackTargetTask : StrategicTask
                     targetTile = tile;
                 }
                 else if (tile.buildType == tempType 
-                && (tile.position - (squadCreation as CreateSquadTask).factory.transform.position).magnitude 
-                < (targetTile.position - (squadCreation as CreateSquadTask).factory.transform.position).magnitude)
+                && (tile.position - rallyPoint).magnitude 
+                < (targetTile.position - rallyPoint).magnitude)
                 {
                     targetTile = tile;
                 }
@@ -607,8 +615,9 @@ public class AttackTargetTask : StrategicTask
         if (targetTile == null || score <= 0.001f)
             return false;
 
-        score *=  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
-                * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - (squadCreation as CreateSquadTask).factory.transform.position).magnitude / Map.Instance.mapSize);
+        // evaluate from time and distance to rallypoint
+        score =  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
+            * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - rallyPoint).magnitude / Map.Instance.mapSize);
 
         //Debug.Log("attack");
         //Debug.Log(score);
