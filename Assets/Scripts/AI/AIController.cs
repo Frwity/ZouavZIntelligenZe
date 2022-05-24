@@ -50,7 +50,7 @@ public sealed class AIController : UnitController
         UpdateTasks();
 
         UtilitySystemUpdate(ref task1, 0.1f, ref previousUtilitySystemTime1);
-        UtilitySystemUpdate(ref task2, 0.15f, ref  previousUtilitySystemTime2);
+        UtilitySystemUpdate(ref task2, 0.15f, ref previousUtilitySystemTime2);
         UtilitySystemUpdate(ref task3, 0.35f, ref previousUtilitySystemTime3);
 
     }

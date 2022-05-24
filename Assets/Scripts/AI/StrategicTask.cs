@@ -563,7 +563,7 @@ public class AttackTargetTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
-        if (_controller.taskDatas[CreateHAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f) > _controller.taskDatas[CreateHAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f)) // choose what types of squad will attack
+        if (_controller.taskDatas[CreateLAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f) > _controller.taskDatas[CreateHAttackSquadTask.id].Time.Evaluate(Time.time / 60.0f)) // choose what types of squad will attack
         {
             if (CreateSquadTask.HasToCompleteSquad(_controller, CreateLAttackSquadTask.id, squad.GetSquadValue(), 0.80f))
                 squadCreation = new CreateLAttackSquadTask(squad);
@@ -595,8 +595,8 @@ public class AttackTargetTask : StrategicTask
                     targetTile = tile;
                 }
                 else if (tile.buildType == tempType 
-                && (tile.position - (squadCreation as CreateLAttackSquadTask).factory.transform.position).magnitude 
-                < (targetTile.position - (squadCreation as CreateLAttackSquadTask).factory.transform.position).magnitude)
+                && (tile.position - (squadCreation as CreateSquadTask).factory.transform.position).magnitude 
+                < (targetTile.position - (squadCreation as CreateSquadTask).factory.transform.position).magnitude)
                 {
                     targetTile = tile;
                 }
