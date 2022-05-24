@@ -49,13 +49,17 @@ public sealed class AIController : UnitController
         if (previousUtilitySystemTime1 + timeBetweenUtilitySystemUpdate < Time.time)
         {
             previousUtilitySystemTime1 = Time.time;
+            Debug.Log("1-------------");
             UtilitySystemUpdate(ref task1, 0.1f);
+            Debug.Log("1-------------");
+
         }
         if (previousUtilitySystemTime2 + timeBetweenUtilitySystemUpdate < Time.time)
         {
             previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 2.0f;
-            UtilitySystemUpdate(ref task2, 0.3f);
-
+            Debug.Log("2-------------");
+            UtilitySystemUpdate(ref task2, 0.2f);
+            Debug.Log("2-------------");
         }
     }
 
@@ -85,9 +89,13 @@ public sealed class AIController : UnitController
             if (tempTask.Evaluate(this, ref score))
                 task = tempTask;
 
-            if (militarySquad1.State == E_TASK_STATE.Free || militarySquad2.State == E_TASK_STATE.Free)
+            tempTask = new CreateMinerTask();
+            if (tempTask.Evaluate(this, ref score))
+                task = tempTask;
+
+            if (IsSquadAvailible())
             {
-                tempTask = new AttackTargetTask(militarySquad1.State == E_TASK_STATE.Free ? militarySquad1 : militarySquad2);
+                tempTask = new AttackTargetTask(GetRandomSquad());
                 if (tempTask.Evaluate(this, ref score))
                     task = tempTask;
             }
@@ -95,5 +103,37 @@ public sealed class AIController : UnitController
             if (score > scoreThreshold)
                 task.StartTask(this);
         }
+    }
+
+    Squad GetRandomSquad()
+    {
+        if (!IsSquadAvailible())
+            return null;
+
+        int random = Random.Range(0, 3);
+
+        // no while because of very few cases, could be better with
+
+        if (random++ == 0 && militarySquad1.State == E_TASK_STATE.Free)
+            return militarySquad1;
+        if (random++ == 1 && militarySquad2.State == E_TASK_STATE.Free)
+            return militarySquad2;
+        if (random == 2 && explorationSquad.State == E_TASK_STATE.Free)
+            return explorationSquad;
+        else
+            random = 0;
+        if (random++ == 0 && militarySquad1.State == E_TASK_STATE.Free)
+            return militarySquad1;
+        if (random == 1 && militarySquad2.State == E_TASK_STATE.Free)
+            return militarySquad2;
+
+        return null;
+    }
+
+    bool IsSquadAvailible()
+    {
+        if (militarySquad1.State == E_TASK_STATE.Free || militarySquad2.State == E_TASK_STATE.Free || explorationSquad.State == E_TASK_STATE.Free)
+            return true;
+        return false;
     }
 }
