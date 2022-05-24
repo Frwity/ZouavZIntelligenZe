@@ -17,6 +17,7 @@ public class MenuController : MonoBehaviour
     Text CapturedTargetsText = null;
     Button[] BuildUnitButtons = null;
     Button[] BuildFactoryButtons = null;
+    Button BuildTurretButton = null;
     Button CancelBuildButton = null;
     Text[] BuildQueueTexts = null;
     
@@ -109,9 +110,10 @@ public class MenuController : MonoBehaviour
         {
             BuildFactoryButtons[i].onClick.RemoveAllListeners();
         }
+        BuildTurretButton.onClick.RemoveAllListeners();
     }
 
-    public void UpdateFactoryMenu(Factory selectedFactory, int selectedFactoryCount, Func<int, Factory, bool> requestUnitBuildMethod, Action<int> enterFactoryBuildModeMethod)
+    public void UpdateFactoryMenu(Factory selectedFactory, int selectedFactoryCount, Func<int, Factory, bool> requestUnitBuildMethod, Action<int> enterFactoryBuildModeMethod, Action enterTurretBuildModeMethod)
     {
         ShowFactoryMenu();
 
@@ -176,6 +178,12 @@ public class MenuController : MonoBehaviour
         {
             BuildFactoryButtons[i].gameObject.SetActive(false);
         }
+
+        BuildTurretButton.gameObject.SetActive(true);
+        BuildTurretButton.onClick.AddListener(() =>
+        {
+            enterTurretBuildModeMethod();
+        });
     }
 
     public void UpdateProduceResourcesMenu(TargetBuilding target)
@@ -240,6 +248,7 @@ public class MenuController : MonoBehaviour
     {
         BuildUnitButtons = FactoryMenuPanel.transform.Find("BuildUnitMenu_Panel").GetComponentsInChildren<Button>();
         BuildFactoryButtons = FactoryMenuPanel.transform.Find("BuildFactoryMenu_Panel").GetComponentsInChildren<Button>();
+        BuildTurretButton = FactoryMenuPanel.transform.Find("BuildTurretMenu_Panel").GetComponentInChildren<Button>();
         CancelBuildButton = FactoryMenuPanel.transform.Find("Cancel_Button").GetComponent<Button>();
         produceResourcesButton = ProduceResourcesMenuPanel.transform.Find("Button").gameObject;
         produceResourcesText = ProduceResourcesMenuPanel.transform.Find("Already Upgraded").gameObject;

@@ -38,9 +38,11 @@ public sealed class Factory : BaseEntity
     public int AvailableFactoriesCount { get { return Mathf.Min(MaxAvailableFactories, FactoryData.AvailableFactories.Length); } }
     public Action<Unit> OnUnitBuilt;
     public Action<Factory> OnFactoryBuilt;
+    public Action<Turret> OnTurretBuild;
     public Action OnBuildCanceled;
     public bool IsBuildingUnit { get { return CurrentState == State.BuildingUnit; } }
     public int influence = 2;
+    public GameObject TurretPrefab = null;
 
     #region MonoBehaviour methods
     protected override void Awake()
@@ -81,6 +83,8 @@ public sealed class Factory : BaseEntity
             string path = "Prefabs/Factories/" + templateFactoryPrefab.name + "_" + Team.ToString();
             FactoryPrefabs[i] = Resources.Load<GameObject>(path);
         }
+        TurretPrefab = Resources.Load<GameObject>("Prefabs/Turrets/Turret_" + Team.ToString());
+
     }
     protected override void Start()
     {
@@ -387,5 +391,40 @@ public sealed class Factory : BaseEntity
         EndBuildDate = Time.time + FactoryData.BuildDuration;
     }
 
+    #endregion
+
+    #region Turret building methods
+    public bool CanPositionTurret(Vector3 buildPos)
+    {
+        if (GameServices.IsPosInPlayableBounds(buildPos) == false)
+            return false;
+
+        Vector3 extent = TurretPrefab.GetComponent<BoxCollider>().size / 2f;
+
+        float overlapYOffset = 0.1f;
+        buildPos += Vector3.up * (extent.y + overlapYOffset);
+
+        if (Physics.CheckBox(buildPos, extent))
+        //foreach(Collider col in Physics.OverlapBox(buildPos, halfExtent))
+        {
+            //Debug.Log("Overlap");
+            return false;
+        }
+
+        return true;
+    }
+    public Turret StartBuildTurret(Vector3 buildPos)
+    {
+        if (CurrentState == State.BuildingUnit)
+            return null;
+
+        Transform teamRoot = GameServices.GetControllerByTeam(GetTeam())?.GetTeamRoot();
+        GameObject turretInst = Instantiate(TurretPrefab, buildPos, Quaternion.identity, teamRoot);
+        turretInst.name = turretInst.name.Replace("(Clone)", "_" + SpawnCount.ToString());
+        Turret newTurret = turretInst.GetComponent<Turret>();
+        newTurret.Init(GetTeam());
+
+        return newTurret;
+    }
     #endregion
 }
