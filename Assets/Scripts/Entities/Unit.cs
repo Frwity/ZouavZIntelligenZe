@@ -248,7 +248,7 @@ public class Unit : BaseEntity
             {
                 GameObject newBullet = Instantiate(UnitData.BulletPrefab, BulletSlot);
                 newBullet.transform.parent = null;
-                newBullet.GetComponent<Bullet>().ShootToward(EntityTarget.transform.position - transform.position, this);
+                newBullet.GetComponent<Bullet>().ShootToward(EntityTarget.transform.position - transform.position, Team);
             }
             // apply damages
             int damages = Mathf.FloorToInt(UnitData.DPS * UnitData.AttackFrequency);
