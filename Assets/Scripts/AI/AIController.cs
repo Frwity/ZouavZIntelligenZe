@@ -13,6 +13,7 @@ public sealed class AIController : UnitController
 
     public StrategicTask task1 = null;
     public StrategicTask task2 = null;
+    public StrategicTask task3 = null;
 
     Squad explorationSquad;
     Squad militarySquad1;
@@ -21,6 +22,7 @@ public sealed class AIController : UnitController
     [SerializeField] float timeBetweenUtilitySystemUpdate = 5.0f;
     float previousUtilitySystemTime1 = 0.0f;
     float previousUtilitySystemTime2 = 0.0f;
+    float previousUtilitySystemTime3 = 0.0f;
 
     protected override void Awake()
     {
@@ -36,7 +38,8 @@ public sealed class AIController : UnitController
         explorationSquad = new Squad(this);
 
         previousUtilitySystemTime1 = Time.time;
-        previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 2.0f;
+        previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 3.0f;
+        previousUtilitySystemTime3 = Time.time + timeBetweenUtilitySystemUpdate / 3.0f * 2;
 
         playerController = FindObjectOfType<PlayerController>();
     }
@@ -46,21 +49,10 @@ public sealed class AIController : UnitController
         base.Update();
         UpdateTasks();
 
-        if (previousUtilitySystemTime1 + timeBetweenUtilitySystemUpdate < Time.time)
-        {
-            previousUtilitySystemTime1 = Time.time;
-            //    Debug.Log("1-------------");
-            UtilitySystemUpdate(ref task1, 0.1f);
-            //    Debug.Log("1-------------");
+        UtilitySystemUpdate(ref task1, 0.1f, ref previousUtilitySystemTime1);
+        UtilitySystemUpdate(ref task2, 0.15f, ref  previousUtilitySystemTime2);
+        UtilitySystemUpdate(ref task3, 0.35f, ref previousUtilitySystemTime3);
 
-        }
-        if (previousUtilitySystemTime2 + timeBetweenUtilitySystemUpdate < Time.time)
-        {
-            previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 2.0f;
-            //    Debug.Log("2-------------");
-            UtilitySystemUpdate(ref task2, 0.2f);
-            //    Debug.Log("2-------------");
-        }
     }
 
     void UpdateTasks()
@@ -69,10 +61,18 @@ public sealed class AIController : UnitController
             task1.UpdateTask();
         if (task2 != null && !task2.isComplete)
             task2.UpdateTask();
+        if (task3 != null && !task3.isComplete)
+            task3.UpdateTask();
     }
 
-    void UtilitySystemUpdate(ref StrategicTask task, float scoreThreshold)
+    void UtilitySystemUpdate(ref StrategicTask task, float scoreThreshold, ref float previousTime)
     {
+        if (previousTime + timeBetweenUtilitySystemUpdate > Time.time)
+            return;
+        previousTime = Time.time;
+
+        Debug.Log("-------------" + scoreThreshold.ToString());
+
         if (task == null || task.isComplete)
         {
             StrategicTask tempTask;
@@ -103,6 +103,7 @@ public sealed class AIController : UnitController
             if (score > scoreThreshold)
                 task.StartTask(this);
         }
+        Debug.Log("-------------" + scoreThreshold.ToString());
     }
 
     Squad GetRandomSquad()

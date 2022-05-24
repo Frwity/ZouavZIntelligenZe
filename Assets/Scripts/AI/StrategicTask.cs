@@ -356,16 +356,16 @@ public class CreateMinerTask : StrategicTask
         for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
         {
             TargetBuilding temp = _controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>();
-            if (temp.GetTeam() == _controller.GetTeam()) // TODO function and variable to hold in controller
+            if (temp.GetTeam() == _controller.GetTeam()) 
             {
                 ++ownedTarget;
                 if (temp.isProducingResources)
                     ++ownedMine;
 
-                if (!temp.isProducingResources && targetBuilding == null)
+                if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && targetBuilding == null)
                     targetBuilding = temp;
                 
-                else if (!temp.isProducingResources && (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude 
+                else if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude 
                         < (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude)
                 {
                     targetBuilding = temp;
@@ -381,7 +381,7 @@ public class CreateMinerTask : StrategicTask
                     *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
 
         //Debug.Log("mine");
-        //Debug.Log(score); Debug.Log(currentScore);
+        //Debug.Log(score); 
 
         if (score > currentScore)
         {
@@ -590,7 +590,10 @@ public class AttackTargetTask : StrategicTask
     {
         base.UpdateTask();
         if (squad == null)
+        {
+            Debug.Log("c pas bien jerem");
             return;
+        }
 
         if (squadCreation != null)
         {
