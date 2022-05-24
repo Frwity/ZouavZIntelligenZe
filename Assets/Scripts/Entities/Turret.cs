@@ -11,6 +11,8 @@ public class Turret : BaseEntity
     [SerializeField]
     int damage = 40;
     [SerializeField]
+    int maxHp = 350;
+    [SerializeField]
     float buildDuration = 20f;
     [SerializeField]
     float range = 15f;
@@ -40,7 +42,6 @@ public class Turret : BaseEntity
             BuildGaugeImage.fillAmount = 0f;
             BuildGaugeImage.color = GameServices.GetTeamColor(GetTeam());
         }
-        OnDeadEvent += Turret_OnDead;
     }
 
     // Start is called before the first frame update
@@ -56,6 +57,8 @@ public class Turret : BaseEntity
     {
         base.Init(_team);
         isUnderConstruction = true;
+        HP = maxHp;
+        OnDeadEvent += Turret_OnDead;
     }
 
     // Update is called once per frame
