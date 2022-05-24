@@ -43,6 +43,11 @@ public class Squad
          InternalState = E_TASK_STATE.Free;
     }
 
+    public Unit GetSquadLeader()
+    {
+        return SquadFormation.FormationLeader;
+    }
+
     /*
      * Calculate position of the members
      */
