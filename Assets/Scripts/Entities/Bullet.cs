@@ -10,12 +10,13 @@ public class Bullet : MonoBehaviour
     float MoveForce = 2000f;
 
     float ShootDate = 0f;
-    Unit UnitOwner;
-    public void ShootToward(Vector3 direction, Unit owner)
+    ETeam TeamOwner;
+
+    public void ShootToward(Vector3 direction, ETeam ownerTeam)
     {
         ShootDate = Time.time;
         GetComponent<Rigidbody>().AddForce(direction.normalized * MoveForce);
-        UnitOwner = owner;
+        TeamOwner = ownerTeam;
     }
 
     #region MonoBehaviour methods
@@ -28,7 +29,7 @@ public class Bullet : MonoBehaviour
     }
     void OnCollisionEnter(Collision col)
     {
-        if (col.gameObject.GetComponent<Unit>()?.GetTeam() == UnitOwner.GetTeam())
+        if (col.gameObject.GetComponent<Unit>()?.GetTeam() == TeamOwner)
             return;
 
         Destroy(gameObject);

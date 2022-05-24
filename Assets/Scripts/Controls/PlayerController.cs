@@ -11,7 +11,7 @@ public sealed class PlayerController : UnitController
     public enum InputMode
     {
         Orders,
-        FactoryPositioning,
+        Positioning,
     }
 
     [SerializeField]
@@ -22,7 +22,7 @@ public sealed class PlayerController : UnitController
     EventSystem SceneEventSystem = null;
 
     [SerializeField, Range(0f, 1f)]
-    float FactoryPreviewTransparency = 0.3f;
+    float PreviewTransparency = 0.3f;
 
     PointerEventData MenuPointerEventData = null;
 
@@ -47,7 +47,8 @@ public sealed class PlayerController : UnitController
     // Factory build
     InputMode CurrentInputMode = InputMode.Orders;
     int WantedFactoryId = 0;
-    GameObject WantedFactoryPreview = null;
+    GameObject WantedPreview = null;
+    bool isFactoryWanted = false;
     Shader PreviewShader = null;
 
     // Mouse events
@@ -60,6 +61,7 @@ public sealed class PlayerController : UnitController
     Action OnCameraDragMoveEnd = null;
 
     Action<Vector3> OnFactoryPositioned = null;
+    Action<Vector3> OnTurretPositionned = null;
     Action<float> OnCameraZoom = null;
     Action<float> OnCameraMoveHorizontal = null;
     Action<float> OnCameraMoveVertical = null;
@@ -68,7 +70,7 @@ public sealed class PlayerController : UnitController
     Action OnFocusBasePressed = null;
     Action OnCancelBuildPressed = null;
     Action OnDestroyEntityPressed = null;
-    Action OnCancelFactoryPositioning = null;
+    Action OnCancelPositioning = null;
     Action OnSelectAllPressed = null;
     Action [] OnCategoryPressed = new Action[9];
 
@@ -159,11 +161,18 @@ public sealed class PlayerController : UnitController
         OnFocusBasePressed += SetCameraFocusOnMainFactory;
         OnCancelBuildPressed += CancelCurrentBuild;
 
-        OnCancelFactoryPositioning += ExitFactoryBuildMode;
+        OnCancelPositioning += ExitFactoryBuildMode;
 
         OnFactoryPositioned += (floorPos) =>
         {
             if (RequestFactoryBuild(WantedFactoryId, floorPos) != null)
+            {
+                ExitFactoryBuildMode();
+            }
+        };
+        OnTurretPositionned += (floorPos) =>
+        {
+            if (RequestTurretBuild(floorPos) != null)
             {
                 ExitFactoryBuildMode();
             }
@@ -203,8 +212,8 @@ public sealed class PlayerController : UnitController
     {
         switch (CurrentInputMode)
         {
-            case InputMode.FactoryPositioning:
-                UpdateFactoryPositioningInput();
+            case InputMode.Positioning:
+                UpdatePositioningInput();
                 break;
             case InputMode.Orders:
                 UpdateSelectionInput();
@@ -224,17 +233,20 @@ public sealed class PlayerController : UnitController
     #endregion
 
     #region Update methods
-    void UpdateFactoryPositioningInput()
+    void UpdatePositioningInput()
     {
-        Vector3 floorPos = ProjectFactoryPreviewOnFloor();
+        Vector3 floorPos = ProjectPreviewOnFloor();
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            OnCancelFactoryPositioning?.Invoke();
+            OnCancelPositioning?.Invoke();
         }
         if (Input.GetMouseButtonDown(0))
         {
-            OnFactoryPositioned?.Invoke(floorPos);
+            if (isFactoryWanted)
+                OnFactoryPositioned?.Invoke(floorPos);
+            else
+                OnTurretPositionned?.Invoke(floorPos);
         }
     }
     void UpdateSelectionInput()
@@ -507,7 +519,7 @@ public sealed class PlayerController : UnitController
 
         base.SelectFactory(factory);
 
-        PlayerMenuController.UpdateFactoryMenu(factory, SelectedFactoryList.Count, RequestUnitBuild, EnterFactoryBuildMode);
+        PlayerMenuController.UpdateFactoryMenu(factory, SelectedFactoryList.Count, RequestUnitBuild, EnterFactoryBuildMode, EnterTurretBuildMode);
     }
     public override void UnselectCurrentFactory()
     {
@@ -540,7 +552,7 @@ public sealed class PlayerController : UnitController
         if (SelectedFactoryList[0].GetFactoryCost(factoryId) > TotalBuildPoints)
             return;
 
-        CurrentInputMode = InputMode.FactoryPositioning;
+        CurrentInputMode = InputMode.Positioning;
 
         WantedFactoryId = factoryId;
 
@@ -552,27 +564,59 @@ public sealed class PlayerController : UnitController
         {
             Debug.LogWarning("Invalid factory prefab for factoryId " + factoryId);
         }
-        WantedFactoryPreview = Instantiate(factoryPrefab.transform.GetChild(0).gameObject); // Quick and dirty access to mesh GameObject
-        WantedFactoryPreview.name = WantedFactoryPreview.name.Replace("(Clone)", "_Preview");
+        isFactoryWanted = true;
+        WantedPreview = Instantiate(factoryPrefab.transform.GetChild(0).gameObject); // Quick and dirty access to mesh GameObject
+        WantedPreview.name = WantedPreview.name.Replace("(Clone)", "_Preview");
         // Set transparency on materials
-        foreach(Renderer rend in WantedFactoryPreview.GetComponentsInChildren<MeshRenderer>())
+        foreach (Renderer rend in WantedPreview.GetComponentsInChildren<MeshRenderer>())
         {
             Material mat = rend.material;
             mat.shader = PreviewShader;
             Color col = mat.color;
-            col.a = FactoryPreviewTransparency;
+            col.a = PreviewTransparency;
             mat.color = col;
         }
 
         // Project mouse position on ground to position factory preview
-        ProjectFactoryPreviewOnFloor();
+        ProjectPreviewOnFloor();
+    }
+    void EnterTurretBuildMode()
+    {
+        if (Turret.cost > TotalBuildPoints)
+            return;
+
+        CurrentInputMode = InputMode.Positioning;
+
+        // Create turret preview
+
+        // Load turret prefab for preview
+        GameObject turretPrefab = SelectedFactoryList[0].TurretPrefab;
+        if (turretPrefab == null)
+        {
+            Debug.LogWarning("Invalid turret prefab for turret");
+        }
+        isFactoryWanted = false;
+        WantedPreview = Instantiate(turretPrefab.transform.GetChild(0).gameObject); // Quick and dirty access to mesh GameObject
+        WantedPreview.name = WantedPreview.name.Replace("(Clone)", "_Preview");
+        // Set transparency on materials
+        foreach (Renderer rend in WantedPreview.GetComponentsInChildren<MeshRenderer>())
+        {
+            Material mat = rend.material;
+            mat.shader = PreviewShader;
+            Color col = mat.color;
+            col.a = PreviewTransparency;
+            mat.color = col;
+        }
+
+        // Project mouse position on ground to position factory preview
+        ProjectPreviewOnFloor();
     }
     void ExitFactoryBuildMode()
     {
         CurrentInputMode = InputMode.Orders;
-        Destroy(WantedFactoryPreview);
+        Destroy(WantedPreview);
     }
-    Vector3 ProjectFactoryPreviewOnFloor()
+    Vector3 ProjectPreviewOnFloor()
     {
         if (CurrentInputMode == InputMode.Orders)
         {
@@ -587,7 +631,7 @@ public sealed class PlayerController : UnitController
         if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
             floorPos = raycastInfo.point;
-            WantedFactoryPreview.transform.position = floorPos;
+            WantedPreview.transform.position = floorPos;
         }
         return floorPos;
     }

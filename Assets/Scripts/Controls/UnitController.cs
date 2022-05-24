@@ -50,6 +50,7 @@ public class UnitController : MonoBehaviour
     protected List<Unit> SelectedUnitList = new List<Unit>();
     public List<Factory> FactoryList = new List<Factory>();
     protected List<Factory> SelectedFactoryList = new List<Factory>();
+    public List<Turret> TurretList = new List<Turret>();
     public TargetBuilding currentTarget = null;
 
     // events
@@ -176,6 +177,21 @@ public class UnitController : MonoBehaviour
         };
         FactoryList.Add(factory);
     }
+    void AddTurret(Turret turret)
+    {
+        if (turret == null)
+        {
+            Debug.LogWarning("Trying to add null turret");
+            return;
+        }
+
+        turret.OnDeadEvent += () =>
+        {
+            TotalBuildPoints += Turret.cost;
+            TurretList.Remove(turret);
+        };
+        TurretList.Add(turret);
+    }
     virtual public void SelectTarget(TargetBuilding target)
     {
         if (target == null || target.GetTeam() == ETeam.Neutral)
@@ -235,6 +251,30 @@ public class UnitController : MonoBehaviour
         }
         return null;
     }
+    public Turret RequestTurretBuild(Vector3 buildPos)
+    {
+        if (SelectedFactoryList.Count == 0)
+            return null;
+
+        if (TotalBuildPoints < Turret.cost)
+            return null;
+
+        // Check if positon is valid
+        if (SelectedFactoryList[0].CanPositionTurret(buildPos) == false)
+            return null;
+
+        Turret newTurret = SelectedFactoryList[0].StartBuildTurret(buildPos);
+        if (newTurret != null)
+        {
+            AddTurret(newTurret);
+            TotalBuildPoints -= Turret.cost;
+
+            return newTurret;
+        }
+
+        return null;
+    }
+
     public int GetLFactoryCount()
     {
         int count = 0;
