@@ -49,17 +49,17 @@ public sealed class AIController : UnitController
         if (previousUtilitySystemTime1 + timeBetweenUtilitySystemUpdate < Time.time)
         {
             previousUtilitySystemTime1 = Time.time;
-            Debug.Log("1-------------");
+            //    Debug.Log("1-------------");
             UtilitySystemUpdate(ref task1, 0.1f);
-            Debug.Log("1-------------");
+            //    Debug.Log("1-------------");
 
         }
         if (previousUtilitySystemTime2 + timeBetweenUtilitySystemUpdate < Time.time)
         {
             previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 2.0f;
-            Debug.Log("2-------------");
+            //    Debug.Log("2-------------");
             UtilitySystemUpdate(ref task2, 0.2f);
-            Debug.Log("2-------------");
+            //    Debug.Log("2-------------");
         }
     }
 

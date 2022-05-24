@@ -33,6 +33,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     public UnityEvent OnBuiilduingCaptured;
     public bool canProduceResources = false;
     public bool isProducingResources = false;
+    public bool isUpgrading = false;
 
     #region MonoBehaviour methods
     void Start()
@@ -162,12 +163,14 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     public void StartUpgrade()
     {
         currentUpgradeDuration = upgradeDuration;
+        isUpgrading = true;
     }
 
     private void StartProducingResources()
     {
         transform.localScale = new Vector3(1.7f, 2.5f, 1.7f);
         isProducingResources = true;
+        isUpgrading = false;
         InvokeRepeating("ProduceResources", 5f, 5f);
         GaugeImage.fillAmount = 0f;
         Map.Instance.GetTile(transform.position).buildType = E_BUILDTYPE.MINER;

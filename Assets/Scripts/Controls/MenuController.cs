@@ -191,8 +191,8 @@ public class MenuController : MonoBehaviour
         ShowProduceResourcesMenu();
         if (target)
         {
-            produceResourcesText.SetActive(target.isProducingResources);
-            produceResourcesButton.SetActive(!target.isProducingResources);
+            produceResourcesText.SetActive(target.isProducingResources || target.isUpgrading);
+            produceResourcesButton.SetActive(!target.isProducingResources && !target.isUpgrading);
             produceResourcesButton.GetComponent<Button>().onClick.AddListener(() =>
             {
                 if (Controller.TotalBuildPoints >= 8)

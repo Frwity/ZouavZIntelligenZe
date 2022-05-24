@@ -28,19 +28,19 @@ public class Squad
     public E_MODE SquadMode;
     //Target unit to destroy
     private BaseEntity SquadTarget = null;
-    private E_TASK_STATE InternalState;
 
-    public E_TASK_STATE State
-    {
-        get => InternalState;
-    }
+    public E_TASK_STATE State;
 
     public Squad(UnitController controller)
     {
          SquadFormation = new Formation(this);
          Controller = controller;
          SquadMode = E_MODE.Defensive;
-         InternalState = E_TASK_STATE.Free;
+    }
+
+    public Unit GetSquadLeader()
+    {
+        return SquadFormation.FormationLeader;
     }
 
     /*
@@ -108,7 +108,9 @@ public class Squad
      */
     public void MoveUnitToPosition()
     {
-        InternalState = E_TASK_STATE.Ongoing;
+        if(State !=E_TASK_STATE.Busy)
+            State = E_TASK_STATE.Ongoing;
+        
         SetSquadSpeed();
         foreach (Unit unit in members)
         {
@@ -148,7 +150,7 @@ public class Squad
         {
             SquadNeedToCapture(target);
 
-            InternalState = E_TASK_STATE.Busy;
+            State = E_TASK_STATE.Busy;
             target.OnBuiilduingCaptured.AddListener(OnSquadCaptureTarget);
             SquadFormation.ChooseLeader(target.transform.position);
             SquadCapture = true;
@@ -207,7 +209,7 @@ public class Squad
 
     public void SquadTaskAttack(BaseEntity target)
     {
-        InternalState = E_TASK_STATE.Busy;
+        State = E_TASK_STATE.Busy;
         SetMode(E_MODE.Agressive);
         SquadTarget = target;
         SquadAttack = true;
@@ -224,7 +226,7 @@ public class Squad
     private void OnSquadCaptureTarget()
     {
         SquadCapture = false;
-        InternalState = E_TASK_STATE.Free;
+        State = E_TASK_STATE.Free;
         targetBuilding.OnBuiilduingCaptured.RemoveListener(OnSquadCaptureTarget);
     }
 
@@ -242,7 +244,7 @@ public class Squad
         SquadTarget = null;
         SetSquadTarget();
         SquadAttack = false;
-        InternalState = E_TASK_STATE.Free;
+        State = E_TASK_STATE.Free;
         StopSquadMovement();
         CanBreakFormation = false;
     }
@@ -285,10 +287,11 @@ public class Squad
         SquadTarget = null;
         SquadStopCapture();
         SetSquadTarget();
+        SquadStopRepair();
         SquadCapture = false;
         SquadAttack = false;
         SquadRepair = false;
-        InternalState = E_TASK_STATE.Free;
+        State = E_TASK_STATE.Free;
         CanBreakFormation = false;
         StopSquadMovement();
     }
@@ -299,14 +302,14 @@ public class Squad
     {
         ResetTask();
         
-        InternalState = E_TASK_STATE.Busy;
+        State = E_TASK_STATE.Busy;
         SquadTarget = target;
         SquadRepair = true;
         CanBreakFormation = true;
         
         MoveSquad(target.transform.position);
     }
-
+      
     private void SquadStartRepair()
     {
         if (!SquadTarget.NeedsRepairing())
@@ -319,10 +322,19 @@ public class Squad
         {
             if (unit.Equals(SquadTarget))
                 continue;
-            
-            if(unit.IsAtDestination() && unit.CanRepair(SquadTarget))
-                unit.StartRepairing(SquadTarget);
+
+            if (unit.IsAtDestination() && unit.CanRepair(SquadTarget) && !unit.IsRepairing)
+            {
+                unit.IsRepairing = true;
+                unit.SetRepairTarget(SquadTarget);
+            }
         }
+    }
+
+    private void SquadStopRepair()
+    {
+        foreach (Unit unit in members)
+            unit.IsRepairing = false;
     }
     
     #endregion
