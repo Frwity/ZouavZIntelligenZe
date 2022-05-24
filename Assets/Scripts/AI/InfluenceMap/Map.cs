@@ -88,6 +88,14 @@ public class Map : MonoBehaviour
             tilesWithBuild.Add(tile);
     }
 
+    public void RemoveTargetBuilding(TargetBuilding targetBuilding, ETeam team)
+    {
+        Tile tile = GetTile(targetBuilding.transform.position);
+        tile.gameobject = null;
+        tile.strategicInfluence = 0;
+        tilesWithBuild.Remove(tile);
+    }
+
     public void AddFactory(Factory factory, ETeam team)
     {
         Tile tile = GetTile(factory.transform.position);

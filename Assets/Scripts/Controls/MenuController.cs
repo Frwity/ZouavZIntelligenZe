@@ -198,7 +198,7 @@ public class MenuController : MonoBehaviour
                 if (Controller.TotalBuildPoints >= 8)
                 {
                     Controller.TotalBuildPoints -= 8;
-                    target.StartProducingResources();
+                    target.StartUpgrade();
                     produceResourcesButton.SetActive(false);
                     produceResourcesText.SetActive(true);
                 }

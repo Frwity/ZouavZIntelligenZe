@@ -51,6 +51,7 @@ public class UnitController : MonoBehaviour
     public List<Factory> FactoryList = new List<Factory>();
     protected List<Factory> SelectedFactoryList = new List<Factory>();
     public List<Turret> TurretList = new List<Turret>();
+    public List<TargetBuilding> TargetBuildingList = new List<TargetBuilding>();
     public TargetBuilding currentTarget = null;
 
     // events
@@ -108,16 +109,16 @@ public class UnitController : MonoBehaviour
         };
         UnitList.Add(unit);
     }
-    public void CaptureTarget(int points)
+    public void CaptureTarget(int points, TargetBuilding target)
     {
-        //Debug.Log("CaptureTarget");
         TotalBuildPoints += points;
         CapturedTargets++;
+        TargetBuildingList.Add(target);
     }
-    public void LoseTarget(int points)
+    public void LoseTarget(int points, TargetBuilding target)
     {
-        TotalBuildPoints -= points;
         CapturedTargets--;
+        TargetBuildingList.Remove(target);
     }
 
     public int GetMilitaryPower()
@@ -171,7 +172,6 @@ public class UnitController : MonoBehaviour
 
         factory.OnDeadEvent += () =>
         {
-            TotalBuildPoints += factory.Cost;
             if (factory.IsSelected)
                 SelectedFactoryList.Remove(factory);
             FactoryList.Remove(factory);
@@ -188,7 +188,6 @@ public class UnitController : MonoBehaviour
 
         turret.OnDeadEvent += () =>
         {
-            TotalBuildPoints += Turret.cost;
             TurretList.Remove(turret);
         };
         TurretList.Add(turret);

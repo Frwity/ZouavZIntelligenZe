@@ -379,7 +379,7 @@ public class CreateMinerTask : StrategicTask
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
-        targetBuilding.StartProducingResources();
+        targetBuilding.StartUpgrade();
     }
 
     public override void UpdateTask()
@@ -621,7 +621,7 @@ public class AttackTargetTask : StrategicTask
     {
         checkIfEndInterval = Time.time;
         squad.SetMode(E_MODE.Agressive);
-        if (targetTile.buildType != E_BUILDTYPE.MINER)
+        if (targetTile.buildType != E_BUILDTYPE.MINER && targetTile.buildType != E_BUILDTYPE.CAPTUREPOINT)
             squad.SquadTaskAttack(targetTile.gameobject.GetComponent<BaseEntity>());
         else
             squad.CaptureTarget(targetTile.gameobject.GetComponent<TargetBuilding>());

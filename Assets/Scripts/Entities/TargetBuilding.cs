@@ -9,6 +9,8 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     [SerializeField]
     float CaptureGaugeSpeed = 1f;
     [SerializeField]
+    float upgradeDuration = 20f;
+    [SerializeField]
     int BuildPoints = 5;
     [SerializeField]
     Material BlueTeamMaterial = null;
@@ -20,6 +22,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     Image GaugeImage;
     int[] TeamScore;
     float CaptureGaugeValue;
+    float currentUpgradeDuration = 0f;
     ETeam OwningTeam = ETeam.Neutral;
     ETeam CapturingTeam = ETeam.Neutral;
     UnitController owningController = null;
@@ -48,17 +51,26 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     }
     void Update()
     {
-        if (CapturingTeam == OwningTeam || CapturingTeam == ETeam.Neutral)
-            return;
-
-        CaptureGaugeValue -= TeamScore[(int)CapturingTeam] * CaptureGaugeSpeed * Time.deltaTime;
-
-        GaugeImage.fillAmount = 1f - CaptureGaugeValue / CaptureGaugeStart;
-
-        if (CaptureGaugeValue <= 0f)
+        if (CapturingTeam != OwningTeam && CapturingTeam != ETeam.Neutral)
         {
-            CaptureGaugeValue = 0f;
-            OnCaptured(CapturingTeam);
+            CaptureGaugeValue -= TeamScore[(int)CapturingTeam] * CaptureGaugeSpeed * Time.deltaTime;
+
+            GaugeImage.fillAmount = 1f - CaptureGaugeValue / CaptureGaugeStart;
+
+            if (CaptureGaugeValue <= 0f)
+            {
+                CaptureGaugeValue = 0f;
+                OnCaptured(CapturingTeam);
+            }
+        }
+
+        if (currentUpgradeDuration > 0f)
+        {
+            currentUpgradeDuration -= Time.deltaTime;
+            GaugeImage.fillAmount = 1f - currentUpgradeDuration / upgradeDuration;
+
+            if (currentUpgradeDuration <= 0f)
+                StartProducingResources();
         }
     }
     #endregion
@@ -123,7 +135,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
             UnitController teamController = GameServices.GetControllerByTeam(newTeam);
             if (teamController != null)
             {
-                teamController.CaptureTarget(BuildPoints);
+                teamController.CaptureTarget(BuildPoints, this);
                 owningController = teamController;
             }
 
@@ -132,8 +144,11 @@ public class TargetBuilding : MonoBehaviour, ISelectable
                 // remove points to previously owning team
                 teamController = GameServices.GetControllerByTeam(OwningTeam);
                 if (teamController != null)
-                    teamController.LoseTarget(BuildPoints);
+                {
+                    teamController.LoseTarget(BuildPoints, this);
+                }
                 CancelInvoke("ProduceResources");
+                Map.Instance.RemoveTargetBuilding(this, OwningTeam);
             }
         }
 
@@ -144,10 +159,18 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         isProducingResources = false;
     }
 
-    public void StartProducingResources()
+    public void StartUpgrade()
     {
+        currentUpgradeDuration = upgradeDuration;
+    }
+
+    private void StartProducingResources()
+    {
+        transform.localScale = new Vector3(1.7f, 2.5f, 1.7f);
         isProducingResources = true;
         InvokeRepeating("ProduceResources", 5f, 5f);
+        GaugeImage.fillAmount = 0f;
+        Map.Instance.GetTile(transform.position).buildType = E_BUILDTYPE.MINER;
     }
 
     private void ProduceResources()
