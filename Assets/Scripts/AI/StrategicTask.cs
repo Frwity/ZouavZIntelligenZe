@@ -313,10 +313,11 @@ public class CreateHAttackSquadTask : CreateSquadTask
     {
         base.StartTask(_controller);
         int moneyTemp = money;
-        while (moneyTemp > 0) // TODO create squad
+        while (moneyTemp > 0)
         {
-            factory.RequestUnitBuild(2, this);
-            moneyTemp -= 3;
+            int newUnitCost = Random.Range(0, 2);
+            factory.RequestUnitBuild(newUnitCost * 2 + 3, this);
+            moneyTemp -= newUnitCost + 4;
         }
     }
 
@@ -330,10 +331,52 @@ public class CreateHAttackSquadTask : CreateSquadTask
         if (base.Evaluate(_controller, ref currentScore))
         {
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
-            if (score > currentScore) // TODO alocate money
+            if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.8f);
-                money += 3 - money % 3;
+                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.7f);
+                targetCost = money + squad.totalCost;
+                currentScore = score;
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+public class CreateDefenseSquadTask : CreateSquadTask
+{
+    new public static int id { get; private set; } = 9; // TODO change to 5
+
+    public CreateDefenseSquadTask(Squad _squad)
+    {
+        squad = _squad;
+    }
+
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+        int moneyTemp = money;
+        while (moneyTemp > 0)
+        {
+            factory.RequestUnitBuild(4, this);
+            moneyTemp -= 5;
+        }
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
+    }
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        if (base.Evaluate(_controller, ref currentScore))
+        {
+            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
+            if (score > currentScore)
+            {
+                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.5f);
+                money += 5 - money % 5;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
                 return true;
