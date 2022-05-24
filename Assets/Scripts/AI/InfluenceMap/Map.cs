@@ -84,11 +84,10 @@ public class Map : MonoBehaviour
         tile.gameobject = targetBuilding.gameObject;
         tile.strategicInfluence = targetBuilding.GetTeam() == ETeam.Blue ? targetBuilding.influence : -targetBuilding.influence;
         tile.buildType = E_BUILDTYPE.CAPTUREPOINT;
-        if (!tilesWithBuild.Contains(tile))
-            tilesWithBuild.Add(tile);
+        tilesWithBuild.Add(tile);
     }
 
-    public void RemoveTargetBuilding(TargetBuilding targetBuilding, ETeam team)
+    public void RemoveTargetBuilding(TargetBuilding targetBuilding)
     {
         Tile tile = GetTile(targetBuilding.transform.position);
         tile.gameobject = null;
@@ -103,6 +102,33 @@ public class Map : MonoBehaviour
         tile.strategicInfluence = factory.GetTeam() == ETeam.Blue ? factory.influence : -factory.influence;
         tile.buildType = factory.GetFactoryData.TypeId == 0 ? E_BUILDTYPE.LIGHTFACTORY : E_BUILDTYPE.HEAVYFACTORY;
         tilesWithBuild.Add(tile);
+    }
+
+    public void RemoveFactory(Factory factory)
+    {
+        Tile tile = GetTile(factory.transform.position);
+        tile.gameobject = null;
+        tile.strategicInfluence = 0;
+        tile.buildType = E_BUILDTYPE.NOTHING;
+        tilesWithBuild.Remove(tile);
+    }
+
+    public void AddTurret(Turret turret, ETeam team)
+    {
+        Tile tile = GetTile(turret.transform.position);
+        tile.gameobject = turret.gameObject;
+        tile.strategicInfluence = turret.GetTeam() == ETeam.Blue ? Turret.influence : -Turret.influence;
+        tile.buildType = E_BUILDTYPE.TURRET;
+        tilesWithBuild.Add(tile);
+    }
+
+    public void RemoveTurret(Turret turret)
+    {
+        Tile tile = GetTile(turret.transform.position);
+        tile.gameobject = null;
+        tile.strategicInfluence = 0;
+        tile.buildType = E_BUILDTYPE.NOTHING;
+        tilesWithBuild.Remove(tile);
     }
 
     // Update is called once per frame

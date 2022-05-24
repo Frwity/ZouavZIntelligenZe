@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class Turret : BaseEntity
 {
     static public int cost = 10;
+    static public int influence = 1;
 
     [SerializeField]
     int damage = 40;
@@ -39,6 +40,7 @@ public class Turret : BaseEntity
             BuildGaugeImage.fillAmount = 0f;
             BuildGaugeImage.color = GameServices.GetTeamColor(GetTeam());
         }
+        OnDeadEvent += Turret_OnDead;
     }
 
     // Start is called before the first frame update
@@ -47,6 +49,7 @@ public class Turret : BaseEntity
         base.Start();
         currentDuration = buildDuration;
         toRotate = transform.Find("ToRotate").gameObject;
+        Map.Instance.AddTurret(this, Team);
     }
 
     override public void Init(ETeam _team)
@@ -111,5 +114,10 @@ public class Turret : BaseEntity
 
             currentFocus.AddDamage(damage);
         }
+    }
+
+    void Turret_OnDead()
+    {
+        Map.Instance.RemoveTurret(this);
     }
 }
