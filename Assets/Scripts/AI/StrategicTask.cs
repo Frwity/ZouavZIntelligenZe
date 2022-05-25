@@ -61,17 +61,14 @@ public class CapturePointTask : StrategicTask
         if (captureIndex != int.MaxValue)
         {
             targetBuilding = _controller.capturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
-            int ownedTarget = 1;
-            int enemyTarget = 1;
 
-            for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
-            {
-                if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == _controller.GetTeam()) // TODO function and variable to hold in controller
-                    ++ownedTarget;
-                else if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == _controller.playerController.GetTeam())
-                    ++enemyTarget;
-            }
-            score = (_controller.taskDatas[id].Distance.Evaluate(distance / Map.Instance.mapSize) + _controller.taskDatas[id].Ratio.Evaluate(((enemyTarget + 0.25f) / (ownedTarget)) <= 0.01f ? 0.1f : ((float)enemyTarget / ownedTarget))) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
+            float ownedTarget = _controller.TargetBuildingList.Count;
+            float enemyTarget = _controller.playerController.TargetBuildingList.Count;
+
+            float targetBuildingRatio = ((enemyTarget + 0.25f) / ownedTarget) <= 0.01f ? 0.1f : (enemyTarget / ownedTarget);
+
+            score = (_controller.taskDatas[id].Distance.Evaluate(distance / Map.Instance.mapSize) + _controller.taskDatas[id].Ratio.Evaluate(targetBuildingRatio)) 
+                  *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
         }
         else
             return false;
@@ -346,7 +343,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
 
 public class CreateDefenseSquadTask : CreateSquadTask
 {
-    new public static int id { get; private set; } = 9; // TODO change to 5
+    new public static int id { get; private set; } = 5; // TODO change to 5
 
     public CreateDefenseSquadTask(Squad _squad)
     {
@@ -389,7 +386,7 @@ public class CreateDefenseSquadTask : CreateSquadTask
 
 public class CreateMinerTask : StrategicTask
 {
-    public static int id { get; private set; } = 5;
+    public static int id { get; private set; } = 6;
 
     TargetBuilding targetBuilding = null;
 
@@ -452,7 +449,7 @@ public class CreateMinerTask : StrategicTask
 
 public class CreateFactoryTask : StrategicTask
 {
-    public static int id { get; private set; } = 6;
+    public static int id { get; private set; } = 7;
 
     Vector3 pos;
 
@@ -549,7 +546,7 @@ public class CreateFactoryTask : StrategicTask
 
 public class AttackTargetTask : StrategicTask
 {
-    public static int id { get; private set; } = 7;
+    public static int id { get; private set; } = 8;
 
     Tile targetTile = null;
     StrategicTask squadCreation = null;
@@ -702,7 +699,7 @@ public class AttackTargetTask : StrategicTask
 
 public class PlaceDefendUnitTask : StrategicTask
 {
-    public static int id { get; private set; } = 8;
+    public static int id { get; private set; } = 9;
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
