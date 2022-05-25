@@ -62,8 +62,8 @@ public class CapturePointTask : StrategicTask
         {
             targetBuilding = _controller.capturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
 
-            float ownedTarget = _controller.TargetBuildingList.Count;
-            float enemyTarget = _controller.playerController.TargetBuildingList.Count;
+            float ownedTarget = _controller.TargetBuildingList.Count + 1;
+            float enemyTarget = _controller.playerController.TargetBuildingList.Count + 1;
 
             float targetBuildingRatio = ((enemyTarget + 0.25f) / ownedTarget) <= 0.01f ? 0.1f : (enemyTarget / ownedTarget);
 
@@ -343,7 +343,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
 
 public class CreateDefenseSquadTask : CreateSquadTask
 {
-    new public static int id { get; private set; } = 5; // TODO change to 5
+    new public static int id { get; private set; } = 5;
 
     public CreateDefenseSquadTask(Squad _squad)
     {
@@ -720,5 +720,92 @@ public class PlaceDefendUnitTask : StrategicTask
     public override void UpdateTask()
     {
         base.UpdateTask();
+    }
+}
+
+public class PlaceTurretTask : StrategicTask
+{
+    public static int id { get; private set; } = 10;
+
+    Vector3 pos;
+
+    Turret turret;
+
+    public override bool Evaluate(AIController _controller, ref float currentScore)
+    {
+        if (_controller.FactoryList.Count < 0)
+            return false;
+
+        Factory buildingFactory = null;
+        for (int i = 0; i < _controller.FactoryList.Count; ++i) // get availible factory
+        {
+            if (_controller.FactoryList[i].CurrentState == Factory.State.Available)
+            {
+                buildingFactory = _controller.FactoryList[i];
+                break;
+            }
+        }
+        if (buildingFactory != null)
+            _controller.SelectFactory(buildingFactory);
+        else
+            return false;
+
+        float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints)
+                    * _controller.taskDatas[id].MilitaryPower.Evaluate(_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower())
+                    * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
+
+        if (score > currentScore)
+        {
+            pos = Vector3.zero;
+
+            Tile stratTile = null;
+
+            List<Tile> ValueTile = new List<Tile>();
+
+            foreach (Tile tile in Map.Instance.tilesWithBuild) // check for a set of best tiles
+            {
+                if (tile.GetTeam() == _controller.GetTeam())
+                {
+                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 20.0f);
+
+                    foreach (Tile it in stratTiles)
+                        if (it.GetTeam() == _controller.GetTeam() && it.buildType == E_BUILDTYPE.TURRET)
+                            continue;
+                    ValueTile.Add(tile);
+                }
+            }
+
+            foreach (Tile tile in ValueTile) // check for THE best tile
+            {
+                if (stratTile == null || tile.buildType <= stratTile.buildType
+                || tile.buildType == stratTile.buildType && (tile.position - _controller.FactoryList[0].transform.position).magnitude < (stratTile.position - _controller.FactoryList[0].transform.position).magnitude)
+                    stratTile = tile;
+            }
+
+            if (stratTile == null)
+                return false;
+
+            while (buildingFactory.CanPositionTurret(pos) == false)
+                pos = stratTile.position + new Vector3(Random.Range(-1.0f, 1.0f), 0.0f, Random.Range(-1.0f, 1.0f)).normalized * 15.0f;
+
+            currentScore = score;
+            return true;
+        }
+        return false;
+    }
+
+    public override void StartTask(AIController _controller)
+    {
+        base.StartTask(_controller);
+        turret = _controller.RequestTurretBuild(pos);
+        if (turret == null)
+            EndTask();
+    }
+
+    public override void UpdateTask()
+    {
+        base.UpdateTask();
+        if (!turret.isUnderConstruction)
+            EndTask();
     }
 }
