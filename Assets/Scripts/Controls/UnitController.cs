@@ -18,6 +18,7 @@ public class UnitController : MonoBehaviour
     protected Dictionary<int, Squad> Squads = new Dictionary<int, Squad>();
 
     protected Squad SelectedSquad;
+    public List<Squad> TemporarySquadList = new List<Squad>();
 
     public E_MODE SelectedSquadMode { get { return SelectedSquad.SquadMode; } }
     
@@ -58,7 +59,7 @@ public class UnitController : MonoBehaviour
     protected Action OnCaptureTarget;
 
     #region Unit methods
-    protected void UnselectAllUnits()
+    virtual protected void UnselectAllUnits()
     {
         foreach (Unit unit in SelectedUnitList)
             unit.SetSelected(false);
@@ -90,7 +91,6 @@ public class UnitController : MonoBehaviour
     {
         unit.SetSelected(true);
         SelectedUnitList.Add(unit);
-        SelectedSquad.members = SelectedUnitList;
     }
     protected void UnselectUnit(Unit unit)
     {

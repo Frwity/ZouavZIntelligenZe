@@ -227,8 +227,14 @@ public sealed class PlayerController : UnitController
         // Apply camera movement
         UpdateMoveCamera();
         
-        if(SelectedSquad != null)
+        if(SelectedSquad.members.Count > 0)
             SelectedSquad.UpdateSquad();
+
+        foreach (KeyValuePair<int, Squad> squad in Squads)
+            squad.Value.UpdateSquad();
+
+        foreach (Squad squad in TemporarySquadList)
+            squad.UpdateSquad();
     }
     #endregion
 
@@ -451,6 +457,7 @@ public sealed class PlayerController : UnitController
                 if (selectedEntity is Unit)
                 {
                     SelectUnit((selectedEntity as Unit));
+                    SelectedSquad.AddUnit(selectedEntity as Unit);
                 }
                 else if (selectedEntity is Factory)
                 {
@@ -467,10 +474,21 @@ public sealed class PlayerController : UnitController
         SelectionStart = Vector3.zero;
         SelectionEnd = Vector3.zero;
     }
+
+    protected override void UnselectAllUnits()
+    {
+        base.UnselectAllUnits();
+
+        if (SelectedSquad.State == E_TASK_STATE.Busy)
+            TemporarySquadList.Add(new Squad(SelectedSquad));
+
+        SelectedSquad.ClearUnits();
+    }
+
     #endregion
 
     #region Squad creation methods
-    
+
     /*
      * create a squad with selected unit
      * or select a squad with alpha numeric
@@ -537,7 +555,7 @@ public sealed class PlayerController : UnitController
     }
     public override void SelectTarget(TargetBuilding target)
     {
-        if (target == null || target.GetTeam() == ETeam.Neutral)
+        if (target == null || target.GetTeam() == ETeam.Neutral || !target.canProduceResources)
             return;
 
         base.SelectTarget(target);
