@@ -32,7 +32,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
 
     public ETeam GetTeam() { return OwningTeam; }
     public int influence = 1;
-    public UnityEvent OnBuiilduingCaptured;
+    public UnityEvent OnBuilduingCaptured;
     public bool canProduceResources = false;
     public bool isProducingResources = false;
     public bool isUpgrading = false;
@@ -50,7 +50,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         TeamScore = new int[2];
         TeamScore[0] = 0;
         TeamScore[1] = 0;
-        OnBuiilduingCaptured = new UnityEvent();
+        OnBuilduingCaptured = new UnityEvent();
     }
     void Update()
     {
@@ -131,7 +131,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     }
     void OnCaptured(ETeam newTeam)
     {
-        OnBuiilduingCaptured.Invoke();
+        OnBuilduingCaptured.Invoke();
         //Debug.Log("target captured by " + newTeam.ToString());
         if (OwningTeam != newTeam)
         {
