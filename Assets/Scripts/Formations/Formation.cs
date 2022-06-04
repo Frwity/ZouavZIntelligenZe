@@ -131,6 +131,17 @@ public class Formation
         }
     }
 
+    void CreateSquareFormation(Vector3 targetPos)
+    {
+        const float half = (3f - 1f) / 2f;
+        
+        FormationLeader.GridPosition = targetPos;
+        for (int i = 0; i < Squad.members.Count; i++)
+        {
+            
+        }
+    }
+
     /*
      * Choose the leader when a move order is issue
      * The leader is the unit closest to the destination
