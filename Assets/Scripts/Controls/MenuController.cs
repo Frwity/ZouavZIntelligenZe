@@ -211,7 +211,15 @@ public class MenuController : MonoBehaviour
 
         SetSquadText(selectedSquad.SquadMode);
         for (int i = 0; i < SquadButtons.Length; i++)
-            SquadButtons[i].onClick.AddListener(() => { selectedSquad.SetMode((E_MODE)i); });
+        {
+            //not working with i
+            int temp = i;
+            SquadButtons[i].onClick.AddListener(() =>
+            {
+                selectedSquad.SetMode((E_MODE)temp);
+                SetSquadText(selectedSquad.SquadMode);
+            });
+        }
     }
 
     void Awake()
