@@ -60,7 +60,7 @@ public class Squad
             SquadTarget.OnDeadEvent += StopAttack;
         }
 
-        if (squad.SquadCapture)
+        if (squad.SquadCapture && members.Count > 0)
         {
             targetBuilding.OnBuilduingCaptured.RemoveListener(squad.OnSquadCaptureTarget);
             targetBuilding.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
@@ -190,7 +190,7 @@ public class Squad
             MoveSquad(target.transform.position);
             targetBuilding = target;
 
-            if (CanCapture(target))
+            if (members.Count > 0 &&target)
             {
                 CanBreakFormation = true;
                 SquadStartCapture(target);
