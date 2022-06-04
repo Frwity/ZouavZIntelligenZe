@@ -176,16 +176,16 @@ public class CreateSquadTask : StrategicTask
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
-        Factory tempFactory = null;
+        factory = null;
         Vector3 squadPos = squad.GetSquadValue() > 0 ? squad.GetSquadLeader().transform.position : _controller.FactoryList[0].transform.position;
         foreach (Factory it in _controller.FactoryList)
         {
             if (it.CurrentState == Factory.State.Available
             &&  it.GetFactoryData.TypeId == (int)factoryType)
             {
-                if (tempFactory == null)
+                if (factory == null)
                     factory = it;
-                else if ((it.transform.position - squadPos).magnitude < (tempFactory.transform.position - squadPos).magnitude)
+                else if ((it.transform.position - squadPos).magnitude < (factory.transform.position - squadPos).magnitude)
                     factory = it;
             }
         }
