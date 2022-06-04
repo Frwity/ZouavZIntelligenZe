@@ -199,7 +199,7 @@ public class CreateSquadTask : StrategicTask
 
     public static bool HasToCompleteSquad(AIController _controller, int _id, float squadValue, float percentage)
     {
-        if (squadValue <= _controller.taskDatas[_id].MilitaryPower.Evaluate((_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower()) * percentage))
+        if (squadValue <= _controller.taskDatas[_id].EnemyPower.Evaluate((_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower()) * percentage))
             return true;
         return false;
     }
@@ -207,7 +207,7 @@ public class CreateSquadTask : StrategicTask
 
 public class CreateExploSquadTask : CreateSquadTask
 {
-    new public static int id { get; private set; } = 2;
+    public static new int id { get; private set; } = 2;
 
     public CreateExploSquadTask(Squad _squad)
     {
@@ -258,7 +258,7 @@ public class CreateExploSquadTask : CreateSquadTask
 
 public class CreateLAttackSquadTask : CreateSquadTask
 {
-    new public static int id { get; private set; } = 3;
+    public static new int id { get; private set; } = 3;
 
     public CreateLAttackSquadTask(Squad _squad)
     {
@@ -301,7 +301,7 @@ public class CreateLAttackSquadTask : CreateSquadTask
 
 public class CreateHAttackSquadTask : CreateSquadTask
 {
-    new public static int id { get; private set; } = 4;
+    public static new int id { get; private set; } = 4;
 
     public CreateHAttackSquadTask(Squad _squad)
     {
@@ -346,7 +346,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
 
 public class CreateDefenseSquadTask : CreateSquadTask
 {
-    new public static int id { get; private set; } = 5;
+    public static new int id { get; private set; } = 5;
 
     public CreateDefenseSquadTask(Squad _squad)
     {
@@ -480,7 +480,7 @@ public class CreateFactoryTask : StrategicTask
             return false;
         
         float score = (_controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) 
-                    *  _controller.taskDatas[id].Ratio.Evaluate(_controller.FactoryList.Count / _controller.playerController.FactoryList.Count)) 
+                    *  _controller.taskDatas[id].Ratio.Evaluate((_controller.FactoryList.Count + 1) / (_controller.playerController.FactoryList.Count + 1))) 
                     *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
 
         //Debug.Log("factory");
@@ -503,13 +503,16 @@ public class CreateFactoryTask : StrategicTask
             {
                 if (tile.GetTeam() == _controller.GetTeam())
                 {
-                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 20.0f);
+                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 30.0f);
 
                     foreach (Tile it in stratTiles)
+                    {
                         if (it.GetTeam() == _controller.GetTeam() && (it.buildType == E_BUILDTYPE.HEAVYFACTORY || it.buildType == E_BUILDTYPE.LIGHTFACTORY))
-                            continue;
-                    ValueTile.Add(tile);
+                            goto REPEAT;
+                    }
                 }
+                ValueTile.Add(tile);
+                REPEAT:;
             }
 
             foreach (Tile tile in ValueTile) // check for THE best tile
@@ -642,10 +645,7 @@ public class AttackTargetTask : StrategicTask
     {
         base.UpdateTask();
         if (squad == null)
-        {
-            Debug.Log("c pas bien jerem");
             return;
-        }
 
         if (squadCreation != null)
         {

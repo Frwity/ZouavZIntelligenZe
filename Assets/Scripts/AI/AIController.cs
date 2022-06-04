@@ -37,9 +37,9 @@ public sealed class AIController : UnitController
         militarySquad2 = new Squad(this);
         explorationSquad = new Squad(this);
 
-        previousUtilitySystemTime1 = Time.time;
-        previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 3.0f;
-        previousUtilitySystemTime3 = Time.time + timeBetweenUtilitySystemUpdate / 3.0f * 2;
+        previousUtilitySystemTime1 = Time.time - timeBetweenUtilitySystemUpdate;
+        previousUtilitySystemTime2 = Time.time + timeBetweenUtilitySystemUpdate / 3.0f - timeBetweenUtilitySystemUpdate;
+        previousUtilitySystemTime3 = Time.time + timeBetweenUtilitySystemUpdate / 3.0f * 2.0f - timeBetweenUtilitySystemUpdate;
 
         playerController = FindObjectOfType<PlayerController>();
     }
@@ -78,9 +78,9 @@ public sealed class AIController : UnitController
             StrategicTask tempTask;
             float score = scoreThreshold;
 
-            if (explorationSquad.State == E_TASK_STATE.Free)
+            if (explorationSquad.State == E_TASK_STATE.Free && IsSquadAvailible())
             {
-                tempTask = new CapturePointTask(explorationSquad);
+                tempTask = new CapturePointTask(explorationSquad.State == E_TASK_STATE.Free ? explorationSquad : GetRandomSquad());
                 if (tempTask.Evaluate(this, ref score))
                     task = tempTask;
             }
@@ -104,6 +104,9 @@ public sealed class AIController : UnitController
                     task = tempTask;
             }
 
+            //Debug.Log(task);
+            //Debug.Log(score);
+
             if (score > scoreThreshold)
                 task.StartTask(this);
         }
@@ -115,29 +118,32 @@ public sealed class AIController : UnitController
         if (!IsSquadAvailible())
             return null;
 
-        int random = Random.Range(0, 3);
+        const int squadCount = 3;
 
-        // no while because of very few cases, could be better with
+        int random = Random.Range(0, squadCount);
+        int i = 0;
 
-        if (random++ == 0 && militarySquad1.State == E_TASK_STATE.Free)
-            return militarySquad1;
-        if (random++ == 1 && militarySquad2.State == E_TASK_STATE.Free)
-            return militarySquad2;
-        if (random == 2 && explorationSquad.State == E_TASK_STATE.Free)
-            return explorationSquad;
-        else
-            random = 0;
-        if (random++ == 0 && militarySquad1.State == E_TASK_STATE.Free)
-            return militarySquad1;
-        if (random == 1 && militarySquad2.State == E_TASK_STATE.Free)
-            return militarySquad2;
+        while(i < squadCount)
+        {
+            if (random == 0 && militarySquad1.State == E_TASK_STATE.Free)
+                return militarySquad1;
+            else if (random == 1 && militarySquad2.State == E_TASK_STATE.Free)
+                return militarySquad2;
+            else if (random == 2 && explorationSquad.State == E_TASK_STATE.Free)
+                return explorationSquad;
+
+            random = (random + 1) % squadCount;
+            ++i;
+        }
 
         return null;
     }
 
     bool IsSquadAvailible()
     {
-        if (militarySquad1.State == E_TASK_STATE.Free || militarySquad2.State == E_TASK_STATE.Free || explorationSquad.State == E_TASK_STATE.Free)
+        if (militarySquad1.State == E_TASK_STATE.Free 
+        ||  militarySquad2.State == E_TASK_STATE.Free 
+        ||  explorationSquad.State == E_TASK_STATE.Free)
             return true;
         return false;
     }
