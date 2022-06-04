@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class Turret : BaseEntity
 {
-    static public int cost = 10;
+    static public int cost = 7;
     static public int influence = 1;
 
     [SerializeField]
@@ -28,7 +28,7 @@ public class Turret : BaseEntity
     float currentDuration = 0f;
 
     float cooldown = 0f;
-    bool isUnderConstruction = false;
+    public bool isUnderConstruction = false;
     Unit currentFocus = null;
     Image BuildGaugeImage;
     GameObject toRotate;

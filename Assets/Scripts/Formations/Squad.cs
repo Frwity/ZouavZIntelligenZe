@@ -19,9 +19,9 @@ public class Squad
     public UnitController Controller;
     //use to break formation and attack
     public bool CanBreakFormation = false;
-    private bool SquadCapture = false;
-    private bool SquadAttack = false;
-    private bool SquadRepair = false;
+    public bool SquadCapture = false;
+    public bool SquadAttack = false;
+    public bool SquadRepair = false;
     private TargetBuilding targetBuilding;
     public int totalCost = 0;
     
@@ -30,16 +30,52 @@ public class Squad
     private BaseEntity SquadTarget = null;
 
     public E_TASK_STATE State;
+    public bool isTemporary = false;
 
     public Squad(UnitController controller)
     {
-         SquadFormation = new Formation(this);
-         Controller = controller;
-         SquadMode = E_MODE.Defensive;
+        SquadFormation = new Formation(this);
+        Controller = controller;
+        SquadMode = E_MODE.Defensive;
+    }
+
+    public Squad(Squad squad)
+    {
+        SquadFormation = squad.SquadFormation;
+        Controller = squad.Controller;
+        SquadMode = squad.SquadMode;
+        State = squad.State;
+        isTemporary = true;
+
+        foreach (Unit unit in squad.members)
+            AddUnit(unit);
+
+        SquadFormation.FormationLeader = squad.SquadFormation.FormationLeader;
+        targetBuilding = squad.targetBuilding;
+        SquadTarget = squad.SquadTarget;
+
+        if (SquadAttack = squad.SquadAttack)
+        {
+            SquadTarget.OnDeadEvent -= squad.StopAttack;
+            SquadTarget.OnDeadEvent += StopAttack;
+        }
+
+        if (squad.SquadCapture)
+        {
+            targetBuilding.OnBuilduingCaptured.RemoveListener(squad.OnSquadCaptureTarget);
+            targetBuilding.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
+            SquadCapture = true;
+            if (CanCapture(targetBuilding))
+                CanBreakFormation = true;
+        }
+        SquadRepair = squad.SquadRepair;
     }
 
     public Unit GetSquadLeader()
     {
+        if (SquadFormation.FormationLeader == null)
+            SquadFormation.UpdateFormationLeader();
+        
         return SquadFormation.FormationLeader;
     }
 
@@ -55,8 +91,8 @@ public class Squad
     {
         unit.SetMode(SquadMode);
         members.Add(unit);
+        unit.squad = this;
         totalCost += unit.Cost;
-        unit.OnUnitDeath += RemoveUnit;
         //assign first unit to be the leader
         SquadFormation.UpdateFormationLeader();
     }
@@ -73,22 +109,22 @@ public class Squad
 
     public void ClearUnits()
     {
-        foreach (Unit unit in members)
+        while (members.Count > 0)
         {
-            RemoveUnit(unit);
+            RemoveUnit(members[0]);
         }
+
+        totalCost = 0;
     }
 
     public void RemoveUnit(Unit unit)
     {
         if (!members.Remove(unit)) 
             return;
-        
-        unit.OnUnitDeath -= RemoveUnit;
+
+        totalCost -= unit.Cost;
+        unit.squad = null;
         SquadFormation.UpdateFormationLeader();
-        //temp when unit is removed from squad recalculate formation based on the new leader grid position
-        if(members.Count > 0)
-            MoveSquad(members[0].transform.position);
     }
 
     public void UpdateSquad()
@@ -104,7 +140,7 @@ public class Squad
     }
     
     /*
-     * Set target pos of NavMesh Agent of units
+     * Set target pos of NavMesh Agent of units when CanBreakFormation = true
      */
     public void MoveUnitToPosition()
     {
@@ -121,10 +157,7 @@ public class Squad
 
     public int GetSquadValue()
     {
-        int cost = 0;
-        for (int i = 0; i < members.Count; ++i)
-            cost += members[i].Cost;
-        return cost;
+        return totalCost;
     }
 
     /*
@@ -143,7 +176,7 @@ public class Squad
      */
     public void CaptureTarget(TargetBuilding target)
     {
-        if (target == null)
+        if (target == null && members.Count > 0)
             return;
 
         if (target.GetTeam() != Controller.GetTeam())
@@ -151,7 +184,7 @@ public class Squad
             SquadNeedToCapture(target);
 
             State = E_TASK_STATE.Busy;
-            target.OnBuiilduingCaptured.AddListener(OnSquadCaptureTarget);
+            target.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
             SquadFormation.ChooseLeader(target.transform.position);
             SquadCapture = true;
             MoveSquad(target.transform.position);
@@ -227,7 +260,7 @@ public class Squad
     {
         SquadCapture = false;
         State = E_TASK_STATE.Free;
-        targetBuilding.OnBuiilduingCaptured.RemoveListener(OnSquadCaptureTarget);
+        targetBuilding.OnBuilduingCaptured.RemoveListener(OnSquadCaptureTarget);
     }
 
     public void SetMode(E_MODE newMode)
@@ -294,6 +327,14 @@ public class Squad
         State = E_TASK_STATE.Free;
         CanBreakFormation = false;
         StopSquadMovement();
+        if (isTemporary)
+        {
+            foreach (Unit unit in members)
+            {
+                RemoveUnit(unit);
+            }
+            Controller.TemporarySquadList.Remove(this);
+        } 
     }
 
     #region RepairTask

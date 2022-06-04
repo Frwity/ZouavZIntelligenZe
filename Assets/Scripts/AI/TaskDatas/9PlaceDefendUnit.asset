@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8e24455241804543b7411941772f756, type: 3}
-  m_Name: 7AttackTarget
+  m_Name: 9PlaceDefendUnit
   m_EditorClassIdentifier: 
-  id: 7
+  id: 9
   Time:
     serializedVersion: 2
     m_Curve:
@@ -26,40 +26,13 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.2012013
-      value: 0.09466553
+      time: 1
+      value: 1
       inSlope: 0
-      outSlope: 1.134645
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.03347012
-    - serializedVersion: 3
-      time: 2.1662073
-      value: 0.42069966
-      inSlope: -0.03775904
-      outSlope: -0.03775904
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.051084004
-    - serializedVersion: 3
-      time: 9.316523
-      value: 0.53321886
-      inSlope: -0.022626365
-      outSlope: -0.022626365
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.17065293
-    - serializedVersion: 3
-      time: 15
-      value: 1.0021057
-      inSlope: 0.0021455558
-      outSlope: 0.0021455558
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.09823677
+      inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -84,25 +57,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   EnemyPower:
     serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 1.4814528
-      outSlope: 1.4814528
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.05947912
-    - serializedVersion: 3
-      time: 50
-      value: 40
-      inSlope: 0.5274218
-      outSlope: 0.5274218
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.077905424
-      outWeight: 0
+    m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -135,21 +90,21 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
-      inSlope: -1
-      outSlope: -1
+      value: 0
+      inSlope: 1
+      outSlope: 1
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.33333334
+      outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: -1
-      outSlope: -1
+      value: 1
+      inSlope: 1
+      outSlope: 1
       tangentMode: 34
       weightedMode: 0
-      inWeight: 0.33333334
+      inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

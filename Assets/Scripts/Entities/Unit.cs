@@ -42,7 +42,7 @@ public class Unit : BaseEntity
     private float influence = 1;
     public float Influence { get { return Team == ETeam.Blue ? influence : -influence; } }
 
-    public new Action<Unit> OnUnitDeath;
+    public Squad squad;
 
     override public void Init(ETeam _team)
     {
@@ -56,7 +56,9 @@ public class Unit : BaseEntity
     }
     void Unit_OnDead()
     {
-        OnUnitDeath.Invoke(this);
+        if (squad != null)
+            squad.RemoveUnit(this);
+
         if (IsCapturing())
             StopCapture();
 
@@ -380,15 +382,15 @@ public class Unit : BaseEntity
 
     void OnModeActionEnd()
     {
-        if (needToCapture)
+        if (needToCapture && squad != null)
         {
             TargetBuilding temp = CaptureTarget;
             CaptureTarget = null;
-            SetCaptureTarget(temp);
+            squad.CaptureTarget(temp);
         }
 
-        else if (tempEntityTarget != null)
-            SetAttackTarget(tempEntityTarget);
+        else if (tempEntityTarget != null && squad != null)
+            squad.SquadTaskAttack(tempEntityTarget);
     }
 
     void CheckForStop()
