@@ -58,9 +58,8 @@ public class Unit : BaseEntity
     {
         if (squad != null)
             squad.RemoveUnit(this);
-
-        if (IsCapturing())
-            StopCapture();
+        
+        StopCapture();
 
         if (GetUnitData.DeathFXPrefab)
         {
@@ -276,11 +275,11 @@ public class Unit : BaseEntity
 
     public void StopCapture()
     {
-        if (CaptureTarget == null)
-            return;
-
-        CaptureTarget.StopCapture(this);
-        CaptureTarget = null;
+        if (CaptureTarget != null)
+        {
+            CaptureTarget.StopCapture(this);
+            CaptureTarget = null;
+        }
     }
 
     public bool IsCapturing()

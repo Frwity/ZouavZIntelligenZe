@@ -178,7 +178,7 @@ public class Squad
     {
         if (target == null && members.Count > 0)
             return;
-
+        
         if (target.GetTeam() != Controller.GetTeam())
         {
             SquadNeedToCapture(target);
@@ -187,13 +187,13 @@ public class Squad
             target.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
             SquadFormation.ChooseLeader(target.transform.position);
             SquadCapture = true;
-            MoveSquad(target.transform.position);
             targetBuilding = target;
 
             if (members.Count > 0 &&target)
             {
                 CanBreakFormation = true;
                 SquadStartCapture(target);
+                MoveSquad(target.transform.position);
             }
         }
     }
@@ -210,7 +210,7 @@ public class Squad
     {
         foreach (Unit unit in members)
         {
-            if (unit.needToCapture && (unit.IsAtDestination() || unit.CanCapture(target)))
+            if (unit.needToCapture && unit.CanCapture(target))
                 unit.StartCapture(target);
         }
     }
