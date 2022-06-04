@@ -92,6 +92,12 @@ public class TargetBuilding : MonoBehaviour, ISelectable
 
         TeamScore[(int)unit.GetTeam()] += unit.Cost;
 
+        if (isUpgrading)
+        {
+            currentUpgradeDuration = 0f;
+            isUpgrading = false;
+            ResetCapture();
+        }
         if (CapturingTeam == ETeam.Neutral)
         {
             CapturingTeam = unit.GetTeam();
@@ -150,7 +156,6 @@ public class TargetBuilding : MonoBehaviour, ISelectable
                 {
                     teamController.LoseTarget(BuildPoints, this);
                 }
-                CancelInvoke("ProduceResources");
                 Map.Instance.RemoveTargetBuilding(this);
             }
         }
