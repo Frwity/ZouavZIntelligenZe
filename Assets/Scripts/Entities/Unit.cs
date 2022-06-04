@@ -382,11 +382,11 @@ public class Unit : BaseEntity
 
     void OnModeActionEnd()
     {
-        if (needToCapture)
+        if (needToCapture && squad != null)
         {
             TargetBuilding temp = CaptureTarget;
             CaptureTarget = null;
-            SetCaptureTarget(temp);
+            squad.CaptureTarget(temp);
         }
 
         else if (tempEntityTarget != null && squad != null)
