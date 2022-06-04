@@ -182,9 +182,8 @@ public class Unit : BaseEntity
 
         if (EntityTarget != null)
             EntityTarget = null;
-
-        if (IsCapturing())
-            StopCapture();
+        
+        StopCapture();
 
         if (target.GetTeam() != GetTeam())
         {
