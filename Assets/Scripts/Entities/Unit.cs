@@ -44,6 +44,8 @@ public class Unit : BaseEntity
 
     public new Action<Unit> OnUnitDeath;
 
+    public Squad squad;
+
     override public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -56,7 +58,10 @@ public class Unit : BaseEntity
     }
     void Unit_OnDead()
     {
-        OnUnitDeath.Invoke(this);
+        if (squad != null)
+            squad.members.Remove(this);
+        
+        //OnUnitDeath .Invoke(this);
         if (IsCapturing())
             StopCapture();
 

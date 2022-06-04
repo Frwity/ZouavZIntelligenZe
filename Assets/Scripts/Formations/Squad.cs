@@ -87,6 +87,7 @@ public class Squad
     {
         unit.SetMode(SquadMode);
         members.Add(unit);
+        unit.squad = this;
         totalCost += unit.Cost;
         unit.OnUnitDeath += RemoveUnit;
         //assign first unit to be the leader
@@ -116,7 +117,7 @@ public class Squad
         if (!members.Remove(unit)) 
             return;
         
-        unit.OnUnitDeath -= RemoveUnit;
+        unit.squad = null;
         SquadFormation.UpdateFormationLeader();
     }
 
