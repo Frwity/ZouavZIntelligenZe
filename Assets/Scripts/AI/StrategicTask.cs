@@ -177,6 +177,9 @@ public class CreateSquadTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         Factory tempFactory = null;
+        //Debug.Log(squad.GetSquadValue());
+        //Debug.Log(squad.GetSquadLeader());
+        //Debug.Log(_controller.FactoryList[0]);
         Vector3 squadPos = squad.GetSquadValue() > 0 ? squad.GetSquadLeader().transform.position : _controller.FactoryList[0].transform.position;
         foreach (Factory it in _controller.FactoryList)
         {
@@ -751,8 +754,10 @@ public class PlaceTurretTask : StrategicTask
             return false;
 
         float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints)
-                    * _controller.taskDatas[id].MilitaryPower.Evaluate(_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower())
+                    * _controller.taskDatas[id].EnemyPower.Evaluate(_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower())
                     * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
+
+        //Debug.Log(score);
 
         if (score > currentScore)
         {
