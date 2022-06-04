@@ -157,7 +157,6 @@ public class TargetBuilding : MonoBehaviour, ISelectable
                 {
                     teamController.LoseTarget(BuildPoints, this);
                 }
-                CancelInvoke("ProduceResources");
                 Map.Instance.RemoveTargetBuilding(this);
             }
         }
