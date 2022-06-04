@@ -140,7 +140,7 @@ public class Map : MonoBehaviour
             foreach (Unit unit in unitController.UnitList)
             {
                 Tile tile = GetTile(unit.transform.position);
-                if (unit.currentTilesInfluence.TryGetValue(tile, out outValue) && Math.Abs(unit.Influence - outValue) < 0.0001f)
+                if (tile == null || (unit.currentTilesInfluence.TryGetValue(tile, out outValue) && Math.Abs(unit.Influence - outValue) < 0.0001f))
                     continue;
 
                 else

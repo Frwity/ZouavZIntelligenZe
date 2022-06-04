@@ -395,7 +395,6 @@ public sealed class PlayerController : UnitController
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
             UnselectCurrentFactory();
-            UnselectTarget();
             SelectionLineRenderer.enabled = true;
 
             SelectionStarted = true;
@@ -403,6 +402,9 @@ public sealed class PlayerController : UnitController
             SelectionStart.x = raycastInfo.point.x;
             SelectionStart.y = 0.0f;//raycastInfo.point.y + 1f;
             SelectionStart.z = raycastInfo.point.z;
+
+            if (!Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, 1 << LayerMask.NameToLayer("Floor")))
+                UnselectTarget();
         }
     }
 
