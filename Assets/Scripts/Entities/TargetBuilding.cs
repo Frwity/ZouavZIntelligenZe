@@ -131,6 +131,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     }
     void ResetCapture()
     {
+        TeamScore[(int)(CapturingTeam)] = 0;
         CaptureGaugeValue = CaptureGaugeStart;
         CapturingTeam = ETeam.Neutral;
         GaugeImage.fillAmount = 0f;
