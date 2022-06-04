@@ -210,7 +210,7 @@ public class UnitController : MonoBehaviour
     }
     virtual public void SelectFactory(Factory factory)
     {
-        if (factory == null || factory.IsUnderConstruction)
+        if (factory == null ||  factory.IsUnderConstruction)
             return;
 
         factory.SetSelected(true);

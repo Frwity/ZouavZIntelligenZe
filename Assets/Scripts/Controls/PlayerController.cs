@@ -375,6 +375,7 @@ public sealed class PlayerController : UnitController
             UnselectTarget();
 
             Unit selectedUnit = raycastInfo.transform.GetComponent<Unit>();
+            bool hasSelectedEnemy = false;
             if (selectedUnit != null && selectedUnit.GetTeam() == Team)
             {
                 if (isShiftBtPressed)
@@ -384,13 +385,21 @@ public sealed class PlayerController : UnitController
                 else if (isCtrlBtPressed)
                 {
                     SelectUnit(selectedUnit);
+                    SelectedSquad.AddUnit(selectedUnit);
+                    hasSelectedEnemy = true;
                 }
                 else
                 {
                     UnselectAllUnits();
                     SelectUnit(selectedUnit);
+                    SelectedSquad.AddUnit(selectedUnit);
+                    hasSelectedEnemy = true;
                 }
             }
+            if (hasSelectedEnemy)
+                PlayerMenuController.UpdateSquadMenu(SelectedSquad);
+            else
+                PlayerMenuController.HideSquadMenu();
         }
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
@@ -542,7 +551,8 @@ public sealed class PlayerController : UnitController
     }
     public override void SelectFactory(Factory factory)
     {
-        if (factory == null || factory.IsUnderConstruction)
+        if (factory == null || factory.IsUnderConstruction
+        || (SelectedFactoryList.Count > 0 && SelectedFactoryList[0].GetFactoryData.TypeId != factory.GetFactoryData.TypeId))
             return;
 
         base.SelectFactory(factory);
