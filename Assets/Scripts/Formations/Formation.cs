@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using UnityEngine;
 
 public enum E_FORMATION_TYPE
@@ -40,9 +41,6 @@ public class Formation
 
     public void UpdateFormationLeader()
     {
-        if (FormationLeader != null)
-            return;
-        
         if (Squad.members.Count != 0)
             FormationLeader = Squad.members[0];
     }

@@ -89,7 +89,6 @@ public class Squad
         members.Add(unit);
         unit.squad = this;
         totalCost += unit.Cost;
-        unit.OnUnitDeath += RemoveUnit;
         //assign first unit to be the leader
         SquadFormation.UpdateFormationLeader();
     }
@@ -110,13 +109,17 @@ public class Squad
         {
             RemoveUnit(members[0]);
         }
+
+        totalCost = 0;
+        SquadFormation.FormationLeader = null;
     }
 
     public void RemoveUnit(Unit unit)
     {
         if (!members.Remove(unit)) 
             return;
-        
+
+        totalCost -= unit.Cost;
         unit.squad = null;
         SquadFormation.UpdateFormationLeader();
     }
@@ -151,10 +154,7 @@ public class Squad
 
     public int GetSquadValue()
     {
-        int cost = 0;
-        for (int i = 0; i < members.Count; ++i)
-            cost += members[i].Cost;
-        return cost;
+        return totalCost;
     }
 
     /*
@@ -173,7 +173,7 @@ public class Squad
      */
     public void CaptureTarget(TargetBuilding target)
     {
-        if (target == null)
+        if (target == null && members.Count > 0)
             return;
 
         if (target.GetTeam() != Controller.GetTeam())
