@@ -450,6 +450,7 @@ public sealed class PlayerController : UnitController
         int factoryLayerMask = 1 << LayerMask.NameToLayer("Factory");
         int targetLayerMask = 1 << LayerMask.NameToLayer("Target");
         Collider[] colliders = Physics.OverlapBox(center, size / 2f, Quaternion.identity, unitLayerMask | factoryLayerMask | targetLayerMask, QueryTriggerInteraction.Ignore);
+        bool hasSelectedEnemy = false;
         foreach (Collider col in colliders)
         {
             //Debug.Log("collider name = " + col.gameObject.name);
@@ -460,6 +461,7 @@ public sealed class PlayerController : UnitController
                 {
                     SelectUnit((selectedEntity as Unit));
                     SelectedSquad.AddUnit(selectedEntity as Unit);
+                    hasSelectedEnemy = true;
                 }
                 else if (selectedEntity is Factory)
                 {
@@ -471,6 +473,11 @@ public sealed class PlayerController : UnitController
                 }
             }
         }
+
+        if (hasSelectedEnemy)
+            PlayerMenuController.UpdateSquadMenu(SelectedSquad);
+        else
+            PlayerMenuController.HideSquadMenu();
 
         SelectionStarted = false;
         SelectionStart = Vector3.zero;

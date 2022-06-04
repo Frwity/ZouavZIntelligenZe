@@ -24,6 +24,7 @@ public class MenuController : MonoBehaviour
     [SerializeField]
     GameObject SquadMenuPanel = null;
     Text SquadCurrentMode = null;
+    Button[] SquadButtons = null;
     
     [SerializeField]
     GameObject ProduceResourcesMenuPanel = null;
@@ -44,6 +45,9 @@ public class MenuController : MonoBehaviour
     {
         if (SquadMenuPanel)
             SquadMenuPanel.SetActive(false);
+
+        foreach (Button button in SquadButtons)
+            button.onClick.RemoveAllListeners();
     }
     public void ShowSquadMenu()
     {
@@ -189,20 +193,27 @@ public class MenuController : MonoBehaviour
     public void UpdateProduceResourcesMenu(TargetBuilding target)
     {
         ShowProduceResourcesMenu();
-        if (target)
+        produceResourcesText.SetActive(target.isProducingResources || target.isUpgrading);
+        produceResourcesButton.SetActive(!target.isProducingResources && !target.isUpgrading);
+        produceResourcesButton.GetComponent<Button>().onClick.AddListener(() =>
         {
-            produceResourcesText.SetActive(target.isProducingResources || target.isUpgrading);
-            produceResourcesButton.SetActive(!target.isProducingResources && !target.isUpgrading);
-            produceResourcesButton.GetComponent<Button>().onClick.AddListener(() =>
+            if (target.StartUpgrade())
             {
-                if (target.StartUpgrade())
-                {
-                    produceResourcesButton.SetActive(false);
-                    produceResourcesText.SetActive(true);
-                }
-            });
-        }
+                produceResourcesButton.SetActive(false);
+                produceResourcesText.SetActive(true);
+            }
+        });
     }
+
+    public void UpdateSquadMenu(Squad selectedSquad)
+    {
+        ShowSquadMenu();
+
+        SetSquadText(selectedSquad.SquadMode);
+        for (int i = 0; i < SquadButtons.Length; i++)
+            SquadButtons[i].onClick.AddListener(() => { selectedSquad.SetMode((E_MODE)i); });
+    }
+
     void Awake()
     {
         if (FactoryMenuCanvas == null)
@@ -250,6 +261,7 @@ public class MenuController : MonoBehaviour
         CancelBuildButton = FactoryMenuPanel.transform.Find("Cancel_Button").GetComponent<Button>();
         produceResourcesButton = ProduceResourcesMenuPanel.transform.Find("Button").gameObject;
         produceResourcesText = ProduceResourcesMenuPanel.transform.Find("Already Upgraded").gameObject;
+        SquadButtons = SquadMenuPanel.GetComponentsInChildren<Button>();
         BuildQueueTexts = new Text[BuildUnitButtons.Length];
     }
 }
