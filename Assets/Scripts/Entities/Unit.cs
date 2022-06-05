@@ -367,10 +367,9 @@ public class Unit : BaseEntity
                         if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, layerMask))
                             direction = hit.point - transform.position;
 
-                        TargetBuilding temp = CaptureTarget;
-                        CaptureTarget = null;
                         SetTargetPos(direction + transform.position);
-                        CaptureTarget = temp;
+                        if (CaptureTarget)
+                            CaptureTarget.StopCapture(this);
                         isFleeing = true;
                         return;
                 }
@@ -380,7 +379,7 @@ public class Unit : BaseEntity
 
     void OnModeActionEnd()
     {
-        if (needToCapture && squad != null)
+        if ((CaptureTarget || needToCapture) && squad != null)
         {
             TargetBuilding temp = CaptureTarget;
             CaptureTarget = null;
