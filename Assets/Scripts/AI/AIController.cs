@@ -71,11 +71,11 @@ public sealed class AIController : UnitController
             return;
         previousTime = Time.time;
 
-        Debug.Log("-------------" + scoreThreshold.ToString());
+        Debug.Log("-------------" + scoreThreshold.ToString() + " doing " + task);
 
         if (task == null || task.isComplete)
         {
-            Debug.Log(task);
+            Debug.Log("was :" + task);
             StrategicTask tempTask;
             float score = scoreThreshold;
 

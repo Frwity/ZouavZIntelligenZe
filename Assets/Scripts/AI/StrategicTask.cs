@@ -26,7 +26,8 @@ public abstract class StrategicTask
     public virtual void EndTask() 
     {
         isComplete = true;
-        squad.State = E_TASK_STATE.Free;
+        if (squad != null)
+            squad.State = E_TASK_STATE.Free;
     }
 }
 
@@ -609,15 +610,10 @@ public class AttackTargetTask : StrategicTask
                     continue;
                 }
                 else if (tile.buildType < tempType)
-                {
                     targetTile = tile;
-                }
-                else if (tile.buildType == tempType 
-                && (tile.position - rallyPoint).magnitude 
-                < (targetTile.position - rallyPoint).magnitude)
-                {
+                else if (tile.buildType == tempType && (tile.position - rallyPoint).magnitude  < (targetTile.position - rallyPoint).magnitude)
                     targetTile = tile;
-                }
+
                 tempType = targetTile.buildType;
             }
         }
@@ -676,14 +672,14 @@ public class AttackTargetTask : StrategicTask
             if (checkIfEndInterval < Time.time)
             {
                 checkIfEndInterval = Time.time + 1.0f;
-                if (targetTile.gameobject == null || targetTile.gameobject.GetComponent<BaseEntity>() == null)
+                if (targetTile.gameobject == null || (targetTile.gameobject.GetComponent<BaseEntity>() == null && targetTile.gameobject.GetComponent<TargetBuilding>() == null))
                 {
                     EndTask();
                     return;
                 }
                 else
                 {
-                    if (targetTile.buildType != E_BUILDTYPE.MINER)
+                    if (targetTile.buildType != E_BUILDTYPE.MINER && targetTile.buildType != E_BUILDTYPE.CAPTUREPOINT)
                     {
                         if (!targetTile.gameobject.GetComponent<BaseEntity>().IsAlive)
                             EndTask();
