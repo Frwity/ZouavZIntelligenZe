@@ -340,32 +340,32 @@ public class Unit : BaseEntity
             return;
 
         int focusLayer = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Turret")) | (1 << LayerMask.NameToLayer("Factory"));
-        Collider[] unitsCollider = Physics.OverlapSphere(transform.position, 15f, focusLayer);
-        foreach(Collider unitCollider in unitsCollider)
+        Collider[] inRangeColliders = Physics.OverlapSphere(transform.position, 15f, focusLayer);
+        foreach(Collider inRangeCollider in inRangeColliders)
         {
-            if (unitCollider.GetComponent<Unit>().Team != Team && (!EntityTarget || !(EntityTarget is Unit)))
+            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team && !EntityTarget)
             {
                 switch (mode)
                 {
                     case E_MODE.Agressive:
                         tempEntityTarget = EntityTarget;
-                        entityToKill = EntityTarget = unitCollider.GetComponent<Unit>();
+                        entityToKill = EntityTarget = inRangeCollider.GetComponent<BaseEntity>();
                         EntityTarget.OnDeadEvent += OnModeActionEnd;
                         return;
 
                     case E_MODE.Defensive:
                         tempEntityTarget = EntityTarget;
-                        EntityTarget = unitCollider.GetComponent<Unit>();
+                        EntityTarget = inRangeCollider.GetComponent<BaseEntity>();
                         EntityTarget.OnDeadEvent += OnModeActionEnd;
                         return;
 
                     case E_MODE.Flee:
-                        if (unitCollider.GetComponent<Factory>() == null)
+                        if (inRangeCollider.GetComponent<Factory>() == null)
                             continue;
 
                         tempEntityTarget = EntityTarget;
                         RaycastHit hit;
-                        Vector3 direction = Vector3.up + (transform.position - unitCollider.transform.position).normalized * passiveFleeDistance;
+                        Vector3 direction = Vector3.up + (transform.position - inRangeCollider.transform.position).normalized * passiveFleeDistance;
                         int layerMask = (1 << LayerMask.NameToLayer("Floor")) | (1 << LayerMask.NameToLayer("Factory")) | (1 << LayerMask.NameToLayer("Target"));
 
                         if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, layerMask))
