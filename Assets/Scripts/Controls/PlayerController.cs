@@ -226,15 +226,20 @@ public sealed class PlayerController : UnitController
 
         // Apply camera movement
         UpdateMoveCamera();
-        
-        if(SelectedSquad.members.Count > 0)
+
+        if (SelectedSquad.members.Count > 0)
             SelectedSquad.UpdateSquad();
 
         foreach (KeyValuePair<int, Squad> squad in Squads)
             squad.Value.UpdateSquad();
 
         foreach (Squad squad in TemporarySquadList)
-            squad.UpdateSquad();
+        {
+            if (squad.members.Count == 0)
+                squad.ResetTask();
+            else
+                squad.UpdateSquad();
+        }
     }
     #endregion
 

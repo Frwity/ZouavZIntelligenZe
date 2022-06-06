@@ -131,7 +131,19 @@ public class Map : MonoBehaviour
         tilesWithBuild.Remove(tile);
     }
 
-    // Update is called once per frame
+    public Tile GetHighestNeighbor(Tile tile, ETeam team)
+    {
+        List<Tile> neighbours = GetNeighbours(tile);
+        foreach (Tile neighbour in neighbours)
+        {
+            if ((team == ETeam.Blue && tile.militaryInfluence < neighbour.militaryInfluence)
+            ||  (team == ETeam.Red && tile.militaryInfluence > neighbour.militaryInfluence))
+                return GetHighestNeighbor(neighbour, team);
+        }
+
+        return tile;
+    }
+
     void UpdateMap()
     {
         float outValue = 0f;

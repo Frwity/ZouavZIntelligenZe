@@ -16,6 +16,10 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
     public Action OnDeadEvent;
     public bool IsSelected { get; protected set; }
     public bool IsAlive { get; protected set; }
+    public bool IsUnderAttack { get; protected set; }
+
+    private float isUnderAttackDuration = 5f;
+
     virtual public void Init(ETeam _team)
     {
         if (IsInitialized)
@@ -57,6 +61,11 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
 
         OnHpUpdated?.Invoke();
 
+        if (IsUnderAttack)
+            CancelInvoke("SetIsNotUnderAttack");
+        IsUnderAttack = true;
+        Invoke("SetIsNotUnderAttack", isUnderAttackDuration);
+
         if (HP <= 0)
         {
             IsAlive = false;
@@ -64,6 +73,12 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
             //Debug.Log("Entity " + gameObject.name + " died");
         }
     }
+
+    void SetIsNotUnderAttack()
+    {
+        IsUnderAttack = false;
+    }
+
     public void Destroy()
     {
         AddDamage(HP);

@@ -120,6 +120,7 @@ public class Squad
         }
 
         totalCost = 0;
+        ResetTask();
     }
 
     public void RemoveUnit(Unit unit)

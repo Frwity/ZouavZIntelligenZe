@@ -341,6 +341,7 @@ public class Unit : BaseEntity
 
         int focusLayer = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Turret")) | (1 << LayerMask.NameToLayer("Factory"));
         Collider[] inRangeColliders = Physics.OverlapSphere(transform.position, 15f, focusLayer);
+        BaseEntity tempFactoryTarget = null;
         foreach(Collider inRangeCollider in inRangeColliders)
         {
             if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team && !EntityTarget)
@@ -348,37 +349,76 @@ public class Unit : BaseEntity
                 switch (mode)
                 {
                     case E_MODE.Agressive:
-                        tempEntityTarget = EntityTarget;
-                        entityToKill = EntityTarget = inRangeCollider.GetComponent<BaseEntity>();
-                        EntityTarget.OnDeadEvent += OnModeActionEnd;
+                        if (inRangeCollider.GetComponent<Factory>() != null)
+                        {
+                            if (tempFactoryTarget == null)
+                                tempFactoryTarget = EntityTarget;
+                            continue;
+                        }
+                        AgressiveBehavior(inRangeCollider.GetComponent<BaseEntity>());
                         return;
 
                     case E_MODE.Defensive:
-                        tempEntityTarget = EntityTarget;
-                        EntityTarget = inRangeCollider.GetComponent<BaseEntity>();
-                        EntityTarget.OnDeadEvent += OnModeActionEnd;
+                        if (inRangeCollider.GetComponent<Factory>() != null)
+                        {
+                            if (tempFactoryTarget == null)
+                                tempFactoryTarget = EntityTarget;
+                            continue;
+                        }
+                        DefensiveBehavior(inRangeCollider.GetComponent<BaseEntity>());
                         return;
 
                     case E_MODE.Flee:
-                        if (inRangeCollider.GetComponent<Factory>() == null)
+                        if (inRangeCollider.GetComponent<Factory>() != null)
                             continue;
-
-                        tempEntityTarget = EntityTarget;
-                        RaycastHit hit;
-                        Vector3 direction = Vector3.up + (transform.position - inRangeCollider.transform.position).normalized * passiveFleeDistance;
-                        int layerMask = (1 << LayerMask.NameToLayer("Floor")) | (1 << LayerMask.NameToLayer("Factory")) | (1 << LayerMask.NameToLayer("Target"));
-
-                        if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, layerMask))
-                            direction = hit.point - transform.position;
-
-                        SetTargetPos(direction + transform.position);
-                        if (CaptureTarget)
-                            CaptureTarget.StopCapture(this);
-                        isFleeing = true;
+                        FleeBehavior(inRangeCollider.GetComponent<BaseEntity>());
                         return;
                 }
             }
         }
+
+        if (tempFactoryTarget != null && tempEntityTarget == null)
+        {
+            if (mode == E_MODE.Agressive)
+                AgressiveBehavior(tempFactoryTarget);
+            else if (mode == E_MODE.Defensive)
+                DefensiveBehavior(tempFactoryTarget);
+        }
+
+    }
+
+    void AgressiveBehavior(BaseEntity inRangeEntity)
+    {
+        tempEntityTarget = EntityTarget;
+        entityToKill = EntityTarget = inRangeEntity;
+        EntityTarget.OnDeadEvent += OnModeActionEnd;
+        if (CaptureTarget)
+            CaptureTarget.StopCapture(this);
+    }
+
+    void DefensiveBehavior(BaseEntity inRangeEntity)
+    {
+        tempEntityTarget = EntityTarget;
+        EntityTarget = inRangeEntity;
+        EntityTarget.OnDeadEvent += OnModeActionEnd;
+        if (CaptureTarget)
+            CaptureTarget.StopCapture(this);
+    }
+
+    void FleeBehavior(BaseEntity inRangeEntity)
+    {
+        tempEntityTarget = EntityTarget;
+        RaycastHit hit;
+        Vector3 direction = Vector3.up + (transform.position - inRangeEntity.transform.position).normalized * passiveFleeDistance;
+        int layerMask = (1 << LayerMask.NameToLayer("Floor")) | (1 << LayerMask.NameToLayer("Factory")) | (1 << LayerMask.NameToLayer("Target"));
+
+        if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, direction.magnitude, layerMask))
+            direction = hit.point - transform.position;
+
+        SetTargetPos(direction + transform.position);
+        if (CaptureTarget)
+            CaptureTarget.StopCapture(this);
+        isFleeing = true;
     }
 
     void OnModeActionEnd()
@@ -392,6 +432,8 @@ public class Unit : BaseEntity
 
         else if (tempEntityTarget != null && squad != null)
             squad.SquadTaskAttack(tempEntityTarget);
+
+        tempEntityTarget = null;
     }
 
     void CheckForStop()
