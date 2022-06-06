@@ -225,6 +225,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2853760328258230540, guid: 3a519dc657169c94891593423f0c6d19,
+        type: 3}
+      propertyPath: m_CullTransparentMesh
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2853760328296228610, guid: 3a519dc657169c94891593423f0c6d19,
         type: 3}
       propertyPath: m_Name
@@ -333,6 +338,21 @@ PrefabInstance:
     - target: {fileID: 2853760328296228614, guid: 3a519dc657169c94891593423f0c6d19,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853760328417212040, guid: 3a519dc657169c94891593423f0c6d19,
+        type: 3}
+      propertyPath: m_CullTransparentMesh
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853760329353484857, guid: 3a519dc657169c94891593423f0c6d19,
+        type: 3}
+      propertyPath: m_CullTransparentMesh
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853760330138336285, guid: 3a519dc657169c94891593423f0c6d19,
+        type: 3}
+      propertyPath: m_CullTransparentMesh
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -804,6 +824,11 @@ PrefabInstance:
       propertyPath: SquadMenuPanel
       value: 
       objectReference: {fileID: 1341094528}
+    - target: {fileID: 8446335230809480305, guid: dc4ee6691f59b07458286e0cfb38d82d,
+        type: 3}
+      propertyPath: SquadMenuCanvas
+      value: 
+      objectReference: {fileID: 1460789072}
     - target: {fileID: 8446335230809480305, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
       propertyPath: PlayerController
@@ -1677,6 +1702,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 88ac38a91d99496429c90b076195dc70, type: 3}
+--- !u!224 &1460789072 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2853760328296228614, guid: 3a519dc657169c94891593423f0c6d19,
+    type: 3}
+  m_PrefabInstance: {fileID: 90419942}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1471369967 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4162452776302188, guid: 88ac38a91d99496429c90b076195dc70,

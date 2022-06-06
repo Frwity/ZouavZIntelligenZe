@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4732168559980594952}
   - component: {fileID: 6652601341711258925}
   - component: {fileID: 6957881582202263641}
-  m_Layer: 11
+  m_Layer: 14
   m_Name: Turret_Blue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63,6 +63,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Team: 0
   damage: 40
+  maxHp: 350
   buildDuration: 20
   range: 15
   focusRefreshRate: 0.5
@@ -70,6 +71,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 6953520636668906323, guid: 8cfda45e4c481a747a65e832f34b152e,
     type: 3}
   bulletSlot: {fileID: 3570956820642656162}
+  isUnderConstruction: 0
 --- !u!208 &6957881582202263641
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -97,7 +99,7 @@ GameObject:
   - component: {fileID: 2384303731334653701}
   - component: {fileID: 3187641857129735183}
   - component: {fileID: 4727894916722864985}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -180,7 +182,7 @@ GameObject:
   - component: {fileID: 4140147536008279101}
   - component: {fileID: 8992025400818185061}
   - component: {fileID: 5545327526266845502}
-  m_Layer: 5
+  m_Layer: 14
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -279,7 +281,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1289766123228588867}
   - component: {fileID: 7965037316919802311}
-  m_Layer: 10
+  m_Layer: 14
   m_Name: SelectedSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -362,7 +364,7 @@ GameObject:
   - component: {fileID: 6311181323505176444}
   - component: {fileID: 1534063160137068044}
   - component: {fileID: 223124663958814019}
-  m_Layer: 5
+  m_Layer: 14
   m_Name: BuildProgressImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -435,7 +437,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3570956820642656162}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: BulletSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -465,7 +467,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4052550502216799518}
-  m_Layer: 11
+  m_Layer: 14
   m_Name: ToRotate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -499,7 +501,7 @@ GameObject:
   - component: {fileID: 6930634185119329030}
   - component: {fileID: 1185126233626276614}
   - component: {fileID: 5866805384220870407}
-  m_Layer: 5
+  m_Layer: 14
   m_Name: HPText
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -9,7 +9,10 @@ public class MenuController : MonoBehaviour
 {
     [SerializeField]
     Transform FactoryMenuCanvas = null;
+    [SerializeField]
+    Transform SquadMenuCanvas = null;
     public GraphicRaycaster BuildMenuRaycaster { get; private set; }
+    public GraphicRaycaster SquadMenuRaycaster { get; private set; }
 
     UnitController Controller = null;
     GameObject FactoryMenuPanel = null;
@@ -21,7 +24,6 @@ public class MenuController : MonoBehaviour
     Button CancelBuildButton = null;
     Text[] BuildQueueTexts = null;
     
-    [SerializeField]
     GameObject SquadMenuPanel = null;
     Text SquadCurrentMode = null;
     Button[] SquadButtons = null;
@@ -237,6 +239,7 @@ public class MenuController : MonoBehaviour
                 FactoryMenuPanel.SetActive(false);
             }
             BuildMenuRaycaster = FactoryMenuCanvas.GetComponent<GraphicRaycaster>();
+
             Transform BuildPointsTextTransform = FactoryMenuCanvas.Find("BuildPointsText");
             if (BuildPointsTextTransform)
             {
@@ -248,12 +251,18 @@ public class MenuController : MonoBehaviour
                 CapturedTargetsText = CapturedTargetsTextTransform.GetComponent<Text>();
             }
         }
-        if (SquadMenuPanel == null)
-            Debug.LogWarning("SquadMenuPanel not assigned in inspector");
+        if (SquadMenuCanvas == null)
+            Debug.LogWarning("SquadMenuCanvas not assigned in inspector");
         else
         {
+            Transform SquadMenuPanelTransform = SquadMenuCanvas.Find("SquadMenuPanel");
+            if (SquadMenuPanelTransform)
+            {
+                SquadMenuPanel = SquadMenuPanelTransform.gameObject;
+                SquadMenuPanel.SetActive(false);
+            }
+            SquadMenuRaycaster = SquadMenuCanvas.GetComponent<GraphicRaycaster>();
             SquadCurrentMode = SquadMenuPanel.transform.Find("CurrentMode").GetComponent<Text>();
-            SquadMenuPanel.SetActive(false);
         }
 
         if (ProduceResourcesMenuPanel != null)

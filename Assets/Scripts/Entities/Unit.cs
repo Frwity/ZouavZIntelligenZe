@@ -339,7 +339,8 @@ public class Unit : BaseEntity
         if (EntityTarget != null && EntityTarget is Unit)
             return;
 
-        Collider[] unitsCollider = Physics.OverlapSphere(transform.position, 15f, 1 << LayerMask.NameToLayer("Unit"));
+        int focusLayer = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Turret")) | (1 << LayerMask.NameToLayer("Factory"));
+        Collider[] unitsCollider = Physics.OverlapSphere(transform.position, 15f, focusLayer);
         foreach(Collider unitCollider in unitsCollider)
         {
             if (unitCollider.GetComponent<Unit>().Team != Team && (!EntityTarget || !(EntityTarget is Unit)))
@@ -359,6 +360,9 @@ public class Unit : BaseEntity
                         return;
 
                     case E_MODE.Flee:
+                        if (unitCollider.GetComponent<Factory>() == null)
+                            continue;
+
                         tempEntityTarget = EntityTarget;
                         RaycastHit hit;
                         Vector3 direction = Vector3.up + (transform.position - unitCollider.transform.position).normalized * passiveFleeDistance;

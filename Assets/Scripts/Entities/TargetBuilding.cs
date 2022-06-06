@@ -96,7 +96,8 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         {
             currentUpgradeDuration = 0f;
             isUpgrading = false;
-            ResetCapture();
+            CaptureGaugeValue = CaptureGaugeStart;
+            GaugeImage.fillAmount = 0f;
         }
         if (CapturingTeam == ETeam.Neutral)
         {
