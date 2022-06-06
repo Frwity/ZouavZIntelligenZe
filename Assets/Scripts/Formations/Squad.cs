@@ -211,7 +211,10 @@ public class Squad
         foreach (Unit unit in members)
         {
             if (unit.needToCapture && unit.CanCapture(target))
+            {
                 unit.StartCapture(target);
+                unit.StopMovement();
+            }
         }
     }
 

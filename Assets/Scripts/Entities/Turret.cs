@@ -122,5 +122,6 @@ public class Turret : BaseEntity
     void Turret_OnDead()
     {
         Map.Instance.RemoveTurret(this);
+        Destroy(this);
     }
 }

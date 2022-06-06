@@ -346,9 +346,11 @@ public sealed class PlayerController : UnitController
         MenuPointerEventData.position = Input.mousePosition;
 
         //Create a list of Raycast Results
-        List<RaycastResult> results = new List<RaycastResult>();
-        PlayerMenuController.BuildMenuRaycaster.Raycast(MenuPointerEventData, results);
-        if (results.Count > 0)
+        List<RaycastResult> buildResults = new List<RaycastResult>();
+        List<RaycastResult> squadResults = new List<RaycastResult>();
+        PlayerMenuController.BuildMenuRaycaster.Raycast(MenuPointerEventData, buildResults);
+        PlayerMenuController.SquadMenuRaycaster.Raycast(MenuPointerEventData, squadResults);
+        if (buildResults.Count > 0 || squadResults.Count > 0)
             return;
 
         RaycastHit raycastInfo;
@@ -398,22 +400,18 @@ public sealed class PlayerController : UnitController
             }
             if (hasSelectedEnemy)
                 PlayerMenuController.UpdateSquadMenu(SelectedSquad);
-            else
-                PlayerMenuController.HideSquadMenu();
         }
         else if (Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, floorMask))
         {
             UnselectCurrentFactory();
+            UnselectTarget();
+
             SelectionLineRenderer.enabled = true;
-
             SelectionStarted = true;
-
             SelectionStart.x = raycastInfo.point.x;
             SelectionStart.y = 0.0f;//raycastInfo.point.y + 1f;
             SelectionStart.z = raycastInfo.point.z;
 
-            if (!Physics.Raycast(ray, out raycastInfo, Mathf.Infinity, 1 << LayerMask.NameToLayer("Floor")))
-                UnselectTarget();
         }
     }
 
@@ -454,6 +452,7 @@ public sealed class PlayerController : UnitController
 
         UnselectAllUnits();
         UnselectCurrentFactory();
+        UnselectTarget();
 
         int unitLayerMask = 1 << LayerMask.NameToLayer("Unit");
         int factoryLayerMask = 1 << LayerMask.NameToLayer("Factory");
@@ -485,8 +484,6 @@ public sealed class PlayerController : UnitController
 
         if (hasSelectedEnemy)
             PlayerMenuController.UpdateSquadMenu(SelectedSquad);
-        else
-            PlayerMenuController.HideSquadMenu();
 
         SelectionStarted = false;
         SelectionStart = Vector3.zero;
@@ -501,6 +498,7 @@ public sealed class PlayerController : UnitController
             TemporarySquadList.Add(new Squad(SelectedSquad));
 
         SelectedSquad.ClearUnits();
+        PlayerMenuController.HideSquadMenu();
     }
 
     #endregion
