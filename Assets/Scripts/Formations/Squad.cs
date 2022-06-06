@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -47,8 +48,8 @@ public class Squad
         State = squad.State;
         isTemporary = true;
 
-        foreach (Unit unit in squad.members)
-            AddUnit(unit);
+        for(int i = 0; i < squad.members.Count; i++)
+            AddUnit(squad.members[i]);
 
         SquadFormation.FormationLeader = squad.SquadFormation.FormationLeader;
         targetBuilding = squad.targetBuilding;
@@ -60,15 +61,16 @@ public class Squad
             SquadTarget.OnDeadEvent -= squad.StopAttack;
             SquadTarget.OnDeadEvent += StopAttack;
         }
+        
         if (squad.SquadCapture && members.Count > 0)
         {
-            Debug.Log("Squad temp capture");
             targetBuilding.OnBuilduingCaptured.RemoveListener(squad.OnSquadCaptureTarget);
             targetBuilding.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
             SquadCapture = true;
             if (CanCapture(targetBuilding))
                 CanBreakFormation = true;
         }
+
         SquadRepair = squad.SquadRepair;
     }
 
@@ -177,7 +179,7 @@ public class Squad
      */
     public void CaptureTarget(TargetBuilding target)
     {
-        if (target == null && members.Count > 0)
+        if (target == null || members.Count == 0)
             return;
         
         if (target.GetTeam() != Controller.GetTeam())
@@ -189,13 +191,10 @@ public class Squad
             SquadFormation.ChooseLeader(target.transform.position);
             SquadCapture = true;
             targetBuilding = target;
-
-            if (members.Count > 0 &&target)
-            {
-                CanBreakFormation = true;
-                SquadStartCapture(target);
-                MoveSquad(target.transform.position);
-            }
+            
+            CanBreakFormation = true;
+            SquadStartCapture(targetBuilding);
+            MoveSquad(targetBuilding.transform.position);
         }
     }
 
@@ -323,6 +322,7 @@ public class Squad
     public void ResetTask()
     {
         SquadTarget = null;
+        targetBuilding = null;
         SquadStopCapture();
         SetSquadTarget();
         SquadStopRepair();

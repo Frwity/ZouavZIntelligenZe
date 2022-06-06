@@ -104,8 +104,8 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         }
     }
     public void StopCapture(Unit unit)
-    {
-        if (unit == null)
+    { 
+        if (unit == null || (TeamScore[(int)unit.GetTeam()] == 0 && CapturingTeam == ETeam.Neutral))
             return;
 
         TeamScore[(int)unit.GetTeam()] -= unit.Cost;
