@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -47,8 +48,8 @@ public class Squad
         State = squad.State;
         isTemporary = true;
 
-        foreach (Unit unit in squad.members)
-            AddUnit(unit);
+        for(int i = 0; i < squad.members.Count; i++)
+            AddUnit(squad.members[i]);
 
         SquadFormation.FormationLeader = squad.SquadFormation.FormationLeader;
         targetBuilding = squad.targetBuilding;
@@ -60,6 +61,7 @@ public class Squad
             SquadTarget.OnDeadEvent -= squad.StopAttack;
             SquadTarget.OnDeadEvent += StopAttack;
         }
+        
         if (squad.SquadCapture && members.Count > 0)
         {
             targetBuilding.OnBuilduingCaptured.RemoveListener(squad.OnSquadCaptureTarget);
@@ -68,6 +70,7 @@ public class Squad
             if (CanCapture(targetBuilding))
                 CanBreakFormation = true;
         }
+
         SquadRepair = squad.SquadRepair;
     }
 
@@ -181,7 +184,7 @@ public class Squad
      */
     public void CaptureTarget(TargetBuilding target)
     {
-        if (target == null || members.Count < 0)
+        if (target == null || members.Count == 0)
             return;
         
         if (target.GetTeam() != Controller.GetTeam())
@@ -324,6 +327,7 @@ public class Squad
     public void ResetTask()
     {
         SquadTarget = null;
+        targetBuilding = null;
         SquadStopCapture();
         SetSquadTarget();
         SquadStopRepair();
