@@ -523,6 +523,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 643947965}
   m_PrefabAsset: {fileID: 0}
+--- !u!224 &300218077 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7589878712571714490, guid: 1b233032235fc5b48a33c763653c2c52,
+    type: 3}
+  m_PrefabInstance: {fileID: 1094405280}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &312249861
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -844,6 +850,11 @@ PrefabInstance:
       propertyPath: ProduceResourcesMenuPanel
       value: 
       objectReference: {fileID: 1094405281}
+    - target: {fileID: 8446335230809480305, guid: dc4ee6691f59b07458286e0cfb38d82d,
+        type: 3}
+      propertyPath: ProduceResourcesMenuCanvas
+      value: 
+      objectReference: {fileID: 300218077}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc4ee6691f59b07458286e0cfb38d82d, type: 3}
 --- !u!114 &589627996 stripped

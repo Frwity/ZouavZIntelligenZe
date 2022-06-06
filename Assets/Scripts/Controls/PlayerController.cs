@@ -348,9 +348,11 @@ public sealed class PlayerController : UnitController
         //Create a list of Raycast Results
         List<RaycastResult> buildResults = new List<RaycastResult>();
         List<RaycastResult> squadResults = new List<RaycastResult>();
+        List<RaycastResult> resourcesResults = new List<RaycastResult>();
         PlayerMenuController.BuildMenuRaycaster.Raycast(MenuPointerEventData, buildResults);
         PlayerMenuController.SquadMenuRaycaster.Raycast(MenuPointerEventData, squadResults);
-        if (buildResults.Count > 0 || squadResults.Count > 0)
+        PlayerMenuController.ProduceResourcesMenuRaycaster.Raycast(MenuPointerEventData, resourcesResults);
+        if (buildResults.Count > 0 || squadResults.Count > 0 || resourcesResults.Count > 0)
             return;
 
         RaycastHit raycastInfo;
