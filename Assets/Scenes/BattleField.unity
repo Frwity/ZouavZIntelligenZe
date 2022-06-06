@@ -308,6 +308,11 @@ PrefabInstance:
       objectReference: {fileID: 1152156315}
     - target: {fileID: 8446335230809480305, guid: dc4ee6691f59b07458286e0cfb38d82d,
         type: 3}
+      propertyPath: SquadMenuCanvas
+      value: 
+      objectReference: {fileID: 1767657033}
+    - target: {fileID: 8446335230809480305, guid: dc4ee6691f59b07458286e0cfb38d82d,
+        type: 3}
       propertyPath: FactoryMenuCanvas
       value: 
       objectReference: {fileID: 1502398125}
@@ -1751,6 +1756,12 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4162452776302188, guid: 0d9616ec63050ca4fa2fc0cc793599d0,
     type: 3}
   m_PrefabInstance: {fileID: 48757321}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1767657033 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2853760328296228614, guid: 3a519dc657169c94891593423f0c6d19,
+    type: 3}
+  m_PrefabInstance: {fileID: 643197524}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1866786994
 GameObject:

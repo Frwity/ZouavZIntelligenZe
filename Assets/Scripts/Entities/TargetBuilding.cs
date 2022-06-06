@@ -26,7 +26,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     float CaptureGaugeValue;
     float currentUpgradeDuration = 0f;
     ETeam OwningTeam = ETeam.Neutral;
-    ETeam CapturingTeam = ETeam.Neutral;
+    public ETeam CapturingTeam = ETeam.Neutral;
     UnitController owningController = null;
     GameObject SelectedSprite = null;
 
@@ -96,7 +96,8 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         {
             currentUpgradeDuration = 0f;
             isUpgrading = false;
-            ResetCapture();
+            CaptureGaugeValue = CaptureGaugeStart;
+            GaugeImage.fillAmount = 0f;
         }
         if (CapturingTeam == ETeam.Neutral)
         {
@@ -168,16 +169,23 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         isProducingResources = false;
     }
 
-    public bool StartUpgrade()
+    public bool CanBeUpgraded()
     {
         UnitController teamController = GameServices.GetControllerByTeam(OwningTeam);
-        if (teamController.TotalBuildPoints < upgradeCost)
+        if (!canProduceResources || isProducingResources || isUpgrading || teamController.TotalBuildPoints < upgradeCost || (CapturingTeam != OwningTeam && CapturingTeam != ETeam.Neutral))
             return false;
 
-        teamController.TotalBuildPoints -= upgradeCost;
+        return true;
+    }
+
+    public void StartUpgrade()
+    {
+        if (!CanBeUpgraded())
+            return;
+
+        GameServices.GetControllerByTeam(OwningTeam).TotalBuildPoints -= upgradeCost;
         currentUpgradeDuration = upgradeDuration;
         isUpgrading = true;
-        return true;
     }
 
     private void StartProducingResources()

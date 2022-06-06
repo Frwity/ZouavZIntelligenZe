@@ -26,6 +26,8 @@ public abstract class StrategicTask
     public virtual void EndTask() 
     {
         isComplete = true;
+        if (squad != null)
+            squad.State = E_TASK_STATE.Free;
     }
 }
 
@@ -288,7 +290,7 @@ public class CreateLAttackSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.8f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 5) * 0.8f);
                 money += 3 - money % 3;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
@@ -334,7 +336,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.7f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.7f);
                 targetCost = money + squad.totalCost;
                 currentScore = score;
                 return true;
@@ -376,7 +378,7 @@ public class CreateDefenseSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.5f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.5f);
                 money += 5 - money % 5;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
@@ -406,13 +408,17 @@ public class CreateMinerTask : StrategicTask
                 if (temp.isProducingResources)
                     ++ownedMine;
 
-                if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && targetBuilding == null)
-                    targetBuilding = temp;
-                
-                else if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude 
-                        < (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude)
+                if (temp.CanBeUpgraded())
                 {
-                    targetBuilding = temp;
+                    if (targetBuilding == null)
+                        targetBuilding = temp;
+                    else
+                    {
+                        float tempDistance = (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
+                        float targetDistance = (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
+                        if (tempDistance < targetDistance)
+                            targetBuilding = temp;
+                    }
                 }
             }
         }
@@ -510,8 +516,8 @@ public class CreateFactoryTask : StrategicTask
                         if (it.GetTeam() == _controller.GetTeam() && (it.buildType == E_BUILDTYPE.HEAVYFACTORY || it.buildType == E_BUILDTYPE.LIGHTFACTORY))
                             goto REPEAT;
                     }
+                    ValueTile.Add(tile);
                 }
-                ValueTile.Add(tile);
                 REPEAT:;
             }
 
@@ -568,6 +574,7 @@ public class AttackTargetTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
+        Debug.Log("money " + _controller.TotalBuildPoints);
 
         StrategicTask temp;
 
@@ -579,6 +586,7 @@ public class AttackTargetTask : StrategicTask
         temp = new CreateHAttackSquadTask(squad);
         if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateHAttackSquadTask.id, squad.GetSquadValue(), 0.70f))
             squadCreation = temp;
+        Debug.Log(squadCreation);
 
         if (score <= 0.001)
             return false;
@@ -602,19 +610,15 @@ public class AttackTargetTask : StrategicTask
                     continue;
                 }
                 else if (tile.buildType < tempType)
-                {
                     targetTile = tile;
-                }
-                else if (tile.buildType == tempType 
-                && (tile.position - rallyPoint).magnitude 
-                < (targetTile.position - rallyPoint).magnitude)
-                {
+                else if (tile.buildType == tempType && (tile.position - rallyPoint).magnitude  < (targetTile.position - rallyPoint).magnitude)
                     targetTile = tile;
-                }
+
                 tempType = targetTile.buildType;
             }
         }
 
+        Debug.Log("tqrget");
         if (targetTile == null || score <= 0.001f)
             return false;
 
@@ -622,8 +626,8 @@ public class AttackTargetTask : StrategicTask
         score =  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
             * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - rallyPoint).magnitude / Map.Instance.mapSize);
 
-        //Debug.Log("attack");
-        //Debug.Log(score);
+        Debug.Log("attack");
+        Debug.Log(score);
         if (score > currentScore)
         {
             currentScore = score;
@@ -664,17 +668,18 @@ public class AttackTargetTask : StrategicTask
                 return;
             }
 
+            squad.UpdateSquad();
             if (checkIfEndInterval < Time.time)
             {
                 checkIfEndInterval = Time.time + 1.0f;
-                if (targetTile.gameobject == null || targetTile.gameobject.GetComponent<BaseEntity>() == null)
+                if (targetTile.gameobject == null || (targetTile.gameobject.GetComponent<BaseEntity>() == null && targetTile.gameobject.GetComponent<TargetBuilding>() == null))
                 {
                     EndTask();
                     return;
                 }
                 else
                 {
-                    if (targetTile.buildType != E_BUILDTYPE.MINER)
+                    if (targetTile.buildType != E_BUILDTYPE.MINER && targetTile.buildType != E_BUILDTYPE.CAPTUREPOINT)
                     {
                         if (!targetTile.gameobject.GetComponent<BaseEntity>().IsAlive)
                             EndTask();
@@ -753,10 +758,17 @@ public class PlaceTurretTask : StrategicTask
         else
             return false;
 
+        int turretCount = 0;
+        foreach (Tile tile in Map.Instance.tilesWithBuild)
+            if (tile.buildType == E_BUILDTYPE.TURRET && tile.GetTeam() == _controller.GetTeam())
+                ++turretCount;
+
         float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints)
                     * _controller.taskDatas[id].EnemyPower.Evaluate(_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower())
+                    * _controller.taskDatas[id].Ratio.Evaluate(turretCount)
                     * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
 
+        //Debug.Log("turret");
         //Debug.Log(score);
 
         if (score > currentScore)
@@ -771,13 +783,15 @@ public class PlaceTurretTask : StrategicTask
             {
                 if (tile.GetTeam() == _controller.GetTeam())
                 {
-                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 20.0f);
+                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 35.0f);
 
                     foreach (Tile it in stratTiles)
                         if (it.GetTeam() == _controller.GetTeam() && it.buildType == E_BUILDTYPE.TURRET)
-                            continue;
+                            goto REPEAT;
+
                     ValueTile.Add(tile);
                 }
+                REPEAT:;
             }
 
             foreach (Tile tile in ValueTile) // check for THE best tile
