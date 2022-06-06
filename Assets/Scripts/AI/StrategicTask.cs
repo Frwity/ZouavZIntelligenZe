@@ -180,9 +180,6 @@ public class CreateSquadTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         factory = null;
-        //Debug.Log(squad.GetSquadValue());
-        //Debug.Log(squad.GetSquadLeader());
-        //Debug.Log(_controller.FactoryList[0]);
         Vector3 squadPos = squad.GetSquadValue() > 0 ? squad.GetSquadLeader().transform.position : _controller.FactoryList[0].transform.position;
         foreach (Factory it in _controller.FactoryList)
         {
@@ -374,17 +371,15 @@ public class CreateDefenseSquadTask : CreateSquadTask
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
+        factoryType = FACTORY_TYPE.HEAVY;
+
         if (base.Evaluate(_controller, ref currentScore))
         {
-            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
-            if (score > currentScore)
-            {
-                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.5f);
-                money += 5 - money % 5;
-                targetCost = money + squad.totalCost;
-                currentScore = score;
+            money = Mathf.CeilToInt((_controller.TotalBuildPoints) * 0.85f);
+            money -= 5 - money % 5;
+            targetCost = money + squad.totalCost;
+            if (money >= 5)
                 return true;
-            }
         }
         return false;
     }
@@ -709,10 +704,52 @@ public class PlaceDefendUnitTask : StrategicTask
 {
     public static int id { get; private set; } = 9;
 
+    StrategicTask squadCreation = null;
+    BaseEntity defendedEntity = null;
+    Vector3 defendPos;
+    float checkIfEndInterval = 0.0f;
+
+    public PlaceDefendUnitTask(Squad _squad)
+    {
+        squad = _squad;
+    }
+
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
 
+        BaseEntity tempEntity;
+        foreach (Tile tile in Map.Instance.tilesWithBuild)
+        {
+            if (tile.GetTeam() == _controller.GetTeam())
+            {
+                tempEntity = tile.gameobject.GetComponent<BaseEntity>();
+                if (tempEntity != null && tempEntity/**/ && !tempEntity.IsDefended) // under attack
+                {
+                    defendedEntity = tempEntity;
+                    break;
+                }
+            }
+        }
+
+        if (defendedEntity == null)
+            return false;
+
+        defendPos = defendPos;
+
+        // choose defend squad if possible
+        StrategicTask tempTask = new CreateDefenseSquadTask(squad);
+        if (tempTask.Evaluate(_controller, ref score))
+            squadCreation = tempTask;
+
+        tempTask = new CreateLAttackSquadTask(squad);
+        if (tempTask.Evaluate(_controller, ref score))
+            squadCreation = tempTask;
+
+        if (tempTask == null)
+            return false;
+
+        score = 1.0f;
         if (score > currentScore)
         {
             currentScore = score;
@@ -723,11 +760,65 @@ public class PlaceDefendUnitTask : StrategicTask
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
+        defendedEntity.IsDefended = true;
+        if (squadCreation != null)
+        {
+            squad.State = E_TASK_STATE.Busy;
+            squadCreation.StartTask(_controller);
+        }
+        else
+            Defend();
     }
 
     public override void UpdateTask()
     {
         base.UpdateTask();
+        if (squad == null)
+            return;
+
+        if (squadCreation != null)
+        {
+            squadCreation.UpdateTask();
+            if (squadCreation.isComplete)
+            {
+                Defend();
+                squadCreation = null;
+            }
+        }
+        else // if squad complete, update defense
+        {
+            if (squad.GetSquadValue() == 0)
+            {
+                EndTask();
+                return;
+            }
+
+            squad.UpdateSquad();
+            if (checkIfEndInterval < Time.time)
+            {
+                checkIfEndInterval = Time.time + 1.0f;
+                if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || defendedEntity.is)
+                {
+                    EndTask();
+                    return;
+                }
+            }
+        }
+    }
+
+    public void Defend()
+    {
+        squad.State = E_TASK_STATE.Free;
+        checkIfEndInterval = Time.time;
+        squad.SetMode(E_MODE.Defensive);
+        squad.MoveSquad(defendPos);
+    }
+
+    public override void EndTask()
+    {
+        base.EndTask();
+        if (defendedEntity)
+            defendedEntity.IsDefended = false;
     }
 }
 

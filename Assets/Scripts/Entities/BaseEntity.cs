@@ -16,6 +16,7 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
     public Action OnDeadEvent;
     public bool IsSelected { get; protected set; }
     public bool IsAlive { get; protected set; }
+    public bool IsDefended = false;
     virtual public void Init(ETeam _team)
     {
         if (IsInitialized)
