@@ -26,6 +26,7 @@ public abstract class StrategicTask
     public virtual void EndTask() 
     {
         isComplete = true;
+        squad.State = E_TASK_STATE.Free;
     }
 }
 
@@ -406,11 +407,18 @@ public class CreateMinerTask : StrategicTask
                 if (temp.isProducingResources)
                     ++ownedMine;
 
-                float tempDistance = (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
-                float targetDistance = (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
-
-                if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && (targetBuilding == null || tempDistance < targetDistance))
-                    targetBuilding = temp;
+                if (temp.CanBeUpgraded())
+                {
+                    if (targetBuilding == null)
+                        targetBuilding = temp;
+                    else
+                    {
+                        float tempDistance = (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
+                        float targetDistance = (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
+                        if (tempDistance < targetDistance)
+                            targetBuilding = temp;
+                    }
+                }
             }
         }
 
@@ -664,6 +672,7 @@ public class AttackTargetTask : StrategicTask
                 return;
             }
 
+            squad.UpdateSquad();
             if (checkIfEndInterval < Time.time)
             {
                 checkIfEndInterval = Time.time + 1.0f;

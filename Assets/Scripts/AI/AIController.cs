@@ -71,10 +71,11 @@ public sealed class AIController : UnitController
             return;
         previousTime = Time.time;
 
-        //Debug.Log("-------------" + scoreThreshold.ToString());
+        Debug.Log("-------------" + scoreThreshold.ToString());
 
         if (task == null || task.isComplete)
         {
+            Debug.Log(task);
             StrategicTask tempTask;
             float score = scoreThreshold;
 
@@ -111,7 +112,7 @@ public sealed class AIController : UnitController
             if (score > scoreThreshold)
                 task.StartTask(this);
         }
-        //Debug.Log("-------------" + scoreThreshold.ToString());
+        Debug.Log("-------------" + scoreThreshold.ToString());
     }
 
     Squad GetRandomSquad()
