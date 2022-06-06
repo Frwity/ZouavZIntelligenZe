@@ -62,7 +62,6 @@ public class Squad
         }
         if (squad.SquadCapture && members.Count > 0)
         {
-            Debug.Log("Squad temp capture");
             targetBuilding.OnBuilduingCaptured.RemoveListener(squad.OnSquadCaptureTarget);
             targetBuilding.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
             SquadCapture = true;
@@ -92,6 +91,8 @@ public class Squad
     {
         unit.SetMode(SquadMode);
         members.Add(unit);
+        if (unit.squad != null && unit.squad.isTemporary)
+            unit.squad.RemoveUnit(unit);
         unit.squad = this;
         totalCost += unit.Cost;
         //assign first unit to be the leader
@@ -124,14 +125,17 @@ public class Squad
             return;
 
         totalCost -= unit.Cost;
-        unit.squad = null;
+
+        if (unit.squad == this)
+            unit.squad = null;
+
         SquadFormation.UpdateFormationLeader();
     }
 
     public void UpdateSquad()
     {
         if (SquadCapture)
-            SquadStartCapture(targetBuilding);
+            SquadStartCapture();
 
         if (SquadAttack && SquadTarget)
             SquadAttackTarget();
@@ -177,43 +181,40 @@ public class Squad
      */
     public void CaptureTarget(TargetBuilding target)
     {
-        if (target == null && members.Count > 0)
+        if (target == null || members.Count < 0)
             return;
         
         if (target.GetTeam() != Controller.GetTeam())
         {
-            SquadNeedToCapture(target);
+            targetBuilding = target;
+            SquadNeedToCapture();
 
             State = E_TASK_STATE.Busy;
             target.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
             SquadFormation.ChooseLeader(target.transform.position);
             SquadCapture = true;
-            targetBuilding = target;
 
-            if (members.Count > 0 &&target)
-            {
-                CanBreakFormation = true;
-                SquadStartCapture(target);
-                MoveSquad(target.transform.position);
-            }
+            CanBreakFormation = true;
+            SquadStartCapture();
+            MoveSquad(target.transform.position);
         }
     }
 
-    void SquadNeedToCapture(TargetBuilding target)
+    void SquadNeedToCapture()
     {
         foreach (Unit unit in members)
         {
-            unit.NeedToCapture(target);
+            unit.NeedToCapture(targetBuilding);
         }
     }
 
-    void SquadStartCapture(TargetBuilding target)
+    void SquadStartCapture()
     {
         foreach (Unit unit in members)
         {
-            if (unit.needToCapture && unit.CanCapture(target))
+            if (unit.needToCapture && unit.CanCapture(targetBuilding))
             {
-                unit.StartCapture(target);
+                unit.StartCapture(targetBuilding);
                 unit.StopMovement();
             }
         }
