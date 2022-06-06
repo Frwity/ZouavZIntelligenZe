@@ -54,14 +54,15 @@ public class Squad
         targetBuilding = squad.targetBuilding;
         SquadTarget = squad.SquadTarget;
 
-        if (SquadAttack = squad.SquadAttack)
+        if (squad.SquadAttack)
         {
+            SquadAttack = true;
             SquadTarget.OnDeadEvent -= squad.StopAttack;
             SquadTarget.OnDeadEvent += StopAttack;
         }
-
         if (squad.SquadCapture && members.Count > 0)
         {
+            Debug.Log("Squad temp capture");
             targetBuilding.OnBuilduingCaptured.RemoveListener(squad.OnSquadCaptureTarget);
             targetBuilding.OnBuilduingCaptured.AddListener(OnSquadCaptureTarget);
             SquadCapture = true;
@@ -211,7 +212,10 @@ public class Squad
         foreach (Unit unit in members)
         {
             if (unit.needToCapture && unit.CanCapture(target))
+            {
                 unit.StartCapture(target);
+                unit.StopMovement();
+            }
         }
     }
 
@@ -286,6 +290,7 @@ public class Squad
     {
         foreach (Unit unit in members)
         {
+            unit.EntityTarget = SquadTarget;
             unit.SetAttackTarget(SquadTarget);
         }
     }
