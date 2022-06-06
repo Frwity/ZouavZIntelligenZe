@@ -169,16 +169,23 @@ public class TargetBuilding : MonoBehaviour, ISelectable
         isProducingResources = false;
     }
 
-    public bool StartUpgrade()
+    public bool CanBeUpgraded()
     {
         UnitController teamController = GameServices.GetControllerByTeam(OwningTeam);
-        if (teamController.TotalBuildPoints < upgradeCost)
+        if (!canProduceResources || isProducingResources || isUpgrading || teamController.TotalBuildPoints < upgradeCost || (CapturingTeam != OwningTeam && CapturingTeam != ETeam.Neutral))
             return false;
 
-        teamController.TotalBuildPoints -= upgradeCost;
+        return true;
+    }
+
+    public void StartUpgrade()
+    {
+        if (!CanBeUpgraded())
+            return;
+
+        GameServices.GetControllerByTeam(OwningTeam).TotalBuildPoints -= upgradeCost;
         currentUpgradeDuration = upgradeDuration;
         isUpgrading = true;
-        return true;
     }
 
     private void StartProducingResources()

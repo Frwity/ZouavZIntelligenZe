@@ -199,8 +199,9 @@ public class MenuController : MonoBehaviour
         produceResourcesButton.SetActive(!target.isProducingResources && !target.isUpgrading);
         produceResourcesButton.GetComponent<Button>().onClick.AddListener(() =>
         {
-            if (target.StartUpgrade())
+            if (target.CanBeUpgraded())
             {
+                target.StartUpgrade();
                 produceResourcesButton.SetActive(false);
                 produceResourcesText.SetActive(true);
             }
