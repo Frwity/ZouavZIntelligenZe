@@ -510,8 +510,8 @@ public class CreateFactoryTask : StrategicTask
                         if (it.GetTeam() == _controller.GetTeam() && (it.buildType == E_BUILDTYPE.HEAVYFACTORY || it.buildType == E_BUILDTYPE.LIGHTFACTORY))
                             goto REPEAT;
                     }
+                    ValueTile.Add(tile);
                 }
-                ValueTile.Add(tile);
                 REPEAT:;
             }
 
@@ -622,8 +622,8 @@ public class AttackTargetTask : StrategicTask
         score =  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
             * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - rallyPoint).magnitude / Map.Instance.mapSize);
 
-        //Debug.Log("attack");
-        //Debug.Log(score);
+        Debug.Log("attack");
+        Debug.Log(score);
         if (score > currentScore)
         {
             currentScore = score;
@@ -753,11 +753,18 @@ public class PlaceTurretTask : StrategicTask
         else
             return false;
 
+        int turretCount = 0;
+        foreach (Tile tile in Map.Instance.tilesWithBuild)
+            if (tile.buildType == E_BUILDTYPE.TURRET && tile.GetTeam() == _controller.GetTeam())
+                ++turretCount;
+
         float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints)
                     * _controller.taskDatas[id].EnemyPower.Evaluate(_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower())
+                    * _controller.taskDatas[id].Ratio.Evaluate(turretCount)
                     * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
 
-        //Debug.Log(score);
+        Debug.Log("turret");
+        Debug.Log(score);
 
         if (score > currentScore)
         {
@@ -771,13 +778,15 @@ public class PlaceTurretTask : StrategicTask
             {
                 if (tile.GetTeam() == _controller.GetTeam())
                 {
-                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 20.0f);
+                    List<Tile> stratTiles = Map.Instance.GetTilesWithBuildAroundPoint(tile.position, 35.0f);
 
                     foreach (Tile it in stratTiles)
                         if (it.GetTeam() == _controller.GetTeam() && it.buildType == E_BUILDTYPE.TURRET)
-                            continue;
+                            goto REPEAT;
+
                     ValueTile.Add(tile);
                 }
+                REPEAT:;
             }
 
             foreach (Tile tile in ValueTile) // check for THE best tile
