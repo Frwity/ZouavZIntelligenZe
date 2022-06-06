@@ -11,8 +11,11 @@ public class MenuController : MonoBehaviour
     Transform FactoryMenuCanvas = null;
     [SerializeField]
     Transform SquadMenuCanvas = null;
+    [SerializeField]
+    Transform ProduceResourcesMenuCanvas = null;
     public GraphicRaycaster BuildMenuRaycaster { get; private set; }
     public GraphicRaycaster SquadMenuRaycaster { get; private set; }
+    public GraphicRaycaster ProduceResourcesMenuRaycaster { get; private set; }
 
     UnitController Controller = null;
     GameObject FactoryMenuPanel = null;
@@ -28,7 +31,6 @@ public class MenuController : MonoBehaviour
     Text SquadCurrentMode = null;
     Button[] SquadButtons = null;
     
-    [SerializeField]
     GameObject ProduceResourcesMenuPanel = null;
     GameObject produceResourcesButton = null;
     GameObject produceResourcesText = null;
@@ -252,6 +254,7 @@ public class MenuController : MonoBehaviour
                 CapturedTargetsText = CapturedTargetsTextTransform.GetComponent<Text>();
             }
         }
+
         if (SquadMenuCanvas == null)
             Debug.LogWarning("SquadMenuCanvas not assigned in inspector");
         else
@@ -266,10 +269,20 @@ public class MenuController : MonoBehaviour
             SquadCurrentMode = SquadMenuPanel.transform.Find("CurrentMode").GetComponent<Text>();
         }
 
-        if (ProduceResourcesMenuPanel != null)
-            ProduceResourcesMenuPanel.SetActive(false);
+        if (ProduceResourcesMenuCanvas == null)
+            Debug.LogWarning("ProduceResourcesMenuCanvas not assigned in inspector");
+        else
+        {
+            Transform ProduceResourcesMenuPanelTransform = ProduceResourcesMenuCanvas.Find("ProduceResoucesPanel");
+            if (ProduceResourcesMenuPanelTransform)
+            {
+                ProduceResourcesMenuPanel = ProduceResourcesMenuPanelTransform.gameObject;
+                ProduceResourcesMenuPanel.SetActive(false);
+            }
+            ProduceResourcesMenuRaycaster = ProduceResourcesMenuCanvas.GetComponent<GraphicRaycaster>();
+        }
 
-    Controller = GetComponent<UnitController>();
+        Controller = GetComponent<UnitController>();
     }
     void Start()
     {

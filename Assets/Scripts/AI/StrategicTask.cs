@@ -719,14 +719,16 @@ public class PlaceDefendUnitTask : StrategicTask
         float score = 0.0f;
 
         BaseEntity tempEntity;
+        Tile defendTile = null;
         foreach (Tile tile in Map.Instance.tilesWithBuild)
         {
             if (tile.GetTeam() == _controller.GetTeam())
             {
                 tempEntity = tile.gameobject.GetComponent<BaseEntity>();
-                if (tempEntity != null && tempEntity/**/ && !tempEntity.IsDefended) // under attack
+                if (tempEntity != null && tempEntity.IsUnderAttack && !tempEntity.IsDefended)
                 {
                     defendedEntity = tempEntity;
+                    defendTile = tile;
                     break;
                 }
             }
@@ -735,7 +737,7 @@ public class PlaceDefendUnitTask : StrategicTask
         if (defendedEntity == null)
             return false;
 
-        defendPos = defendPos;
+        defendPos = Map.Instance.GetHighestNeighbor(defendTile, _controller.GetTeam()).position;
 
         // choose defend squad if possible
         StrategicTask tempTask = new CreateDefenseSquadTask(squad);
@@ -763,6 +765,7 @@ public class PlaceDefendUnitTask : StrategicTask
         defendedEntity.IsDefended = true;
         if (squadCreation != null)
         {
+            Defend();
             squad.State = E_TASK_STATE.Busy;
             squadCreation.StartTask(_controller);
         }
@@ -797,7 +800,7 @@ public class PlaceDefendUnitTask : StrategicTask
             if (checkIfEndInterval < Time.time)
             {
                 checkIfEndInterval = Time.time + 1.0f;
-                if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || defendedEntity.is)
+                if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || !defendedEntity.IsUnderAttack)
                 {
                     EndTask();
                     return;
