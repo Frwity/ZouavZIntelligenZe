@@ -288,7 +288,7 @@ public class CreateLAttackSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.8f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 5) * 0.8f);
                 money += 3 - money % 3;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
@@ -334,7 +334,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.7f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.7f);
                 targetCost = money + squad.totalCost;
                 currentScore = score;
                 return true;
@@ -376,7 +376,7 @@ public class CreateDefenseSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.5f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.5f);
                 money += 5 - money % 5;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
@@ -406,14 +406,11 @@ public class CreateMinerTask : StrategicTask
                 if (temp.isProducingResources)
                     ++ownedMine;
 
-                if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && targetBuilding == null)
+                float tempDistance = (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
+                float targetDistance = (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude;
+
+                if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && (targetBuilding == null || tempDistance < targetDistance))
                     targetBuilding = temp;
-                
-                else if (!temp.isProducingResources && temp.canProduceResources && !temp.isUpgrading && (temp.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude 
-                        < (targetBuilding.gameObject.transform.position - _controller.FactoryList[0].transform.position).magnitude)
-                {
-                    targetBuilding = temp;
-                }
             }
         }
 
@@ -568,6 +565,7 @@ public class AttackTargetTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
+        Debug.Log("money " + _controller.TotalBuildPoints);
 
         StrategicTask temp;
 
@@ -579,6 +577,7 @@ public class AttackTargetTask : StrategicTask
         temp = new CreateHAttackSquadTask(squad);
         if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateHAttackSquadTask.id, squad.GetSquadValue(), 0.70f))
             squadCreation = temp;
+        Debug.Log(squadCreation);
 
         if (score <= 0.001)
             return false;
@@ -615,6 +614,7 @@ public class AttackTargetTask : StrategicTask
             }
         }
 
+        Debug.Log("tqrget");
         if (targetTile == null || score <= 0.001f)
             return false;
 
@@ -763,8 +763,8 @@ public class PlaceTurretTask : StrategicTask
                     * _controller.taskDatas[id].Ratio.Evaluate(turretCount)
                     * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
 
-        Debug.Log("turret");
-        Debug.Log(score);
+        //Debug.Log("turret");
+        //Debug.Log(score);
 
         if (score > currentScore)
         {

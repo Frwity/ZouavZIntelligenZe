@@ -26,7 +26,7 @@ public class TargetBuilding : MonoBehaviour, ISelectable
     float CaptureGaugeValue;
     float currentUpgradeDuration = 0f;
     ETeam OwningTeam = ETeam.Neutral;
-    ETeam CapturingTeam = ETeam.Neutral;
+    public ETeam CapturingTeam = ETeam.Neutral;
     UnitController owningController = null;
     GameObject SelectedSprite = null;
 

@@ -99,6 +99,7 @@ public sealed class AIController : UnitController
 
             if (IsSquadAvailible())
             {
+                Debug.Log("eva");
                 tempTask = new AttackTargetTask(GetRandomSquad());
                 if (tempTask.Evaluate(this, ref score))
                     task = tempTask;
