@@ -321,6 +321,9 @@ public class Squad
 
     void AttackTarget()
     {
+        if (SquadTarget == null)
+            return;
+
         if (SquadFormation.FormationLeader.CanAttack(SquadTarget))
         {
             foreach (Unit unit in members)
