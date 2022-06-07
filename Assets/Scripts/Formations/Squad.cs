@@ -321,6 +321,8 @@ public class Squad
 
     void AttackTarget()
     {
+        if (SquadFormation.FormationLeader.CanAttack(SquadTarget))
+        {
             foreach (Unit unit in members)
             {
                 if (!SquadTarget)
@@ -328,7 +330,7 @@ public class Squad
 
                 if (unit.CanAttack(SquadTarget))
                 {
-                    unit.ComputeAttack();
+                    unit.ComputeAttack(SquadTarget);
                     unit.StopMovement(); 
                 }
                 else
@@ -338,6 +340,9 @@ public class Squad
                 }
             }   
         }
+        else
+            MoveSquad(SquadTarget.transform.position);
+    }
 
     /*
      * Reset Squad task on new order

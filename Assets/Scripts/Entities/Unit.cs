@@ -227,8 +227,11 @@ public class Unit : BaseEntity
     }
 
     // Attack Task
-    public void ComputeAttack()
+    public void ComputeAttack(BaseEntity target = null)
     {
+        if(target != null)
+            EntityTarget = target;
+
         if (CanAttack(EntityTarget) == false)
             return;
 
