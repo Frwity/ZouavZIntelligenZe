@@ -574,7 +574,7 @@ public class AttackTargetTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
-        Debug.Log("money " + _controller.TotalBuildPoints);
+        //Debug.Log("money " + _controller.TotalBuildPoints);
 
         StrategicTask temp;
 
@@ -586,7 +586,7 @@ public class AttackTargetTask : StrategicTask
         temp = new CreateHAttackSquadTask(squad);
         if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateHAttackSquadTask.id, squad.GetSquadValue(), 0.70f))
             squadCreation = temp;
-        Debug.Log(squadCreation);
+        //Debug.Log(squadCreation);
 
         if (score <= 0.001)
             return false;
@@ -618,7 +618,7 @@ public class AttackTargetTask : StrategicTask
             }
         }
 
-        Debug.Log("tqrget");
+        //Debug.Log("tqrget");
         if (targetTile == null || score <= 0.001f)
             return false;
 
@@ -626,8 +626,8 @@ public class AttackTargetTask : StrategicTask
         score =  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
             * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - rallyPoint).magnitude / Map.Instance.mapSize);
 
-        Debug.Log("attack");
-        Debug.Log(score);
+        //Debug.Log("attack");
+        //Debug.Log(score);
         if (score > currentScore)
         {
             currentScore = score;

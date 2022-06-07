@@ -42,7 +42,7 @@ public class Squad
 
     public Squad(Squad squad)
     {
-        SquadFormation = squad.SquadFormation;
+        SquadFormation = new Formation(squad.SquadFormation, this);
         Controller = squad.Controller;
         SquadMode = squad.SquadMode;
         State = squad.State;
@@ -269,7 +269,7 @@ public class Squad
     {
         SquadCapture = false;
         State = E_TASK_STATE.Free;
-        targetBuilding.OnBuilduingCaptured.RemoveListener(OnSquadCaptureTarget);
+        targetBuilding.OnBuilduingCaptured.RemoveAllListeners();
     }
 
     public void SetMode(E_MODE newMode)

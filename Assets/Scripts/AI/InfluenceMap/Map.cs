@@ -46,7 +46,7 @@ public class Map : MonoBehaviour
     [SerializeField]
     private int gridSizeV = 100;
     [SerializeField]
-    private int squareSize = 5;
+    public int squareSize { get; private set; } = 5;
     [SerializeField]
     private int maxHeight = 10;
     [SerializeField]
@@ -149,6 +149,9 @@ public class Map : MonoBehaviour
         float outValue = 0f;
         foreach (UnitController unitController in unitControllers)
         {
+            if (unitController.GetTeam() != ETeam.Blue)
+                continue;
+
             foreach (Unit unit in unitController.UnitList)
             {
                 Tile tile = GetTile(unit.transform.position);
@@ -161,7 +164,9 @@ public class Map : MonoBehaviour
                         t.Key.militaryInfluence -= t.Value;
 
                     unit.currentTilesInfluence.Clear();
-                    unit.UpdateTile(tile, unit.Influence);
+                    List<Tile> tileList = new List<Tile>();
+                    tileList.Add(tile);
+                    unit.UpdateTile(tile.position, tileList, unit.Influence);
                 }
             }
         }
@@ -303,16 +308,4 @@ public class Map : MonoBehaviour
 
         return list;
     }
-
-    private void OnDrawGizmos()
-    {
-        GUIStyle gUIStyle = new GUIStyle();
-        for (int i = 0; i < tileList.Count; i++)
-        {
-            ETeam tileTeam = tileList[i].GetTeam();
-            gUIStyle.normal.textColor = tileTeam == ETeam.Blue ? Color.blue : tileTeam == ETeam.Red ? Color.red : Color.green;
-            gUIStyle.fontStyle = FontStyle.Bold;
-            Handles.Label(tileList[i].position, tileList[i].militaryInfluence.ToString() + " " + tileList[i].strategicInfluence.ToString(), gUIStyle);
-        }
-    } 
 }

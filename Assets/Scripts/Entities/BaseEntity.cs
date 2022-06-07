@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRepairable
 {
     [SerializeField]
-    protected ETeam Team;
+    protected ETeam Team = ETeam.Neutral;
 
     protected int HP = 0;
     protected Action OnHpUpdated;
