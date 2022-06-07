@@ -779,8 +779,12 @@ public class PlaceDefendUnitTask : StrategicTask
     {
         base.UpdateTask();
         if (squad == null)
+        {
+            EndTask();
             return;
+        }
 
+        squad.UpdateSquad();
         if (squadCreation != null)
         {
             squadCreation.UpdateTask();
@@ -790,32 +794,27 @@ public class PlaceDefendUnitTask : StrategicTask
                 squadCreation = null;
             }
         }
-        else // if squad complete, update defense
+        if (squad.GetSquadValue() == 0 && squadCreation.isComplete)
         {
-            if (squad.GetSquadValue() == 0)
+            EndTask();
+            return;
+        }
+        if (checkIfEndInterval < Time.time)
+        {
+            Defend();
+
+            checkIfEndInterval = Time.time + 1.0f;
+            if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || !defendedEntity.IsUnderAttack)
             {
                 EndTask();
                 return;
-            }
-
-            squad.UpdateSquad();
-            if (checkIfEndInterval < Time.time)
-            {
-                defendPos = Map.Instance.GetHighestNeighbor(defendTile, controller.playerController.GetTeam()).position;
-                squad.MoveSquad(defendPos);
-                Debug.Log(defendPos);
-                checkIfEndInterval = Time.time + 1.0f;
-                if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || !defendedEntity.IsUnderAttack)
-                {
-                    EndTask();
-                    return;
-                }
             }
         }
     }
 
     public void Defend()
     {
+        defendPos = Map.Instance.GetHighestNeighbor(defendTile, controller.playerController.GetTeam()).position;
         squad.State = E_TASK_STATE.Free;
         checkIfEndInterval = Time.time;
         squad.SetMode(E_MODE.Defensive);

@@ -71,7 +71,7 @@ public sealed class AIController : UnitController
             return;
         previousTime = Time.time;
 
-        Debug.Log("-------------" + scoreThreshold.ToString() + " doing " + task);
+        //Debug.Log("-------------" + scoreThreshold.ToString() + " doing " + task);
 
         float score = scoreThreshold;
 
@@ -121,7 +121,7 @@ public sealed class AIController : UnitController
             if (score > scoreThreshold)
                 task.StartTask(this);
         }
-        Debug.Log("-------------" + scoreThreshold.ToString());
+        //Debug.Log("-------------" + scoreThreshold.ToString());
     }
 
     Squad GetRandomSquad()

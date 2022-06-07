@@ -188,6 +188,7 @@ public class MenuController : MonoBehaviour
         }
 
         BuildTurretButton.gameObject.SetActive(true);
+        BuildTurretButton.GetComponentInChildren<Text>().text = "Build Turret(" + Turret.cost + ")";
         BuildTurretButton.onClick.AddListener(() =>
         {
             enterTurretBuildModeMethod();

@@ -39,6 +39,13 @@ public class Formation
         Squad = _squad;
     }
 
+    public Formation(Formation _formation, Squad _squad)
+    {
+        FormationType = _formation.FormationType;
+        Squad = _squad;
+        FormationLeader = _formation.FormationLeader;
+    }
+
     public void UpdateFormationLeader()
     {
         if (Squad.members.Count != 0)
