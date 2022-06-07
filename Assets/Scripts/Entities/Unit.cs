@@ -29,6 +29,7 @@ public class Unit : BaseEntity
     public bool IsRepairing = false;
     
     [SerializeField] E_MODE mode = E_MODE.Defensive;
+    public bool isEntityInRange = false;
     private float passiveFleeDistance = 25f;
     private bool isFleeing = false;
     private BaseEntity tempEntityTarget = null;
@@ -338,11 +339,23 @@ public class Unit : BaseEntity
 
     void CheckForEnemy()
     {
-        if (EntityTarget != null && EntityTarget is Unit)
-            return;
-
         int focusLayer = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Turret")) | (1 << LayerMask.NameToLayer("Factory"));
         Collider[] inRangeColliders = Physics.OverlapSphere(transform.position, UnitData.AttackDistanceMax, focusLayer);
+
+        isEntityInRange = false;
+
+        foreach (Collider inRangeCollider in inRangeColliders)
+        {
+            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team && !EntityTarget)
+            {
+                isEntityInRange = true;
+                break;
+            }
+        }
+
+        if (EntityTarget != null || CaptureTarget != null || NavMeshAgent.remainingDistance > NavMeshAgent.stoppingDistance)
+            return;
+
         BaseEntity tempFactoryTarget = null;
         foreach(Collider inRangeCollider in inRangeColliders)
         {
@@ -386,7 +399,6 @@ public class Unit : BaseEntity
             else if (mode == E_MODE.Defensive)
                 DefensiveBehavior(tempFactoryTarget);
         }
-
     }
 
     void AgressiveBehavior(BaseEntity inRangeEntity)
@@ -394,8 +406,6 @@ public class Unit : BaseEntity
         tempEntityTarget = EntityTarget;
         entityToKill = EntityTarget = inRangeEntity;
         EntityTarget.OnDeadEvent += OnModeActionEnd;
-        if (CaptureTarget && !needToCapture)
-            CaptureTarget.StopCapture(this);
     }
 
     void DefensiveBehavior(BaseEntity inRangeEntity)
@@ -403,8 +413,6 @@ public class Unit : BaseEntity
         tempEntityTarget = EntityTarget;
         EntityTarget = inRangeEntity;
         EntityTarget.OnDeadEvent += OnModeActionEnd;
-        if (CaptureTarget && !needToCapture)
-            CaptureTarget.StopCapture(this);
     }
 
     void FleeBehavior(BaseEntity inRangeEntity)
@@ -418,8 +426,6 @@ public class Unit : BaseEntity
             direction = hit.point - transform.position;
 
         SetTargetPos(direction + transform.position);
-        if (CaptureTarget && !needToCapture)
-            CaptureTarget.StopCapture(this);
         isFleeing = true;
     }
 

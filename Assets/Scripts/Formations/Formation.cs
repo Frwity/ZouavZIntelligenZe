@@ -23,9 +23,13 @@ public class Formation
     private Squad Squad;
 
     private float GridDistance = 5.0f;
-    private Vector3 OldLeaderPos;
 
     public Unit FormationLeader = null;
+
+    private Vector3 FinalPos;
+
+    // number of second between updates
+    private float updateDelay = 1f;
 
     public E_FORMATION_TYPE SetFormationType
     {
@@ -35,7 +39,7 @@ public class Formation
     public Formation(Squad _squad)
     {
         //For testing
-        FormationType = E_FORMATION_TYPE.Circle;
+        FormationType = E_FORMATION_TYPE.Line;
         Squad = _squad;
     }
 
@@ -112,40 +116,23 @@ public class Formation
 
     void CreateLineFormation(Vector3 targetPos)
     {
-        //3 = number of parallel lines
-        //TODO make a variable
-        const float half = (3f - 1f) / 2f;
+        const int unitsPerLine = 4;
 
         FormationLeader.GridPosition = targetPos;
+        float half = unitsPerLine / 2f;
+        int j = 1;
         for (int i = 0; i < Squad.members.Count; i++)
         {
-            int row = i / 3;
-            int x = i % 3;
-
-            Vector2 offset = new Vector2((x - half) * GridDistance, -1 * (row + 1) * GridDistance);
-            float rotY = FormationLeader.transform.eulerAngles.y;
-            Vector3 positionOffset = new Vector3(offset.x, 0, offset.y);
-            Vector3 rotationOffset = Quaternion.Euler(0, rotY, 0) * positionOffset;
-            
-            //fix first unit of the squad so that it takes the empty slot
-            if (FormationLeader.Equals(Squad.members[i]))
-            {
-                Squad.members[0].GridPosition = FormationLeader.GridPosition + rotationOffset;
+            if(Squad.members[i] == FormationLeader)
                 continue;
-            }
             
-            Squad.members[i].GridPosition = FormationLeader.GridPosition + rotationOffset;
-        }
-    }
+            int rowIndex = j / unitsPerLine;
+            int columnIndex = j % unitsPerLine;
+            //Debug.Log("LOG : " + i + " " + rowIndex + " " + columnIndex);
+            Vector3 offset = new Vector3(columnIndex * GridDistance, 0f, rowIndex * GridDistance);
 
-    void CreateSquareFormation(Vector3 targetPos)
-    {
-        const float half = (3f - 1f) / 2f;
-        
-        FormationLeader.GridPosition = targetPos;
-        for (int i = 0; i < Squad.members.Count; i++)
-        {
-            
+            Squad.members[i].GridPosition = FormationLeader.GridPosition + offset;
+            j++;
         }
     }
 
@@ -175,5 +162,14 @@ public class Formation
                 FormationLeader = unit;
             }
         }
+    }
+    
+    /*
+     * Calculate pos of units in formation while moving
+     */
+    public void UpdateFormation()
+    {
+        // Calculate pos over time
+        // Upodate GridPos
     }
 }
