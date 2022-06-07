@@ -17,7 +17,7 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
     public bool IsSelected { get; protected set; }
     public bool IsAlive { get; protected set; }
     public bool IsDefended { get; set; } = false;
-    public bool IsUnderAttack { get; protected set; }
+    public BaseEntity attackingEntity { get; protected set; }
 
     private float isUnderAttackDuration = 5f;
 
@@ -53,7 +53,7 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
     #endregion
 
     #region IDamageable
-    public void AddDamage(int damageAmount)
+    public void AddDamage(int damageAmount, BaseEntity _attackingEntity)
     {
         if (IsAlive == false)
             return;
@@ -62,9 +62,9 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
 
         OnHpUpdated?.Invoke();
 
-        if (IsUnderAttack)
+        if (attackingEntity)
             CancelInvoke("SetIsNotUnderAttack");
-        IsUnderAttack = true;
+        attackingEntity = _attackingEntity;
         Invoke("SetIsNotUnderAttack", isUnderAttackDuration);
 
         if (HP <= 0)
@@ -77,12 +77,12 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
 
     void SetIsNotUnderAttack()
     {
-        IsUnderAttack = false;
+        attackingEntity = null;
     }
 
     public void Destroy()
     {
-        AddDamage(HP);
+        AddDamage(HP, null);
     }
     #endregion
 

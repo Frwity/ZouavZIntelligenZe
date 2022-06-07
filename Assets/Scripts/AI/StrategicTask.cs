@@ -757,7 +757,7 @@ public class PlaceDefendUnitTask : StrategicTask
             if (tile.GetTeam() == _controller.GetTeam())
             {
                 tempEntity = tile.gameobject.GetComponent<BaseEntity>();
-                if (tempEntity != null && tempEntity.IsUnderAttack && !tempEntity.IsDefended)
+                if (tempEntity != null && tempEntity.attackingEntity && !tempEntity.IsDefended)
                 {
                     defendedEntity = tempEntity;
                     defendTile = tile;
@@ -834,7 +834,7 @@ public class PlaceDefendUnitTask : StrategicTask
             Defend();
 
             checkIfEndInterval = Time.time + 1.0f;
-            if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || !defendedEntity.IsUnderAttack)
+            if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || !defendedEntity.attackingEntity)
             {
                 EndTask();
                 return;

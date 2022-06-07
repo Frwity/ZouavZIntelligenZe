@@ -115,7 +115,7 @@ public class Turret : BaseEntity
                 newBullet.GetComponent<Bullet>().ShootToward(currentFocus.transform.position - transform.position, Team);
             }
 
-            currentFocus.AddDamage(damage);
+            currentFocus.AddDamage(damage, this);
         }
     }
 

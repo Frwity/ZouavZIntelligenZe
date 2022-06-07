@@ -113,6 +113,9 @@ public class Unit : BaseEntity
 
         if (entityToKill)
             ChaseEntityToKill();
+
+        if (!NavMeshAgent.isStopped && IsAtDestination())
+            NavMeshAgent.isStopped = true;
 	}
     #endregion
 
@@ -256,7 +259,7 @@ public class Unit : BaseEntity
             }
             // apply damages
             int damages = Mathf.FloorToInt(UnitData.DPS * UnitData.AttackFrequency);
-            EntityTarget.AddDamage(damages);
+            EntityTarget.AddDamage(damages, this);
         }
     }
     public bool CanCapture(TargetBuilding target)
@@ -355,7 +358,6 @@ public class Unit : BaseEntity
 
         if (EntityTarget != null || CaptureTarget != null || !NavMeshAgent.isStopped)
             return;
-
 
         BaseEntity tempFactoryTarget = null;
         foreach(Collider inRangeCollider in inRangeColliders)
