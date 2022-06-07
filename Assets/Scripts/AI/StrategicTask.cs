@@ -38,6 +38,8 @@ public class CapturePointTask : StrategicTask
     TargetBuilding targetBuilding;
 
     StrategicTask squadCreation = null;
+    float checkIfEndInterval;
+    bool isCapturing = false;
 
     public CapturePointTask(Squad _squad)
     {
@@ -126,10 +128,23 @@ public class CapturePointTask : StrategicTask
         }
         else // if squad complete, update
         {
-            squad.UpdateSquad();
-
             if (targetBuilding.GetTeam() == controller.GetTeam() || squad.GetSquadValue() == 0)
                 EndTask();
+
+            squad.UpdateSquad();
+
+            if (checkIfEndInterval < Time.time)
+            {
+                checkIfEndInterval = Time.time + 1.0f;
+
+                if (squad.FirstEntityInRange() != null)
+                {
+                    isCapturing = false;
+                    squad.StopSquadMovement();
+                }
+                else if (!isCapturing)
+                    StartCapture();
+            }
         }
     }
 
@@ -137,7 +152,9 @@ public class CapturePointTask : StrategicTask
     {
         squad.State = E_TASK_STATE.Free;
         squad.SetMode(E_MODE.Flee);
+        checkIfEndInterval = Time.time;
         squad.CaptureTarget(targetBuilding);
+        isCapturing = true;
     }
 
     public override void EndTask()
@@ -558,6 +575,7 @@ public class AttackTargetTask : StrategicTask
 
     Tile targetTile = null;
     StrategicTask squadCreation = null;
+    BaseEntity encourteredEntity = null;
 
     Vector3 rallyPoint;
     float checkIfEndInterval = 0.0f;
@@ -636,7 +654,7 @@ public class AttackTargetTask : StrategicTask
             squadCreation.StartTask(_controller);
         }
         else
-            LaunchAttack();
+            LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
     }
 
     public override void UpdateTask()
@@ -650,7 +668,7 @@ public class AttackTargetTask : StrategicTask
             squadCreation.UpdateTask();
             if (squadCreation.isComplete)
             {
-                LaunchAttack();
+                LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
                 squadCreation = null;
             }
         }
@@ -684,17 +702,29 @@ public class AttackTargetTask : StrategicTask
                             EndTask();
                     }
                 }
+
+                encourteredEntity = squad.FirstEntityInRange();
+
+                if (encourteredEntity != null)
+                {
+                    squad.ResetTask();
+                    squad.State = E_TASK_STATE.Busy;
+                    squad.SetMode(E_MODE.Agressive);
+                    LaunchAttack(encourteredEntity);
+                }
+                else
+                    LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
             }
         }
     }
 
-    public void LaunchAttack()
+    public void LaunchAttack(BaseEntity entity)
     {
         squad.State = E_TASK_STATE.Free;
         checkIfEndInterval = Time.time;
         squad.SetMode(E_MODE.Agressive);
         if (targetTile.buildType != E_BUILDTYPE.MINER && targetTile.buildType != E_BUILDTYPE.CAPTUREPOINT)
-            squad.SquadTaskAttack(targetTile.gameobject.GetComponent<BaseEntity>());
+            squad.SquadTaskAttack(entity);
         else
             squad.CaptureTarget(targetTile.gameobject.GetComponent<TargetBuilding>());
     }

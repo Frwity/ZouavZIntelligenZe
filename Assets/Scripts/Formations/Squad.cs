@@ -169,6 +169,15 @@ public class Squad
         return totalCost;
     }
 
+    public BaseEntity FirstEntityInRange()
+    {
+        foreach (Unit unit in members)
+            if (unit.entityInRange != null)
+                return unit.entityInRange;
+
+        return null;
+    }
+
     /*
      * The move speed of the squad is the lowest move speed within the squad members
      */
@@ -310,7 +319,10 @@ public class Squad
                     continue;
 
                 if (unit.CanAttack(SquadTarget))
+                {
                     unit.ComputeAttack();
+                    unit.StopMovement(); 
+                }
                 else
                 {
                     unit.SetTargetPos(SquadTarget.transform.position);

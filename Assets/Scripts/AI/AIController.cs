@@ -115,7 +115,7 @@ public sealed class AIController : UnitController
                     task = tempTask;
             }
 
-            Debug.Log(task);
+            //Debug.Log(task);
             //Debug.Log(score);
 
             if (score > scoreThreshold)

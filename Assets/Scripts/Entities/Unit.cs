@@ -29,7 +29,7 @@ public class Unit : BaseEntity
     public bool IsRepairing = false;
     
     [SerializeField] E_MODE mode = E_MODE.Defensive;
-    public bool isEntityInRange = false;
+    public BaseEntity entityInRange = null;
     private float passiveFleeDistance = 25f;
     private bool isFleeing = false;
     private BaseEntity tempEntityTarget = null;
@@ -342,19 +342,20 @@ public class Unit : BaseEntity
         int focusLayer = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Turret")) | (1 << LayerMask.NameToLayer("Factory"));
         Collider[] inRangeColliders = Physics.OverlapSphere(transform.position, UnitData.AttackDistanceMax, focusLayer);
 
-        isEntityInRange = false;
+        entityInRange = null;
 
         foreach (Collider inRangeCollider in inRangeColliders)
         {
-            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team && !EntityTarget)
+            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team)
             {
-                isEntityInRange = true;
+                entityInRange = inRangeCollider.GetComponent<BaseEntity>();
                 break;
             }
         }
 
-        if (EntityTarget != null || CaptureTarget != null || NavMeshAgent.remainingDistance > NavMeshAgent.stoppingDistance)
+        if (EntityTarget != null || CaptureTarget != null || !NavMeshAgent.isStopped)
             return;
+
 
         BaseEntity tempFactoryTarget = null;
         foreach(Collider inRangeCollider in inRangeColliders)
