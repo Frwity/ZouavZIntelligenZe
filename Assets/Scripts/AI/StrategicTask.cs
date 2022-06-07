@@ -136,7 +136,7 @@ public class CapturePointTask : StrategicTask
     public void StartCapture()
     {
         squad.SetMode(E_MODE.Flee);
-        squad.CaptureTarget(targetBuilding);
+        squad.CaptureTask(targetBuilding);
     }
 
     public override void EndTask()
@@ -699,9 +699,9 @@ public class AttackTargetTask : StrategicTask
         checkIfEndInterval = Time.time;
         squad.SetMode(E_MODE.Agressive);
         if (targetTile.buildType != E_BUILDTYPE.MINER && targetTile.buildType != E_BUILDTYPE.CAPTUREPOINT)
-            squad.SquadTaskAttack(targetTile.gameobject.GetComponent<BaseEntity>());
+            squad.AttackTask(targetTile.gameobject.GetComponent<BaseEntity>());
         else
-            squad.CaptureTarget(targetTile.gameobject.GetComponent<TargetBuilding>());
+            squad.CaptureTask(targetTile.gameobject.GetComponent<TargetBuilding>());
     }
 }
 
