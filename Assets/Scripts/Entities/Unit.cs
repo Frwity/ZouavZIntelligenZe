@@ -354,7 +354,7 @@ public class Unit : BaseEntity
             }
         }
 
-        if (EntityTarget != null || CaptureTarget != null || IsAtDestination())
+        if (EntityTarget != null || CaptureTarget != null || !IsAtDestination())
             return;
 
         BaseEntity tempFactoryTarget = null;
