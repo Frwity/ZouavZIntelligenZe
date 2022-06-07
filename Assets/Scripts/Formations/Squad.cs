@@ -81,10 +81,7 @@ public class Squad
         
         return SquadFormation.FormationLeader;
     }
-
-    /*
-     * Calculate position of the members
-     */
+    
     public void MoveSquad(Vector3 targetPos)
     {
         SquadFormation.CreateFormation(targetPos);
@@ -139,10 +136,10 @@ public class Squad
     public void UpdateSquad()
     {
         if (SquadCapture)
-            SquadStartCapture();
+            CaptureTarget();
 
         if (SquadAttack && SquadTarget)
-            SquadAttackTarget();
+            AttackTarget();
         
         if(SquadRepair && SquadTarget)
             SquadStartRepair();
@@ -192,7 +189,7 @@ public class Squad
     /*
      * Capture task 
      */
-    public void CaptureTarget(TargetBuilding target)
+    public void CaptureTask(TargetBuilding target)
     {
         if (target == null || members.Count == 0)
             return;
@@ -208,7 +205,7 @@ public class Squad
             SquadCapture = true;
 
             CanBreakFormation = true;
-            SquadStartCapture();
+            CaptureTarget();
             MoveSquad(target.transform.position);
         }
     }
@@ -221,7 +218,7 @@ public class Squad
         }
     }
 
-    void SquadStartCapture()
+    void CaptureTarget()
     {
         foreach (Unit unit in members)
         {
@@ -233,7 +230,7 @@ public class Squad
         }
     }
 
-    public void SquadStopCapture()
+    public void StopCapture()
     {
         SquadCapture = false;
         foreach (Unit unit in members)
@@ -258,7 +255,7 @@ public class Squad
         }
     }
 
-    public void SquadTaskAttack(BaseEntity target)
+    public void AttackTask(BaseEntity target)
     {
         State = E_TASK_STATE.Busy;
         SetMode(E_MODE.Agressive);
@@ -270,6 +267,12 @@ public class Squad
 
     public void SwitchFormation(E_FORMATION_TYPE newFormationType)
     {
+        if (SquadFormation == null || members.Count == 0)
+            return;
+        
+        if(SquadFormation.FormationLeader == null)
+            SquadFormation.UpdateFormationLeader();
+
         SquadFormation.SetFormationType = newFormationType;
         SquadFormation.CreateFormation(SquadFormation.FormationLeader.transform.position);
     }
@@ -278,7 +281,9 @@ public class Squad
     {
         SquadCapture = false;
         State = E_TASK_STATE.Free;
-        targetBuilding.OnBuilduingCaptured.RemoveAllListeners();
+    
+        if(targetBuilding != null)
+            targetBuilding.OnBuilduingCaptured.RemoveAllListeners();
     }
 
     public void SetMode(E_MODE newMode)
@@ -309,7 +314,7 @@ public class Squad
         }
     }
 
-    void SquadAttackTarget()
+    void AttackTarget()
     {
         if (SquadFormation.FormationLeader.CanAttack(SquadTarget))
         {
@@ -341,7 +346,7 @@ public class Squad
     {
         SquadTarget = null;
         targetBuilding = null;
-        SquadStopCapture();
+        StopCapture();
         SetSquadTarget();
         SquadStopRepair();
         SquadCapture = false;

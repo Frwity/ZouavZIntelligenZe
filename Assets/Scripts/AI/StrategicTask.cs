@@ -129,7 +129,10 @@ public class CapturePointTask : StrategicTask
         else // if squad complete, update
         {
             if (targetBuilding.GetTeam() == controller.GetTeam() || squad.GetSquadValue() == 0)
+            {
                 EndTask();
+                return;
+            }
 
             squad.UpdateSquad();
 
@@ -153,7 +156,7 @@ public class CapturePointTask : StrategicTask
         squad.State = E_TASK_STATE.Free;
         squad.SetMode(E_MODE.Flee);
         checkIfEndInterval = Time.time;
-        squad.CaptureTarget(targetBuilding);
+        squad.CaptureTask(targetBuilding);
         isCapturing = true;
     }
 
@@ -724,9 +727,9 @@ public class AttackTargetTask : StrategicTask
         checkIfEndInterval = Time.time;
         squad.SetMode(E_MODE.Agressive);
         if (targetTile.buildType != E_BUILDTYPE.MINER && targetTile.buildType != E_BUILDTYPE.CAPTUREPOINT)
-            squad.SquadTaskAttack(entity);
+            squad.AttackTask(entity);
         else
-            squad.CaptureTarget(targetTile.gameobject.GetComponent<TargetBuilding>());
+            squad.CaptureTask(targetTile.gameobject.GetComponent<TargetBuilding>());
     }
 }
 

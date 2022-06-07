@@ -529,7 +529,12 @@ public sealed class PlayerController : UnitController
             index = 2;
         else if (Input.GetKeyDown(KeyCode.Alpha3))
             index = 3;
-        
+
+        if(Input.GetKeyDown(KeyCode.K))
+            SelectedSquad?.SwitchFormation(E_FORMATION_TYPE.Circle);
+        else if(Input.GetKeyDown(KeyCode.L))
+            SelectedSquad?.SwitchFormation(E_FORMATION_TYPE.Line);
+
         //No selection use
         if (index == 0) 
             return;
@@ -547,6 +552,7 @@ public sealed class PlayerController : UnitController
                 unit.SetSelected(true);
             }
         }
+        
     }
 
     #endregion
@@ -701,7 +707,7 @@ public sealed class PlayerController : UnitController
             if (other != null)
             {
                 if (other.GetTeam() != GetTeam())
-                    SelectedSquad.SquadTaskAttack(other);
+                    SelectedSquad.AttackTask(other);
                 else if (other.NeedsRepairing())
                 {
                     // Direct call to reparing task $$$ to be improved by AI behaviour
@@ -724,7 +730,7 @@ public sealed class PlayerController : UnitController
                 // foreach (Unit unit in SelectedUnitList)
                 //     unit.SetCaptureTarget(target);
                 SelectedSquad.ResetTask();
-                SelectedSquad.CaptureTarget(target);
+                SelectedSquad.CaptureTask(target);
             }
         }
         // Set unit move target

@@ -438,11 +438,11 @@ public class Unit : BaseEntity
         {
             TargetBuilding temp = CaptureTarget;
             CaptureTarget = null;
-            squad.CaptureTarget(temp);
+            squad.CaptureTask(temp);
         }
 
         else if (tempEntityTarget != null && squad != null)
-            squad.SquadTaskAttack(tempEntityTarget);
+            squad.AttackTask(tempEntityTarget);
 
         tempEntityTarget = null;
     }
