@@ -301,6 +301,7 @@ public class Squad
 
     public void StopAttack()
     {
+        Debug.Log(GetSquadLeader().EntityTarget);
         SquadTarget = null;
         SetSquadTarget();
         SquadAttack = false;
@@ -313,15 +314,13 @@ public class Squad
     {
         foreach (Unit unit in members)
         {
-            unit.EntityTarget = SquadTarget;
             unit.SetAttackTarget(SquadTarget);
+            unit.EntityTarget = SquadTarget;
         }
     }
 
     void AttackTarget()
     {
-        if (SquadFormation.FormationLeader.CanAttack(SquadTarget))
-        {
             foreach (Unit unit in members)
             {
                 if (!SquadTarget)
@@ -337,11 +336,8 @@ public class Squad
                     unit.SetTargetPos(SquadTarget.transform.position);
                     unit.EntityTarget = SquadTarget;
                 }
-            }
+            }   
         }
-        else
-            MoveSquad(SquadTarget.transform.position);
-    }
 
     /*
      * Reset Squad task on new order

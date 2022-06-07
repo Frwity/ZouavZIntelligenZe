@@ -660,7 +660,6 @@ public class AttackTargetTask : StrategicTask
             squadCreation.UpdateTask();
             if (squadCreation.isComplete)
             {
-                Debug.Log("???????");
                 LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
                 squadCreation = null;
             }

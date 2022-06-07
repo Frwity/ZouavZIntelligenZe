@@ -107,7 +107,6 @@ public class Unit : BaseEntity
             else
                 ComputeRepairing();
         }
-
         if (isFleeing)
             CheckForStop();
 
@@ -235,7 +234,6 @@ public class Unit : BaseEntity
 
         if (NavMeshAgent)
             StopMovement();
-
 
         transform.LookAt(EntityTarget.transform);
         // only keep Y axis
