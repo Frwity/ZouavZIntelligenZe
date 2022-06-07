@@ -191,7 +191,7 @@ public class Squad
      */
     public void CaptureTask(TargetBuilding target)
     {
-        if (target == null || members.Count == 0)
+        if (target == null || target == targetBuilding|| members.Count == 0)
             return;
         
         if (target.GetTeam() != Controller.GetTeam())
@@ -208,6 +208,11 @@ public class Squad
             CaptureTarget();
             MoveSquad(target.transform.position);
         }
+    }
+
+    public bool IsNotCapturing(TargetBuilding target)
+    {
+        return target != targetBuilding;
     }
 
     void SquadNeedToCapture()

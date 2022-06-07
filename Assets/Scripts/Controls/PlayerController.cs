@@ -729,8 +729,11 @@ public sealed class PlayerController : UnitController
                 // Direct call to capturing task $$$ to be improved by AI behaviour
                 // foreach (Unit unit in SelectedUnitList)
                 //     unit.SetCaptureTarget(target);
-                SelectedSquad.ResetTask();
-                SelectedSquad.CaptureTask(target);
+                if (SelectedSquad.IsNotCapturing(target))
+                {
+                    SelectedSquad.ResetTask();
+                    SelectedSquad.CaptureTask(target);
+                }
             }
         }
         // Set unit move target
