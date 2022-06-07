@@ -16,6 +16,7 @@ public abstract class BaseEntity : MonoBehaviour, ISelectable, IDamageable, IRep
     public Action OnDeadEvent;
     public bool IsSelected { get; protected set; }
     public bool IsAlive { get; protected set; }
+    public bool IsDefended { get; set; } = false;
     public bool IsUnderAttack { get; protected set; }
 
     private float isUnderAttackDuration = 5f;

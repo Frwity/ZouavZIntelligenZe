@@ -73,19 +73,29 @@ public sealed class AIController : UnitController
 
         //Debug.Log("-------------" + scoreThreshold.ToString() + " doing " + task);
 
+        float score = scoreThreshold;
+
+        StrategicTask tempTask = new PlaceDefendUnitTask((task != null && task.squad != null) ? task.squad : GetRandomSquad());
+        if (tempTask.Evaluate(this, ref score))
+        {
+            if (task != null)
+                task.EndTask();
+            task = tempTask;
+            task.StartTask(this);
+            return;
+        }
+
         if (task == null || task.isComplete)
         {
             //Debug.Log("was :" + task);
-            StrategicTask tempTask;
-            float score = scoreThreshold;
 
-            if (explorationSquad.State == E_TASK_STATE.Free && IsSquadAvailible())
+            if (explorationSquad.State == E_TASK_STATE.Free && IsSquadAvailable())
             {
-                tempTask = new CapturePointTask(explorationSquad.State == E_TASK_STATE.Free ? explorationSquad : GetRandomSquad());
+                tempTask = new CapturePointTask(explorationSquad.State == E_TASK_STATE.Free ? explorationSquad : GetRandomAvailableSquad());
                 if (tempTask.Evaluate(this, ref score))
                     task = tempTask;
             }
-
+            
             tempTask = new CreateFactoryTask();
             if (tempTask.Evaluate(this, ref score))
                 task = tempTask;
@@ -98,10 +108,9 @@ public sealed class AIController : UnitController
             if (tempTask.Evaluate(this, ref score))
                 task = tempTask;
 
-            if (IsSquadAvailible())
+            if (IsSquadAvailable())
             {
-                //Debug.Log("eva");
-                tempTask = new AttackTargetTask(GetRandomSquad());
+                tempTask = new AttackTargetTask(GetRandomAvailableSquad());
                 if (tempTask.Evaluate(this, ref score))
                     task = tempTask;
             }
@@ -117,7 +126,22 @@ public sealed class AIController : UnitController
 
     Squad GetRandomSquad()
     {
-        if (!IsSquadAvailible())
+        if (IsSquadAvailable())
+            return GetRandomAvailableSquad();
+
+        int random = Random.Range(0, 3);
+
+        if (random == 0)
+            return militarySquad1;
+        else if (random == 1)
+            return militarySquad2;
+        else
+            return explorationSquad;
+    }
+
+    Squad GetRandomAvailableSquad()
+    {
+        if (!IsSquadAvailable())
             return null;
 
         const int squadCount = 3;
@@ -141,7 +165,7 @@ public sealed class AIController : UnitController
         return null;
     }
 
-    bool IsSquadAvailible()
+    bool IsSquadAvailable()
     {
         if (militarySquad1.State == E_TASK_STATE.Free 
         ||  militarySquad2.State == E_TASK_STATE.Free 

@@ -38,6 +38,8 @@ public class CapturePointTask : StrategicTask
     TargetBuilding targetBuilding;
 
     StrategicTask squadCreation = null;
+    float checkIfEndInterval;
+    bool isCapturing = false;
 
     public CapturePointTask(Squad _squad)
     {
@@ -47,6 +49,14 @@ public class CapturePointTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
+
+        StrategicTask temp = new CreateExploSquadTask(squad);
+        if (squad.GetSquadValue() <= Mathf.FloorToInt(Time.time / 60.0f) && temp.Evaluate(_controller, ref score))
+        {
+            squadCreation = temp;
+            if (score <= 0.001)
+                return false;
+        }
 
         int captureIndex = int.MaxValue;
         float distance = float.MaxValue;
@@ -74,13 +84,6 @@ public class CapturePointTask : StrategicTask
         }
         else
             return false;
-
-        if (squad.GetSquadValue() <= Mathf.FloorToInt(Time.time / 60.0f))
-        {
-            squadCreation = new CreateExploSquadTask(squad);
-            float f = 0.0f;
-            squadCreation.Evaluate(_controller, ref f);
-        }
 
         //Debug.Log("capture");
         //Debug.Log(score);
@@ -119,24 +122,39 @@ public class CapturePointTask : StrategicTask
             squadCreation.UpdateTask();
             if (squadCreation.isComplete)
             {
-                squad.State = E_TASK_STATE.Free;
                 StartCapture();
                 squadCreation = null;
             }
         }
         else // if squad complete, update
         {
-            squad.UpdateSquad();
-
             if (targetBuilding.GetTeam() == controller.GetTeam() || squad.GetSquadValue() == 0)
                 EndTask();
+
+            squad.UpdateSquad();
+
+            if (checkIfEndInterval < Time.time)
+            {
+                checkIfEndInterval = Time.time + 1.0f;
+
+                if (squad.FirstEntityInRange() != null)
+                {
+                    isCapturing = false;
+                    squad.StopSquadMovement();
+                }
+                else if (!isCapturing)
+                    StartCapture();
+            }
         }
     }
 
     public void StartCapture()
     {
+        squad.State = E_TASK_STATE.Free;
         squad.SetMode(E_MODE.Flee);
+        checkIfEndInterval = Time.time;
         squad.CaptureTask(targetBuilding);
+        isCapturing = true;
     }
 
     public override void EndTask()
@@ -179,9 +197,6 @@ public class CreateSquadTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         factory = null;
-        //Debug.Log(squad.GetSquadValue());
-        //Debug.Log(squad.GetSquadLeader());
-        //Debug.Log(_controller.FactoryList[0]);
         Vector3 squadPos = squad.GetSquadValue() > 0 ? squad.GetSquadLeader().transform.position : _controller.FactoryList[0].transform.position;
         foreach (Factory it in _controller.FactoryList)
         {
@@ -245,10 +260,10 @@ public class CreateExploSquadTask : CreateSquadTask
     {
         if (base.Evaluate(_controller, ref currentScore))
         {
-            float score = _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) * _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
+            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
             if (score > currentScore)
             {
-                money = Mathf.FloorToInt((_controller.TotalBuildPoints - 10) * 0.25f) + 2;
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.25f) + 2;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
                 return true;
@@ -290,7 +305,7 @@ public class CreateLAttackSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
-                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 5) * 0.8f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 5) * 0.9f);
                 money += 3 - money % 3;
                 targetCost = money + squad.totalCost;
                 currentScore = score;
@@ -336,7 +351,7 @@ public class CreateHAttackSquadTask : CreateSquadTask
             float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
             if (score > currentScore)
             {
-                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.7f);
+                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.8f);
                 targetCost = money + squad.totalCost;
                 currentScore = score;
                 return true;
@@ -373,17 +388,15 @@ public class CreateDefenseSquadTask : CreateSquadTask
 
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
+        factoryType = FACTORY_TYPE.HEAVY;
+
         if (base.Evaluate(_controller, ref currentScore))
         {
-            float score = _controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints);
-            if (score > currentScore)
-            {
-                money = Mathf.CeilToInt((_controller.TotalBuildPoints - 9) * 0.5f);
-                money += 5 - money % 5;
-                targetCost = money + squad.totalCost;
-                currentScore = score;
+            money = Mathf.CeilToInt((_controller.TotalBuildPoints) * 0.85f);
+            money -= 5 - money % 5;
+            targetCost = money + squad.totalCost;
+            if (money >= 5)
                 return true;
-            }
         }
         return false;
     }
@@ -562,6 +575,7 @@ public class AttackTargetTask : StrategicTask
 
     Tile targetTile = null;
     StrategicTask squadCreation = null;
+    BaseEntity encourteredEntity = null;
 
     Vector3 rallyPoint;
     float checkIfEndInterval = 0.0f;
@@ -574,19 +588,15 @@ public class AttackTargetTask : StrategicTask
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
-        //Debug.Log("money " + _controller.TotalBuildPoints);
-
-        StrategicTask temp;
 
         // choose, if neened, what type of squad will complete the current to attack
-        temp = new CreateLAttackSquadTask(squad);
-        if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateLAttackSquadTask.id, squad.GetSquadValue(), 0.80f))
+        StrategicTask temp = new CreateLAttackSquadTask(squad);
+        if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateLAttackSquadTask.id, squad.GetSquadValue(), 0.90f))
             squadCreation = temp;
 
         temp = new CreateHAttackSquadTask(squad);
-        if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateHAttackSquadTask.id, squad.GetSquadValue(), 0.70f))
+        if (temp.Evaluate(_controller, ref score) && CreateSquadTask.HasToCompleteSquad(_controller, CreateHAttackSquadTask.id, squad.GetSquadValue(), 0.80f))
             squadCreation = temp;
-        //Debug.Log(squadCreation);
 
         if (score <= 0.001)
             return false;
@@ -618,7 +628,6 @@ public class AttackTargetTask : StrategicTask
             }
         }
 
-        //Debug.Log("tqrget");
         if (targetTile == null || score <= 0.001f)
             return false;
 
@@ -639,10 +648,13 @@ public class AttackTargetTask : StrategicTask
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
-        if (squadCreation != null) 
+        if (squadCreation != null)
+        {
+            squad.State = E_TASK_STATE.Busy;
             squadCreation.StartTask(_controller);
+        }
         else
-            LaunchAttack();
+            LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
     }
 
     public override void UpdateTask()
@@ -656,7 +668,7 @@ public class AttackTargetTask : StrategicTask
             squadCreation.UpdateTask();
             if (squadCreation.isComplete)
             {
-                LaunchAttack();
+                LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
                 squadCreation = null;
             }
         }
@@ -690,16 +702,29 @@ public class AttackTargetTask : StrategicTask
                             EndTask();
                     }
                 }
+
+                encourteredEntity = squad.FirstEntityInRange();
+
+                if (encourteredEntity != null)
+                {
+                    squad.ResetTask();
+                    squad.State = E_TASK_STATE.Busy;
+                    squad.SetMode(E_MODE.Agressive);
+                    LaunchAttack(encourteredEntity);
+                }
+                else
+                    LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
             }
         }
     }
 
-    public void LaunchAttack()
+    public void LaunchAttack(BaseEntity entity)
     {
+        squad.State = E_TASK_STATE.Free;
         checkIfEndInterval = Time.time;
         squad.SetMode(E_MODE.Agressive);
         if (targetTile.buildType != E_BUILDTYPE.MINER && targetTile.buildType != E_BUILDTYPE.CAPTUREPOINT)
-            squad.AttackTask(targetTile.gameobject.GetComponent<BaseEntity>());
+            squad.AttackTask(entity);
         else
             squad.CaptureTask(targetTile.gameobject.GetComponent<TargetBuilding>());
     }
@@ -709,10 +734,56 @@ public class PlaceDefendUnitTask : StrategicTask
 {
     public static int id { get; private set; } = 9;
 
+    StrategicTask squadCreation = null;
+    BaseEntity defendedEntity = null;
+    Tile defendTile = null;
+    Vector3 defendPos;
+    float checkIfEndInterval = 0.0f;
+
+    public PlaceDefendUnitTask(Squad _squad)
+    {
+        defendedEntity = null;
+        defendTile = null;
+        squad = _squad;
+    }
+
     public override bool Evaluate(AIController _controller, ref float currentScore)
     {
         float score = 0.0f;
 
+        BaseEntity tempEntity;
+        foreach (Tile tile in Map.Instance.tilesWithBuild)
+        {
+            if (tile.GetTeam() == _controller.GetTeam())
+            {
+                tempEntity = tile.gameobject.GetComponent<BaseEntity>();
+                if (tempEntity != null && tempEntity.IsUnderAttack && !tempEntity.IsDefended)
+                {
+                    defendedEntity = tempEntity;
+                    defendTile = tile;
+                    break;
+                }
+            }
+        }
+
+        if (defendedEntity == null)
+            return false;
+
+        defendPos = Map.Instance.GetHighestNeighbor(defendTile, _controller.playerController.GetTeam()).position;
+
+        // choose defend squad if possible
+        StrategicTask tempTask = new CreateDefenseSquadTask(squad);
+        if (tempTask.Evaluate(_controller, ref score))
+            squadCreation = tempTask;
+
+        tempTask = new CreateLAttackSquadTask(squad);
+        if (tempTask.Evaluate(_controller, ref score))
+            squadCreation = tempTask;
+
+        if (tempTask == null)
+            return false;
+
+        score = 1.0f;
         if (score > currentScore)
         {
             currentScore = score;
@@ -723,11 +794,68 @@ public class PlaceDefendUnitTask : StrategicTask
     public override void StartTask(AIController _controller)
     {
         base.StartTask(_controller);
+        defendedEntity.IsDefended = true;
+        if (squadCreation != null)
+        {
+            Defend();
+            squad.State = E_TASK_STATE.Busy;
+            squadCreation.StartTask(_controller);
+        }
+        else
+            Defend();
     }
 
     public override void UpdateTask()
     {
         base.UpdateTask();
+        if (squad == null)
+        {
+            EndTask();
+            return;
+        }
+
+        squad.UpdateSquad();
+        if (squadCreation != null)
+        {
+            squadCreation.UpdateTask();
+            if (squadCreation.isComplete)
+            {
+                Defend();
+                squadCreation = null;
+            }
+        }
+        if (squad.GetSquadValue() == 0 && squadCreation.isComplete)
+        {
+            EndTask();
+            return;
+        }
+        if (checkIfEndInterval < Time.time)
+        {
+            Defend();
+
+            checkIfEndInterval = Time.time + 1.0f;
+            if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || !defendedEntity.IsUnderAttack)
+            {
+                EndTask();
+                return;
+            }
+        }
+    }
+
+    public void Defend()
+    {
+        defendPos = Map.Instance.GetHighestNeighbor(defendTile, controller.playerController.GetTeam()).position;
+        squad.State = E_TASK_STATE.Free;
+        checkIfEndInterval = Time.time;
+        squad.SetMode(E_MODE.Defensive);
+        squad.MoveSquad(defendPos);
+    }
+
+    public override void EndTask()
+    {
+        base.EndTask();
+        if (defendedEntity)
+            defendedEntity.IsDefended = false;
     }
 }
 
