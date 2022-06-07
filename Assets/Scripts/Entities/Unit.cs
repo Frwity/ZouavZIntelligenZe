@@ -349,7 +349,7 @@ public class Unit : BaseEntity
 
         foreach (Collider inRangeCollider in inRangeColliders)
         {
-            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team)
+            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team && inRangeCollider.GetComponent<BaseEntity>().GetTeam() != ETeam.Neutral)
             {
                 entityInRange = inRangeCollider.GetComponent<BaseEntity>();
                 break;
