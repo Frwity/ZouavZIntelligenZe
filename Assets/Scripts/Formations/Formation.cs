@@ -25,9 +25,7 @@ public class Formation
     private float GridDistance = 5.0f;
 
     public Unit FormationLeader = null;
-
-    private Vector3 FinalPos;
-
+    
     // number of second between updates
     private float updateDelay = 1f;
 
@@ -162,14 +160,5 @@ public class Formation
                 FormationLeader = unit;
             }
         }
-    }
-    
-    /*
-     * Calculate pos of units in formation while moving
-     */
-    public void UpdateFormation()
-    {
-        // Calculate pos over time
-        // Upodate GridPos
     }
 }
