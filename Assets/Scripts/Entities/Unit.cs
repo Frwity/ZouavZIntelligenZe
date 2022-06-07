@@ -38,9 +38,8 @@ public class Unit : BaseEntity
     //Move speed of the squad
     public float CurrentMoveSpeed;
     public Dictionary<Tile, float> currentTilesInfluence = new Dictionary<Tile, float>();
-    [SerializeField]
-    private float influence = 1;
-    public float Influence { get { return Team == ETeam.Blue ? influence : -influence; } }
+    private float influence;
+    public float Influence { get { return influence; } }
 
     public Squad squad;
 
@@ -86,6 +85,7 @@ public class Unit : BaseEntity
         NavMeshAgent.angularSpeed = GetUnitData.AngularSpeed;
         NavMeshAgent.acceleration = GetUnitData.Acceleration;
         NavMeshAgent.stoppingDistance = 1f;
+        influence = UnitData.AttackDistanceMax * Mathf.Sqrt(2) / Map.Instance.squareSize;
     }
     override protected void Start()
     {
@@ -138,15 +138,17 @@ public class Unit : BaseEntity
     // Moving Task
     public void SetTargetPos(Vector3 pos)
     {
-        if (!entityToKill)
+        if (EntityTarget != null)
         {
-            if (EntityTarget != null)
+            if (entityToKill)
             {
+                entityToKill = null;
                 EntityTarget.OnDeadEvent -= OnModeActionEnd;
-                EntityTarget = null;
             }
+            EntityTarget.OnDeadEvent -= OnModeActionEnd;
+            EntityTarget = null;
         }
-
+        
         if (NavMeshAgent)
         {
             NavMeshAgent.speed = CurrentMoveSpeed;
@@ -340,7 +342,7 @@ public class Unit : BaseEntity
             return;
 
         int focusLayer = (1 << LayerMask.NameToLayer("Unit")) | (1 << LayerMask.NameToLayer("Turret")) | (1 << LayerMask.NameToLayer("Factory"));
-        Collider[] inRangeColliders = Physics.OverlapSphere(transform.position, 15f, focusLayer);
+        Collider[] inRangeColliders = Physics.OverlapSphere(transform.position, UnitData.AttackDistanceMax, focusLayer);
         BaseEntity tempFactoryTarget = null;
         foreach(Collider inRangeCollider in inRangeColliders)
         {
@@ -392,7 +394,7 @@ public class Unit : BaseEntity
         tempEntityTarget = EntityTarget;
         entityToKill = EntityTarget = inRangeEntity;
         EntityTarget.OnDeadEvent += OnModeActionEnd;
-        if (CaptureTarget)
+        if (CaptureTarget && !needToCapture)
             CaptureTarget.StopCapture(this);
     }
 
@@ -401,7 +403,7 @@ public class Unit : BaseEntity
         tempEntityTarget = EntityTarget;
         EntityTarget = inRangeEntity;
         EntityTarget.OnDeadEvent += OnModeActionEnd;
-        if (CaptureTarget)
+        if (CaptureTarget && !needToCapture)
             CaptureTarget.StopCapture(this);
     }
 
@@ -416,7 +418,7 @@ public class Unit : BaseEntity
             direction = hit.point - transform.position;
 
         SetTargetPos(direction + transform.position);
-        if (CaptureTarget)
+        if (CaptureTarget && !needToCapture)
             CaptureTarget.StopCapture(this);
         isFleeing = true;
     }
@@ -466,16 +468,24 @@ public class Unit : BaseEntity
         return NavMeshAgent.remainingDistance < NavMeshAgent.stoppingDistance && NavMeshAgent.remainingDistance > 0f;
     }
 
-    public void UpdateTile(Tile tile, float currentInfluence)
+    public void UpdateTile(Vector3 centerTilePos, List<Tile> toUpdate, float currentInfluence)
     {
-        if (Math.Abs(currentInfluence) < 0.1f || currentTilesInfluence.ContainsKey(tile))
-            return;
+        List<Tile> nextUpdate = new List<Tile>();
+        foreach (Tile tile in toUpdate)
+        {
+            if (currentInfluence < 0f || (centerTilePos - tile.position).magnitude > UnitData.AttackDistanceMax || currentTilesInfluence.ContainsKey(tile))
+                continue;
 
-        currentTilesInfluence.Add(tile, currentInfluence);
-        
-        tile.militaryInfluence += currentInfluence;
+            currentTilesInfluence.Add(tile, currentInfluence);
 
-        foreach(Tile t in Map.Instance.GetNeighbours(tile))
-            UpdateTile(t, currentInfluence / 2f);
+            tile.militaryInfluence += currentInfluence;
+
+            foreach (Tile t in Map.Instance.GetNeighbours(tile))
+                if (!currentTilesInfluence.ContainsKey(t) && !nextUpdate.Contains(t))
+                    nextUpdate.Add(t);
+        }
+
+        if (nextUpdate.Count > 0)
+            UpdateTile(centerTilePos, nextUpdate, currentInfluence - 1f);
     }
 }

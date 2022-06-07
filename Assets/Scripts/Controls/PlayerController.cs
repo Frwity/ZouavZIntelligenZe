@@ -49,6 +49,7 @@ public sealed class PlayerController : UnitController
     int WantedFactoryId = 0;
     GameObject WantedPreview = null;
     bool isFactoryWanted = false;
+    [SerializeField]
     Shader PreviewShader = null;
 
     // Mouse events
@@ -131,14 +132,11 @@ public sealed class PlayerController : UnitController
         MenuPointerEventData = new PointerEventData(SceneEventSystem);
 
         SelectedSquad = new Squad(this);
-        PlayerMenuController.SetSquadText(SelectedSquad.SquadMode);
     }
 
     override protected void Start()
     {
         base.Start();
-
-        PreviewShader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
 
         // left click : selection
         OnMouseLeftPressed += StartSelection;
@@ -207,6 +205,7 @@ public sealed class PlayerController : UnitController
                 SelectAllUnitsByTypeId(typeId);
             };
         }
+        PlayerMenuController.SetSquadText(SelectedSquad.SquadMode);
     }
     override protected void Update()
     {
