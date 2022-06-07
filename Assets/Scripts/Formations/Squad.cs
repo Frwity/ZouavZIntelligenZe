@@ -204,6 +204,7 @@ public class Squad
             SquadFormation.ChooseLeader(target.transform.position);
             SquadCapture = true;
 
+            CanBreakFormation = true;
             CaptureTarget();
             MoveSquad(target.transform.position);
         }
@@ -301,7 +302,6 @@ public class Squad
 
     public void StopAttack()
     {
-        Debug.Log(GetSquadLeader().EntityTarget);
         SquadTarget = null;
         SetSquadTarget();
         SquadAttack = false;
@@ -314,8 +314,8 @@ public class Squad
     {
         foreach (Unit unit in members)
         {
-            unit.SetAttackTarget(SquadTarget);
             unit.EntityTarget = SquadTarget;
+            unit.SetAttackTarget(SquadTarget);
         }
     }
 
