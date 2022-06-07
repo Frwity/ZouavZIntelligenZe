@@ -61,16 +61,16 @@ public class CapturePointTask : StrategicTask
         int captureIndex = int.MaxValue;
         float distance = float.MaxValue;
 
-        for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i)
+        for (int i = 0; i < _controller.capturableTargets.transform.childCount; ++i) // get nearest 
         {
-            float tempdist = (_controller.capturableTargets.transform.GetChild(i).position - _controller.FactoryList[0].transform.position).magnitude;
-            if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempdist < distance)
+            float tempDist = (_controller.capturableTargets.transform.GetChild(i).position - _controller.FactoryList[0].transform.position).magnitude;
+            if (_controller.capturableTargets.transform.GetChild(i).GetComponent<TargetBuilding>().GetTeam() == ETeam.Neutral && tempDist < distance)
             {
                 captureIndex = i;
-                distance = tempdist;
+                distance = tempDist;
             }
         }
-        if (captureIndex != int.MaxValue)
+        if (captureIndex != int.MaxValue) // evaluate if any
         {
             targetBuilding = _controller.capturableTargets.transform.GetChild(captureIndex).GetComponent<TargetBuilding>();
 
@@ -84,9 +84,6 @@ public class CapturePointTask : StrategicTask
         }
         else
             return false;
-
-        //Debug.Log("capture");
-        //Debug.Log(score);
 
         if (score > currentScore)
         {
@@ -446,9 +443,6 @@ public class CreateMinerTask : StrategicTask
                     *  _controller.taskDatas[id].Ratio.Evaluate(ownedTarget / ownedMine))
                     *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
 
-        //Debug.Log("mine");
-        //Debug.Log(score); 
-
         if (score > currentScore)
         {
             currentScore = score;
@@ -504,9 +498,6 @@ public class CreateFactoryTask : StrategicTask
         float score = (_controller.taskDatas[id].Resources.Evaluate(_controller.TotalBuildPoints) 
                     *  _controller.taskDatas[id].Ratio.Evaluate((_controller.FactoryList.Count + 1) / (_controller.playerController.FactoryList.Count + 1))) 
                     *  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
-
-        //Debug.Log("factory");
-        //Debug.Log(score);
 
         if (score > currentScore)
         {
@@ -638,8 +629,6 @@ public class AttackTargetTask : StrategicTask
         score =  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
             * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - rallyPoint).magnitude / Map.Instance.mapSize);
 
-        //Debug.Log("attack");
-        //Debug.Log(score);
         if (score > currentScore)
         {
             currentScore = score;
@@ -827,7 +816,7 @@ public class PlaceDefendUnitTask : StrategicTask
                 squadCreation = null;
             }
         }
-        if (squad.GetSquadValue() == 0 && squadCreation.isComplete)
+        if (squad.GetSquadValue() == 0 && ((squadCreation != null && squadCreation.isComplete) || squadCreation == null))
         {
             EndTask();
             return;
@@ -898,9 +887,6 @@ public class PlaceTurretTask : StrategicTask
                     * _controller.taskDatas[id].EnemyPower.Evaluate(_controller.playerController.GetMilitaryPower() - _controller.GetMilitaryPower())
                     * _controller.taskDatas[id].Ratio.Evaluate(turretCount)
                     * _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f);
-
-        //Debug.Log("turret");
-        //Debug.Log(score);
 
         if (score > currentScore)
         {

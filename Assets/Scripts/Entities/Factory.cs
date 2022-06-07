@@ -22,7 +22,7 @@ public sealed class Factory : BaseEntity
     UnitController Controller = null;
 
     [SerializeField]
-    int MaxBuildingQueueSize = 5;
+    int MaxBuildingQueueSize = 100;
     Queue<KeyValuePair<int, StrategicTask>> BuildingQueue = new Queue<KeyValuePair<int, StrategicTask>>();
     public enum State
     {

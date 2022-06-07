@@ -107,15 +107,11 @@ public class Unit : BaseEntity
             else
                 ComputeRepairing();
         }
-
         if (isFleeing)
             CheckForStop();
 
         if (entityToKill)
             ChaseEntityToKill();
-
-        if (!NavMeshAgent.isStopped && IsAtDestination())
-            NavMeshAgent.isStopped = true;
 	}
     #endregion
 
@@ -157,7 +153,6 @@ public class Unit : BaseEntity
         {
             NavMeshAgent.speed = CurrentMoveSpeed;
             NavMeshAgent.SetDestination(pos);
-            NavMeshAgent.isStopped = false;
         }
     }
 
@@ -238,7 +233,7 @@ public class Unit : BaseEntity
             return;
 
         if (NavMeshAgent)
-            NavMeshAgent.isStopped = true;
+            StopMovement();
 
         transform.LookAt(EntityTarget.transform);
         // only keep Y axis
@@ -320,7 +315,7 @@ public class Unit : BaseEntity
             return;
 
         if (NavMeshAgent)
-            NavMeshAgent.isStopped = true;
+            StopMovement();
 
         transform.LookAt(EntityTarget.transform);
         // only keep Y axis
@@ -349,14 +344,14 @@ public class Unit : BaseEntity
 
         foreach (Collider inRangeCollider in inRangeColliders)
         {
-            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team)
+            if (inRangeCollider.GetComponent<BaseEntity>().GetTeam() != Team && inRangeCollider.GetComponent<BaseEntity>().GetTeam() != ETeam.Neutral)
             {
                 entityInRange = inRangeCollider.GetComponent<BaseEntity>();
                 break;
             }
         }
 
-        if (EntityTarget != null || CaptureTarget != null || !NavMeshAgent.isStopped)
+        if (EntityTarget != null || CaptureTarget != null || IsAtDestination())
             return;
 
         BaseEntity tempFactoryTarget = null;
@@ -464,7 +459,7 @@ public class Unit : BaseEntity
 
     public void StopMovement()
     {
-        NavMeshAgent.isStopped = true;
+        NavMeshAgent.SetDestination(transform.position);
     }
 
     public void SetMode(E_MODE newMode)

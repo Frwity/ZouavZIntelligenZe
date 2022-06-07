@@ -324,29 +324,24 @@ public class Squad
         if (SquadTarget == null)
             return;
 
-        if (SquadFormation.FormationLeader.CanAttack(SquadTarget))
+        foreach (Unit unit in members)
         {
-            foreach (Unit unit in members)
-            {
-                if (!SquadTarget)
-                    continue;
+            if (!SquadTarget)
+                continue;
 
-                if (unit.CanAttack(SquadTarget))
-                {
-                    unit.ComputeAttack();
-                    unit.StopMovement(); 
-                }
-                else
-                {
-                    unit.SetTargetPos(SquadTarget.transform.position);
-                    unit.EntityTarget = SquadTarget;
-                }
+            if (unit.CanAttack(SquadTarget))
+            {
+                unit.ComputeAttack();
+                unit.StopMovement(); 
+            }
+            else
+            {
+                unit.SetTargetPos(SquadTarget.transform.position);
+                unit.EntityTarget = SquadTarget;
             }
         }
-        else
-            MoveSquad(SquadTarget.transform.position);
     }
-
+     
     /*
      * Reset Squad task on new order
      */
