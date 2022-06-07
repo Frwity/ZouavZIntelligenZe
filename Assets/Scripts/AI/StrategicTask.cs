@@ -83,8 +83,8 @@ public class CapturePointTask : StrategicTask
         else
             return false;
 
-        Debug.Log("capture");
-        Debug.Log(score);
+        //Debug.Log("capture");
+        //Debug.Log(score);
 
         if (score > currentScore)
         {
@@ -617,8 +617,8 @@ public class AttackTargetTask : StrategicTask
         score =  _controller.taskDatas[id].Time.Evaluate(Time.time / 60.0f) 
             * _controller.taskDatas[id].Distance.Evaluate((targetTile.position - rallyPoint).magnitude / Map.Instance.mapSize);
 
-        Debug.Log("attack");
-        Debug.Log(score);
+        //Debug.Log("attack");
+        //Debug.Log(score);
         if (score > currentScore)
         {
             currentScore = score;
@@ -706,11 +706,14 @@ public class PlaceDefendUnitTask : StrategicTask
 
     StrategicTask squadCreation = null;
     BaseEntity defendedEntity = null;
+    Tile defendTile = null;
     Vector3 defendPos;
     float checkIfEndInterval = 0.0f;
 
     public PlaceDefendUnitTask(Squad _squad)
     {
+        defendedEntity = null;
+        defendTile = null;
         squad = _squad;
     }
 
@@ -719,7 +722,6 @@ public class PlaceDefendUnitTask : StrategicTask
         float score = 0.0f;
 
         BaseEntity tempEntity;
-        Tile defendTile = null;
         foreach (Tile tile in Map.Instance.tilesWithBuild)
         {
             if (tile.GetTeam() == _controller.GetTeam())
@@ -737,7 +739,7 @@ public class PlaceDefendUnitTask : StrategicTask
         if (defendedEntity == null)
             return false;
 
-        defendPos = Map.Instance.GetHighestNeighbor(defendTile, _controller.GetTeam()).position;
+        defendPos = Map.Instance.GetHighestNeighbor(defendTile, _controller.playerController.GetTeam()).position;
 
         // choose defend squad if possible
         StrategicTask tempTask = new CreateDefenseSquadTask(squad);
@@ -799,6 +801,9 @@ public class PlaceDefendUnitTask : StrategicTask
             squad.UpdateSquad();
             if (checkIfEndInterval < Time.time)
             {
+                defendPos = Map.Instance.GetHighestNeighbor(defendTile, controller.playerController.GetTeam()).position;
+                squad.MoveSquad(defendPos);
+                Debug.Log(defendPos);
                 checkIfEndInterval = Time.time + 1.0f;
                 if (defendedEntity == null || defendedEntity.gameObject == null || !defendedEntity.IsAlive || !defendedEntity.IsUnderAttack)
                 {
