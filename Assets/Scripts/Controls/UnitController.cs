@@ -102,7 +102,6 @@ public class UnitController : MonoBehaviour
     {
         unit.OnDeadEvent += () =>
         {
-            TotalBuildPoints += unit.Cost;
             if (unit.IsSelected)
                 SelectedUnitList.Remove(unit);
             UnitList.Remove(unit);
