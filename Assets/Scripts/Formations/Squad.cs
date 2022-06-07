@@ -204,7 +204,6 @@ public class Squad
             SquadFormation.ChooseLeader(target.transform.position);
             SquadCapture = true;
 
-            CanBreakFormation = true;
             CaptureTarget();
             MoveSquad(target.transform.position);
         }
