@@ -129,7 +129,10 @@ public class CapturePointTask : StrategicTask
         else // if squad complete, update
         {
             if (targetBuilding.GetTeam() == controller.GetTeam() || squad.GetSquadValue() == 0)
+            {
                 EndTask();
+                return;
+            }
 
             squad.UpdateSquad();
 

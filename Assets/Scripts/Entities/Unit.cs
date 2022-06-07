@@ -113,7 +113,10 @@ public class Unit : BaseEntity
 
         if (entityToKill)
             ChaseEntityToKill();
-	}
+
+        if (!NavMeshAgent.isStopped && IsAtDestination())
+            NavMeshAgent.isStopped = true;
+    }
     #endregion
 
     #region IRepairable
