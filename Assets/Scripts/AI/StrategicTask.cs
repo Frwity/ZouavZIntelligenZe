@@ -110,7 +110,6 @@ public class CapturePointTask : StrategicTask
         base.UpdateTask();
         if (squad == null)
         {
-                    Debug.Log("wrong");
             EndTask();
             return;
         }
@@ -128,8 +127,6 @@ public class CapturePointTask : StrategicTask
         {
             if (targetBuilding.GetTeam() == controller.GetTeam() || squad.GetSquadValue() == 0)
             {
-                Debug.Log("valid");
-
                 EndTask();
                 return;
             }
@@ -144,7 +141,6 @@ public class CapturePointTask : StrategicTask
                 {
                     isCapturing = false;
                     squad.StopSquadMovement();
-                    Debug.Log("wrong");
                 }
                 else if (!isCapturing)
                     StartCapture();
@@ -154,8 +150,6 @@ public class CapturePointTask : StrategicTask
 
     public void StartCapture()
     {
-        Debug.Log(squad.GetSquadValue());
-        Debug.Log(targetBuilding.transform.position);
         squad.State = E_TASK_STATE.Free;
         squad.SetMode(E_MODE.Flee);
         checkIfEndInterval = Time.time;
@@ -165,7 +159,6 @@ public class CapturePointTask : StrategicTask
 
     public override void EndTask()
     {
-        Debug.Log("wrong");
         base.EndTask();
         squadCreation = null;
     }
@@ -667,6 +660,7 @@ public class AttackTargetTask : StrategicTask
             squadCreation.UpdateTask();
             if (squadCreation.isComplete)
             {
+                Debug.Log("???????");
                 LaunchAttack(targetTile.gameobject.GetComponent<BaseEntity>());
                 squadCreation = null;
             }
@@ -823,7 +817,7 @@ public class PlaceDefendUnitTask : StrategicTask
                 squadCreation = null;
             }
         }
-        if (squad.GetSquadValue() == 0 && squadCreation.isComplete)
+        if (squad.GetSquadValue() == 0 && ((squadCreation != null && squadCreation.isComplete) || squadCreation == null))
         {
             EndTask();
             return;

@@ -42,6 +42,8 @@ public sealed class AIController : UnitController
         previousUtilitySystemTime3 = Time.time + timeBetweenUtilitySystemUpdate / 3.0f * 2.0f - timeBetweenUtilitySystemUpdate;
 
         playerController = FindObjectOfType<PlayerController>();
+
+        InvokeRepeating("Cheat", 4.0f, 4.0f);
     }
 
     protected override void Update()
@@ -52,7 +54,11 @@ public sealed class AIController : UnitController
         UtilitySystemUpdate(ref task1, 0.1f, ref previousUtilitySystemTime1);
         UtilitySystemUpdate(ref task2, 0.15f, ref previousUtilitySystemTime2);
         UtilitySystemUpdate(ref task3, 0.35f, ref previousUtilitySystemTime3);
+    }
 
+    void Cheat()
+    {
+        TotalBuildPoints += 1;
     }
 
     void UpdateTasks()
@@ -71,8 +77,6 @@ public sealed class AIController : UnitController
             return;
         previousTime = Time.time;
 
-        Debug.Log("-------------" + scoreThreshold.ToString() + " doing " + task);
-
         float score = scoreThreshold;
 
         StrategicTask tempTask = new PlaceDefendUnitTask((task != null && task.squad != null) ? task.squad : GetRandomSquad());
@@ -87,8 +91,6 @@ public sealed class AIController : UnitController
 
         if (task == null || task.isComplete)
         {
-            Debug.Log("was :" + task);
-
             if (explorationSquad.State == E_TASK_STATE.Free && IsSquadAvailable())
             {
                 tempTask = new CapturePointTask(explorationSquad.State == E_TASK_STATE.Free ? explorationSquad : GetRandomAvailableSquad());
@@ -115,13 +117,9 @@ public sealed class AIController : UnitController
                     task = tempTask;
             }
 
-            Debug.Log(task);
-            Debug.Log(score);
-
             if (score > scoreThreshold)
                 task.StartTask(this);
         }
-        Debug.Log("-------------" + scoreThreshold.ToString());
     }
 
     Squad GetRandomSquad()
