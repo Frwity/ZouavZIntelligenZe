@@ -233,12 +233,15 @@ public sealed class PlayerController : UnitController
         foreach (KeyValuePair<int, Squad> squad in Squads)
             squad.Value.UpdateSquad();
 
-        foreach (Squad squad in TemporarySquadList)
+        for (int i = 0; i < TemporarySquadList.Count;)
         {
-            if (squad.members.Count == 0)
-                squad.ResetTask();
+            if (TemporarySquadList[i].members.Count == 0)
+                TemporarySquadList[i].ResetTask();
             else
-                squad.UpdateSquad();
+            {
+                TemporarySquadList[i].UpdateSquad();
+                i++;
+            }
         }
     }
     #endregion
