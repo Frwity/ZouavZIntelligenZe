@@ -472,7 +472,7 @@ public class Unit : BaseEntity
 
     public bool IsAtDestination()
     {
-        return NavMeshAgent.remainingDistance < NavMeshAgent.stoppingDistance && NavMeshAgent.remainingDistance > 0f;
+        return NavMeshAgent.remainingDistance < NavMeshAgent.stoppingDistance;
     }
 
     public void UpdateTile(Vector3 centerTilePos, List<Tile> toUpdate, float currentInfluence)
